@@ -1,0 +1,12 @@
+import {homeView} from './home.js';
+import {entriesView} from './entries.js';
+import {editorView} from './editor.js';
+import {readerView} from './reader.js';
+import {calendarView} from './calendar.js';
+import {almanacView} from './almanac.js';
+import {githubView} from './github.js';
+import {dataView} from './data.js';
+import {settingsView} from './settings.js';
+import {insightsView} from './insights.js';
+export const VIEWS={home:homeView,entries:entriesView,editor:editorView,reader:readerView,calendar:calendarView,almanac:almanacView,github:githubView,data:dataView,settings:settingsView,insights:insightsView};
+export const VIEW_TITLES={home:'概览',entries:'全部手记',editor:'写作',reader:'阅读手记',calendar:'日历与归档',almanac:'节气风物',github:'GitHub 仓库',data:'数据管理',settings:'设置中心',insights:'线索与行动'};

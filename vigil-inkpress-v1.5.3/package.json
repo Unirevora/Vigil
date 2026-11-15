@@ -1,0 +1,17 @@
+{
+  "name": "vigil-inkpress",
+  "version": "1.5.3",
+  "private": true,
+  "type": "module",
+  "description": "不眠手记 1.5.3：主题联动、毛玻璃侧栏、轻量设置导航、统一下拉选框与动效偏好",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "start": "node scripts/dev-server.mjs",
+    "test": "node --test tests/*.test.js",
+    "fonts:restore": "python3 scripts/restore-fonts.py",
+    "pack:fonts": "python3 scripts/pack-with-local-fonts.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

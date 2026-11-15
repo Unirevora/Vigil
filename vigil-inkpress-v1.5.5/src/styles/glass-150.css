@@ -1,0 +1,183 @@
+/* VIGIL 1.5 · Ink and Liquid Glass. Optical controls, stable manuscript surfaces.
+ * Real scene displacement through SVG feDisplacementMap in supported browsers.
+ * Fallback remains tinted + subtly blurred; no rainbow borders or neon glow.
+ */
+:root{
+  --color-paper:#f3f2ed;--color-ink:#202929;--color-glass-scene:#25414a;
+  --color-glass-mist:#e4efeb;--color-glass-glint:#fff;--color-focus:#557b79;
+  --glass-scene-url:url('/assets/wallpaper-mist-3200.webp');
+  --bg:#eeeae0;--surface:#fcfaf3;--paper-light:#fbf9f2;--surface-soft:#f2f0e8;
+  --stroke:#ded8ca;--stroke-2:#c9c4b7;--ink:#202929;--ink-2:#475653;
+  --muted:#75817c;--side:#243d3e;
+  --vigil-spring:cubic-bezier(.2,1.22,.31,1);--shadow:0 14px 38px rgba(25,48,49,.07);
+}
+:root[data-theme=night]{
+  --bg:#223238;--surface:#2c3c3d;--surface-soft:#2e3f40;--paper-light:#34413d;
+  --ink:#f3efe5;--ink-2:#d5e0d7;--muted:#aebdb4;--stroke:#586962;--stroke-2:#6f7d72;
+  --glass-scene-url:url('/assets/wallpaper-moon-3200.webp');
+}
+body{
+  background:var(--bg);color:var(--ink);
+  background-image:radial-gradient(ellipse at 75% 12%,rgba(255,255,255,.27),transparent 62%);
+}
+body::before{
+  background-image:url('/assets/wallpaper-mist-3200.webp');
+  background-size:cover;background-position:center 26%;
+  opacity:min(var(--wallpaper-alpha), .19);
+}
+body[data-wallpaper=paper]::before{background-image:url('/assets/wallpaper-paper.svg');background-size:cover;opacity:.34}
+body[data-wallpaper=mountains]::before{background-image:url('/assets/wallpaper-mist-3200.webp');background-size:cover;opacity:.55}
+body[data-wallpaper=sea]::before{background-image:url('/assets/wallpaper-moon-3200.webp');background-size:cover;opacity:.43}
+.bg-sea .bg-preview{background-image:url('/assets/wallpaper-moon-3200.webp')}
+.bg-mountains .bg-preview{background-image:url('/assets/wallpaper-mist-3200.webp')}
+body[data-wallpaper=sage]::before{background-image:url('/assets/wallpaper-sage.svg');background-size:cover;opacity:.43}
+body[data-wallpaper=custom]::before{background-image:var(--wallpaper-image);background-size:cover;opacity:var(--wallpaper-alpha)}
+body[data-wallpaper=none]::before{background:none}
+:root[data-theme=night] body::before{filter:brightness(.6) saturate(.68)}
+:root[data-theme=night] body[data-wallpaper=paper]::before{background-image:url('/assets/wallpaper-paper.svg');opacity:.10}
+:root[data-theme=night] body[data-wallpaper=mountains]::before{background-image:url('/assets/wallpaper-moon-3200.webp');opacity:.24}
+.liquid-svg-defs{position:absolute!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none}
+/* Backdrop fallback always present; scene replica activates only with SVG filter. */
+.liquid-glass{
+  position:relative!important;isolation:isolate;overflow:hidden;
+  background:rgba(232,245,238,.69)!important;
+  border:1px solid rgba(255,255,255,.78)!important;
+  box-shadow:0 9px 23px rgba(19,37,41,.11),inset 0 1px 0 rgba(255,255,255,.72)!important;
+  -webkit-backdrop-filter:blur(13px) saturate(1.08);backdrop-filter:blur(13px) saturate(1.08);
+  color:#243c3d!important;
+  transition:transform .42s var(--vigil-spring),box-shadow .24s ease,border-color .24s ease;
+}
+.liquid-glass::before{
+  content:"";position:absolute;z-index:1;pointer-events:none;inset:0;border-radius:inherit;
+  background:linear-gradient(172deg,rgba(255,255,255,.52) 0,rgba(255,255,255,.10) 24%,transparent 60%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.76),inset 1px 0 0 rgba(255,255,255,.2);
+}
+.liquid-glass::after{content:"";position:absolute;pointer-events:none;inset:0;border-radius:inherit;z-index:1;
+  box-shadow:inset 0 0 0 .6px rgba(63,91,91,.11);}
+.glass-lens-underlay{
+  pointer-events:none;position:absolute;inset:0;z-index:0;overflow:hidden;border-radius:inherit;
+  opacity:.22;
+}
+.glass-lens-scene{
+  position:absolute;display:block;width:var(--lens-width,100vw);height:var(--lens-height,100vh);
+  top:var(--lens-top,0px);left:var(--lens-left,0px);max-width:none;max-height:none;
+  background-image:var(--glass-scene-url);background-position:center center;background-size:cover;background-repeat:no-repeat;
+}
+.glass-optics-on .glass-lens-underlay{filter:url(#vigil-glass-bend);opacity:.43;}
+.liquid-glass > :not(.glass-lens-underlay){position:relative;z-index:2}
+.liquid-glass:hover:not(:disabled){box-shadow:0 13px 27px rgba(19,37,41,.16),inset 0 1px 0 rgba(255,255,255,.82)!important}
+.liquid-glass.glass-pressed{transform:scale(.96)!important;transition-duration:.11s!important}
+.liquid-glass:focus-visible,.liquid-glass :focus-visible{
+  outline:2px solid var(--color-focus)!important;outline-offset:3px!important;
+}
+:root[data-theme=night] .liquid-glass{background:rgba(40,71,73,.76)!important;color:#f9faf4!important;border-color:rgba(219,244,236,.30)!important}
+:root[data-theme=night] .liquid-glass::before{background:linear-gradient(165deg,rgba(255,255,255,.17),transparent 55%)}
+/* Navigation remains a dark jade shelf, not a transparent glass wall. */
+.sidebar{background:linear-gradient(160deg,#234343,#203735);border-right:1px solid rgba(32,62,64,.52)}
+.sidebar::before{border-color:rgba(226,215,187,.18)}
+.brand-name,.sidebar-letter{color:#f5eee0}
+.nav-item{border-radius:14px}
+.nav-item.active{background:#eef4ed!important;color:#274648!important;border-left:0!important;border-radius:14px!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),0 4px 11px rgba(9,24,24,.15)!important}
+.nav-item.active svg{color:var(--appearance-accent)!important}
+.sidebar-toggle{border-radius:50%;width:38px;height:38px;right:-18px;box-shadow:0 8px 21px rgba(26,45,41,.22)}
+.topbar{
+  background:rgba(250,250,245,.57);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 1px 0 rgba(255,255,255,.36);border-bottom:1px solid rgba(187,196,186,.38);
+}
+:root[data-theme=night] .topbar{background:rgba(35,56,56,.56)}
+.main-inner{max-width:var(--workspace-max-width);padding-bottom:120px}
+/* Light pages: display pieces breathe more, data stay stable. */
+.heritage-hero{border-radius:28px!important;box-shadow:0 18px 54px rgba(31,54,54,.11)!important;border-color:rgba(184,183,164,.5)!important}
+.heritage-copy{border-radius:28px 0 0 28px}
+.heritage-stats{gap:16px}
+.heritage-stat{border-radius:23px!important;border:1px solid rgba(204,209,196,.7)!important;background:rgba(252,251,245,.92)!important;box-shadow:0 8px 20px rgba(42,56,53,.06)!important}
+.season-teaser,.home-quick-row .draft-banner{border-radius:23px!important;box-shadow:0 8px 24px rgba(36,66,66,.06)!important}
+.note-card,.calendar-card,.archive-mini-card,.github-files,.github-detail,.appearance-section,.data-action-card,
+.dial-panel,.season-current,.hou-panel,.reading-paper,.editor-paper,.filter-panel{
+  border-radius:24px!important;border-color:rgba(198,204,190,.68)!important;
+  box-shadow:0 12px 27px rgba(27,51,53,.05)!important;
+}
+/* Long text and form surfaces must remain opaque, never optically refracted. */
+.reading-paper,.editor-paper,.github-detail,.github-files,.archive-mini-card,.filter-panel,
+.appearance-section,.data-action-card,.season-current,.hou-panel{
+  background:var(--surface)!important;
+}
+.article-content{color:var(--ink-2)}
+.page-head h1,.reading-title,.heritage-copy h1{letter-spacing:-.015em}
+.btn-primary:not(.side-create){border-radius:999px;padding-inline:18px;min-height:44px}
+.btn:not(.btn-primary),.header-search,.header-settings,.icon-button.theme-button{border-radius:999px}
+.header-search,.header-settings,.theme-button{min-height:44px;min-width:44px}
+.header-search{padding-inline:16px}
+.header-search kbd{border-radius:7px}
+/* Floating capsule scene navigator, visible where real wallpaper is behind it. */
+.glass-dock{
+  position:fixed;z-index:18;left:50%;bottom:clamp(16px,2.3vh,28px);transform:translateX(-50%);
+  width:min(510px,calc(100vw - 25px));height:64px;padding:7px;display:none;
+  align-items:center;gap:6px;justify-content:space-between;
+  border-radius:999px!important;background:rgba(223,240,233,.79)!important;
+}
+body[data-page=home] .glass-dock,body[data-page=insights] .glass-dock{display:flex}
+.glass-dock > button{
+  position:relative;z-index:3;display:flex;flex:1;align-items:center;justify-content:center;
+  gap:5px;flex-direction:column;height:49px;min-width:0;border:0;border-radius:999px;
+  color:#254345;background:transparent;cursor:pointer;font:11px/1.1 var(--font-body);
+  transition:transform .42s var(--vigil-spring),background .22s,color .2s;
+}
+.glass-dock > button svg{width:18px;height:18px;transition:transform .4s var(--vigil-spring)}
+.glass-dock > button:hover{background:rgba(255,255,255,.6);transform:translateY(-2px)}
+.glass-dock > button:active{transform:scale(.96)}
+.glass-dock > button[aria-current=page]{background:rgba(246,249,245,.9);box-shadow:0 4px 12px rgba(27,64,67,.11);color:#2c4b4b}
+.glass-dock > button.dock-compose{flex:0 0 55px;height:50px;background:#294940;color:#fcf8ed;border:1px solid rgba(255,255,255,.25)}
+.glass-dock > button.dock-compose svg{width:21px;height:21px}
+.glass-dock > button.dock-compose:hover{background:#42635b}
+.glass-dock > button:focus-visible{outline:2px solid #557b79;outline-offset:3px}
+/* Temporary popovers tinted, not fully transparent, to protect labels. */
+.command-dialog{border-radius:28px;box-shadow:0 16px 40px rgba(19,37,41,.18);background:rgba(239,245,242,.97)}
+.command-input-row{background:rgba(255,255,255,.38);border-radius:28px 28px 0 0}
+.command-result{border-radius:14px;min-height:50px}
+.command-result:hover,.command-result.active{background:rgba(206,229,221,.72)!important}
+@media(max-width:900px){
+  .sidebar-toggle,.shell.sidebar-collapsed .sidebar-toggle{right:12px!important}
+  .glass-dock{display:flex!important;bottom:calc(12px + env(safe-area-inset-bottom,0px));height:63px;width:min(480px,calc(100vw - 24px))}
+  .main-inner{padding-bottom:110px}
+  .nav-list{grid-template-columns:repeat(4,minmax(0,1fr))!important;max-height:180px}
+  .shell.sidebar-collapsed .nav-list{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .sidebar{height:auto;overflow:visible}
+  .hero-scene{max-width:100%}
+}
+@media(max-width:600px){
+  .glass-dock{height:62px;gap:2px;padding:6px}
+  .glass-dock > button{height:47px;font-size:10px}
+  .glass-dock > button.dock-compose{height:48px;flex-basis:49px}
+  .topbar{min-height:58px}
+  .heritage-copy{border-radius:24px 24px 0 0}
+  .main-inner{padding-inline:16px;padding-top:23px}
+  .page-head h1{font-size:34px}
+}
+@media(prefers-reduced-motion:reduce){
+  .liquid-glass,.glass-dock>button,.glass-dock>button svg{transition:none!important;animation:none!important}
+  .liquid-glass.glass-pressed{transform:none!important}
+  .glass-optics-on .glass-lens-underlay{filter:none}
+}
+@media(prefers-reduced-transparency:reduce){
+  .liquid-glass{background:#e3efea!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .glass-lens-underlay{display:none!important}
+  :root[data-theme=night] .liquid-glass{background:#30484b!important}
+}
+/* Explicit scene refraction on browsers with unreliable SVG backdrop composition. */
+.glass-lens-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none;pointer-events:none}
+.glass-scene-ready .glass-lens-canvas{display:block}
+.glass-scene-ready .glass-lens-scene{display:none}
+.glass-optics-on.glass-scene-ready .glass-lens-underlay{opacity:.55}
+@media(prefers-reduced-motion:reduce){.glass-lens-canvas{display:none!important}}
+@media(prefers-reduced-transparency:reduce){.glass-lens-canvas{display:none!important}}
+
+/* 1.5.1 polish: desktop no bottom dock; mobile keeps it */
+.glass-dock{display:none!important}
+@media (max-width:900px){
+  body[data-page="home"] .glass-dock,
+  body[data-page="entries"] .glass-dock,
+  body[data-page="calendar"] .glass-dock,
+  body[data-page="insights"] .glass-dock,
+  body[data-page="almanac"] .glass-dock{display:flex!important}
+}

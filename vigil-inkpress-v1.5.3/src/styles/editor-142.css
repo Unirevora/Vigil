@@ -1,0 +1,122 @@
+/* VIGIL 1.4.2 — one sheet, three editorial modes. */
+.unified-composer-page{max-width:1320px;margin-inline:auto}
+.unified-paper{max-width:none;padding:26px 29px 20px}
+.unified-toolbar{display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap;
+ margin:18px 0 0;padding:9px 11px;background:rgba(154,126,91,.075);border:1px solid var(--stroke);border-radius:10px}
+.unified-toolbar .format-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+.unified-toolbar .tool-button{flex:0 0 auto;width:32px;height:33px;padding:6px}
+.unified-toolbar .tool-math{font:18px var(--font-display);color:var(--appearance-accent)}
+.unified-toolbar .tool-text{font-size:12px}
+.editor-mode-switch{display:flex;align-items:stretch;gap:3px;padding:4px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:10px}
+.editor-mode-option{min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;
+ color:var(--ink-2);background:transparent;border:1px solid transparent;border-radius:7px;
+ font:12px var(--font-body);white-space:nowrap;transition:transform .3s var(--vigil-spring),background .2s}
+.editor-mode-option svg{width:15px;height:15px}
+.editor-mode-option:hover:not(.active){background:var(--surface);transform:translateY(-1px)}
+.editor-mode-option.active{background:var(--green);box-shadow:0 2px 5px rgba(38,50,37,.12)}
+.unified-manuscript{position:relative;min-width:0;overflow:hidden;margin-top:10px;border:1px solid var(--stroke-2);border-radius:12px;
+ background:linear-gradient(140deg,rgba(255,251,240,.8),rgba(249,241,226,.65));}
+.unified-pane-label{height:39px;display:flex;align-items:center;justify-content:space-between;gap:9px;
+ padding:7px 18px;background:rgba(186,159,119,.08);border-bottom:1px solid var(--stroke);color:var(--muted);font:11px var(--font-display)}
+.unified-pane-label>span:first-child{display:flex;align-items:center;gap:8px}
+.unified-pane-label svg{width:14px;height:14px;color:var(--appearance-accent)}
+.unified-edit-host{width:100%;min-height:510px}
+.unified-edit-host .CodeMirror{height:auto;min-height:510px;background:transparent;color:var(--ink);
+ font:var(--reader-font-size)/var(--reader-leading) var(--font-body);letter-spacing:.015em}
+.unified-edit-host .CodeMirror-scroll{min-height:510px;max-height:66vh;overflow-x:hidden!important}
+.unified-edit-host .CodeMirror-lines{padding:22px 28px 50px 42px}
+.unified-edit-host .CodeMirror-line{padding:0 5px;border:0;min-height:1.7em}
+.unified-edit-host .CodeMirror-cursor{border-left:2px solid var(--appearance-accent)}
+.unified-edit-host .CodeMirror-selected{background:color-mix(in srgb,var(--appearance-accent) 17%,transparent)}
+.unified-edit-host .CodeMirror-focused .CodeMirror-selected{background:color-mix(in srgb,var(--appearance-accent) 18%,transparent)}
+.unified-edit-host .CodeMirror-activeline-background{background:rgba(129,106,77,.025)}
+.unified-edit-host .CodeMirror-vscrollbar{scrollbar-color:var(--stroke-2) transparent}
+.unified-edit-host .cm-header{color:var(--ink);font-weight:600}
+.unified-edit-host .cm-formatting{color:var(--appearance-accent)}
+.unified-edit-host .cm-strong{font-weight:700}
+.unified-edit-host .cm-em{font-style:italic}
+.unified-edit-host .cm-link{color:var(--appearance-accent)}
+.unified-edit-host .cm-comment{color:var(--muted)}
+.unified-edit-host .cm-live-heading{color:var(--ink)}
+.unified-edit-host .cm-live-h1{font:clamp(27px,3vw,37px)/1.55 var(--font-display)}
+.unified-edit-host .cm-live-h2{font:clamp(23px,2.6vw,31px)/1.6 var(--font-display)}
+.unified-edit-host .cm-live-h3{font:23px/1.6 var(--font-display)}
+.unified-edit-host .cm-live-h4,.unified-edit-host .cm-live-h5,.unified-edit-host .cm-live-h6{font-weight:700}
+.unified-edit-host .cm-live-quote{color:var(--muted);border-left:2px solid var(--appearance-accent);padding-left:12px}
+.unified-edit-host .cm-live-list{padding-left:9px}
+.unified-edit-host .cm-live-bold{font-weight:700}
+.unified-edit-host .cm-live-italic{font-style:italic}
+.unified-edit-host .cm-live-strike{text-decoration:line-through}
+.unified-edit-host .cm-live-code{font:15px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;background:rgba(154,125,93,.11);padding:2px 4px;border-radius:4px}
+.unified-edit-host .cm-live-link{color:var(--appearance-accent);text-decoration:underline;text-underline-offset:3px}
+.unified-edit-host .cm-live-codeblock{background:rgba(125,123,101,.065);font-family:ui-monospace,Consolas,monospace;font-size:14px}
+.unified-edit-host .cm-live-fence{color:var(--muted);background:rgba(125,123,101,.065)}
+.unified-edit-host .cm-live-active-line{background:rgba(166,139,105,.07)}
+.unified-edit-host .cm-math-inline{display:inline-flex;vertical-align:middle;max-width:100%;cursor:text;
+ padding:1px 5px;margin:0 3px;border-radius:5px;background:rgba(170,144,108,.08)}
+.unified-edit-host .cm-math-display{display:block;max-width:calc(100% - 10px);margin:9px 0;padding:14px 9px;
+ border-left:3px solid var(--appearance-accent);border-radius:4px;background:rgba(166,137,94,.075);cursor:text;overflow-x:auto;text-align:center}
+.unified-reader[hidden],.unified-edit-host .CodeMirror[hidden]{display:none!important}
+.unified-reader{min-height:510px;padding:35px 45px 65px;max-height:72vh;overflow:auto;
+ font-size:var(--reader-font-size);line-height:var(--reader-leading);background:transparent}
+.unified-reader h1,.unified-reader h2,.unified-reader h3{font-family:var(--font-display)}
+.unified-reader:empty::before{content:'这一页还是空白的';color:var(--muted)}
+.math-inline math{display:inline;font-family:serif}
+.math-display{display:block;overflow-x:auto;margin:17px 0;padding:13px 18px;text-align:center;
+ background:rgba(136,116,89,.065);border-left:2px solid var(--appearance-accent);border-radius:4px}
+.math-display math{font-family:serif;font-size:1.16em}
+.math-error{font-family:ui-monospace,Consolas,monospace;font-size:.89em;color:var(--appearance-accent);text-decoration:underline wavy;text-underline-offset:4px}
+.article-content table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.91em}
+.article-content th,.article-content td{padding:9px 12px;border:1px solid var(--stroke-2);text-align:left}
+.article-content th{background:var(--surface-soft);font-weight:600}
+.article-content .task-list{list-style:none;padding-left:5px}
+.article-content .task-list input{accent-color:var(--appearance-accent);margin-right:10px;pointer-events:none}
+.article-content pre{max-width:100%;overflow-x:auto}
+:root[data-theme="night"] .unified-manuscript{background:var(--paper-light)}
+:root[data-theme="night"] .unified-toolbar{background:rgba(168,164,126,.06)}
+:root[data-theme="night"] .editor-mode-switch{background:var(--surface-soft)}
+:root[data-theme="night"] .cm-math-inline{background:rgba(213,198,166,.1)}
+@media(max-width:1020px){.unified-toolbar{gap:10px;align-items:stretch}.unified-toolbar .format-tools{flex:1 1 100%;justify-content:center}
+  .editor-mode-switch{margin:auto}}
+@media(max-width:640px){.unified-paper{padding:16px 11px 14px}.unified-toolbar{padding:8px 5px}
+ .unified-toolbar .tool-button{width:29px;height:30px;min-width:0;padding:5px}
+ .unified-toolbar .format-tools{gap:2px;flex-wrap:wrap}
+ .editor-mode-switch{width:100%;margin:0}.editor-mode-option{flex:1;padding:8px 6px;min-height:36px}
+ .editor-mode-option svg{width:14px;height:14px}.editor-mode-option span{font-size:11px}
+ .unified-edit-host{min-height:430px}.unified-edit-host .CodeMirror{min-height:430px}
+ .unified-edit-host .CodeMirror-scroll{min-height:430px;max-height:69vh}
+ .unified-edit-host .CodeMirror-lines{padding:21px 12px 40px 21px}
+ .unified-reader{min-height:430px;padding:27px 19px;max-height:68vh}
+ .unified-pane-label{padding:7px 12px}}
+@media(prefers-reduced-motion:reduce){.editor-mode-option{transition:none!important}}
+
+.cm-table-widget{display:block;max-width:100%;margin:10px 0;padding:7px 12px;overflow:auto;border-left:3px solid var(--appearance-accent);border-radius:6px;background:rgba(161,140,106,.07);cursor:text}
+.cm-table-widget table{border-collapse:collapse;width:100%;font-size:14px}
+.cm-table-widget td,.cm-table-widget th{border:1px solid var(--stroke-2);padding:6px 10px;text-align:left}
+.cm-live-task{accent-color:var(--appearance-accent);width:16px;height:16px;cursor:pointer;margin:0 9px 0 2px;vertical-align:middle}
+.article-content .wiki-link{display:inline;vertical-align:baseline;padding:0 3px;border:0;background:none;color:var(--appearance-accent);font:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px}
+.article-content .wiki-link:hover{background:var(--accent-soft);border-radius:4px}
+
+.editor-searchbar[hidden]{display:none!important}
+.editor-searchbar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px;border:1px solid var(--stroke-2);border-radius:10px;background:var(--surface-soft);color:var(--appearance-accent);flex-wrap:wrap}
+.editor-searchbar svg{width:16px;height:16px}
+.editor-searchbar input{flex:1;min-width:110px;min-height:34px;padding:6px 10px;border:1px solid var(--stroke);border-radius:7px;background:var(--paper-light)}
+.editor-searchbar .btn,.editor-searchbar .icon-button{flex:none;min-height:31px}
+@media(max-width:640px){.editor-searchbar{gap:5px}.editor-searchbar input{flex:1 1 calc(50% - 35px)}.editor-searchbar .btn{min-width:0;padding:5px 8px}}
+
+@media(prefers-reduced-motion:reduce){
+  .unified-composer-page *, .unified-composer-page *::before,.unified-composer-page *::after{
+    animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
+.editor-pane-tools{display:flex;align-items:center;gap:15px}
+.editor-zen-button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--stroke);border-radius:6px;background:var(--surface-soft);color:var(--muted);font:11px var(--font-display);padding:4px 8px}
+.editor-zen-button svg{width:13px;height:13px}
+.editor-zen-button.active{background:var(--user-primary-bg,var(--green));color:var(--appearance-contrast)}
+.shell.zen-mode{display:block!important;grid-template-columns:1fr!important}
+.shell.zen-mode .sidebar,.shell.zen-mode .topbar{display:none!important}
+.shell.zen-mode .main-inner{max-width:min(1180px,100%);margin:0 auto;padding:23px clamp(14px,4vw,56px)}
+.shell.zen-mode .unified-edit-host .CodeMirror-scroll{max-height:75vh}
+@media(max-width:460px){.editor-pane-tools{gap:6px}.editor-zen-button{padding:3px 5px}}
