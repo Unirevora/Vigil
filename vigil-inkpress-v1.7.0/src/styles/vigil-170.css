@@ -1,0 +1,168 @@
+/* VIGIL v1.7.0 · Two notebook sources, one manuscript; Obsidian-inspired typography.
+   This is an additive module, loaded after legacy sources by build-css.mjs. */
+
+/* Sidebar: keep the seal and traditional inscription, remove ornamental metadata. */
+.sidebar .sidebar-edition,.sidebar .sidebar-letter{display:none!important}
+.sidebar .brand{margin-top:10px;margin-bottom:27px}
+.sidebar .brand-sub{letter-spacing:.08em}
+.sidebar .sidebar-bottom{display:flex!important;align-items:flex-end;justify-content:flex-start;
+  border-top:1px solid rgba(255,255,255,.13)!important;padding:13px 0 0 7px!important;
+  margin-top:auto!important;text-align:left!important;color:rgba(246,238,225,.74)!important}
+.sidebar .sidebar-version{float:none!important;margin:0!important;padding:0!important;
+  color:inherit!important;letter-spacing:.04em;font:11px/1.6 var(--font-typed,monospace)!important}
+.shell.sidebar-collapsed .sidebar-bottom{display:flex!important;padding-left:0!important;justify-content:center!important}
+.shell.sidebar-collapsed .sidebar-version{font-size:10px!important}
+
+/* Local and remote notebooks are peers—not a second miniature text editor. */
+.notebook-switch{display:flex;align-items:stretch;gap:6px;margin:0 0 23px;
+  border-bottom:1px solid var(--stroke);padding:0 0 1px;max-width:100%;overflow-x:auto}
+.notebook-tab{display:flex;align-items:center;gap:9px;min-height:49px;min-width:0;padding:9px 16px;
+  background:transparent;border:0;border-bottom:2px solid transparent;color:var(--muted);font-size:14px;
+  font-weight:550;white-space:nowrap;transition:color .2s,background .2s,border-color .2s}
+.notebook-tab svg{width:17px;height:17px}
+.notebook-tab small{font-size:11px;font-weight:450;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.notebook-tab.active{color:var(--ink);border-bottom-color:var(--appearance-accent);background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.notebook-tab:hover{color:var(--ink);background:var(--surface-soft)}
+.notebook-unlinked{display:flex;flex-direction:column;align-items:flex-start;gap:15px;
+  padding:clamp(27px,5vw,45px);border-radius:22px;max-width:100%}
+.notebook-unlinked-icon{display:grid;place-items:center;width:44px;height:44px;color:var(--appearance-accent);
+  background:var(--accent-soft);border-radius:14px}
+.notebook-unlinked h2{font:clamp(20px,2vw,29px)/1.4 var(--font-display)}
+.notebook-unlinked p{max-width:630px;color:var(--muted);line-height:1.85}
+.github-notebook{display:grid;gap:17px}
+.notebook-repo-strip{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:13px;
+  padding:14px 17px;background:var(--surface);border:1px solid var(--stroke);border-radius:17px}
+.notebook-repo-title,.notebook-repo-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0}
+.notebook-repo-title>svg{color:var(--accent)}
+.notebook-repo-title strong{font-size:14px;color:var(--ink);word-break:break-all}
+.notebook-repo-title span{font-size:11px;color:var(--muted)}
+.notebook-repo-branch{display:flex;align-items:center;gap:3px;border-left:1px solid var(--stroke);padding-left:10px}
+.notebook-repo-branch svg{width:13px;height:13px}
+.notebook-repo-path{overflow-wrap:anywhere;max-width:460px}
+.notebook-filter-panel{display:grid;gap:11px;padding:19px!important;margin:0!important}
+.notebook-folder-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.notebook-folder-actions>span{font-size:12px;color:var(--muted);margin-right:auto}
+.notebook-helper{color:var(--muted);font-size:11px;line-height:1.75}
+.notebook-folder-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
+.notebook-folder{display:flex;align-items:center;gap:10px;padding:15px 17px;min-height:58px;
+  border:1px solid var(--stroke);border-radius:14px;color:var(--ink);background:var(--surface);
+  text-align:left;transition:transform .35s cubic-bezier(.18,1.1,.33,1),border-color .2s}
+.notebook-folder:hover{transform:translateY(-2px);border-color:var(--appearance-accent)}
+.notebook-folder>svg:first-child{color:var(--accent)}
+.notebook-folder>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.notebook-folder>svg:last-child{opacity:.55}
+.github-notebook-grid{margin:0}
+.github-note-card .note-date{display:flex;gap:7px;align-items:center}
+.github-note-card .note-link h3{overflow-wrap:anywhere}
+.github-note-card .github-note-path{font-size:11px;color:var(--muted);overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.github-note-card[hidden]{display:none!important}
+.notebook-create{padding:17px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:14px}
+.notebook-create>label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:9px}
+.notebook-create>div{display:flex;flex-wrap:wrap;gap:9px}
+.notebook-create input{flex:1;min-width:190px;background:var(--surface);border:1px solid var(--stroke);border-radius:10px;
+  color:var(--ink);padding:10px 12px}
+.github-settings-workspace{display:grid;gap:17px}
+.github-library-entry{display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap;
+  padding:clamp(20px,3vw,29px);border-radius:18px;background:var(--surface);border:1px solid var(--stroke)}
+.github-library-entry>div{flex:1;min-width:220px}
+.github-library-entry h2{font:clamp(19px,2vw,25px)/1.35 var(--font-display);color:var(--ink)}
+.github-library-entry p{margin-top:9px;color:var(--ink-2);line-height:1.8;font-size:13px;max-width:710px}
+.github-library-entry small{display:block;margin-top:8px;color:var(--muted);font-size:11px}
+.github-editor-origin{display:flex;flex-wrap:wrap;gap:9px;align-items:center;color:var(--muted);font-size:12px;
+  margin-bottom:9px;line-height:1.5}
+.github-editor-origin svg{color:var(--accent)}
+.github-editor-origin strong{color:var(--ink-2);font-weight:600}
+.github-editor-path{overflow-wrap:anywhere}
+.github-editor-filename-hint{font-size:11px;color:var(--muted);line-height:1.55;margin:1px 0 13px}
+.github-editor-filename-hint svg{width:13px;height:13px}
+.github-editor-origin+.editor-title[readonly]{cursor:default;opacity:1;background:transparent}
+.refined-editor .editor-properties[hidden]{display:none!important}
+.github-reading-path{font:12px/1.5 var(--font-typed,monospace);color:var(--muted);word-break:break-all;
+  margin-top:0;margin-bottom:25px}
+.github-reading-paper .reading-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.github-reading-paper .reading-title{overflow-wrap:anywhere}
+
+/* Readable H4–H6 hierarchy in Reader, same hierarchy in live CodeMirror. */
+.article-content h4,.article-content h5,.article-content h6{color:var(--ink);font-family:var(--font-display);
+  font-weight:650;margin:1.45em 0 .55em;line-height:1.5;letter-spacing:.01em}
+.article-content h4{font-size:1.19em;border-left:3px solid var(--appearance-accent);padding-left:12px}
+.article-content h5{font-size:1.045em;font-weight:700;letter-spacing:.025em}
+.article-content h6{font-size:.93em;text-transform:none;font-weight:700;letter-spacing:.05em;color:var(--ink-2)}
+.article-content :is(h1,h2,h3,h4,h5,h6):first-child{margin-top:0}
+.refined-editor .cm-live-heading.cm-live-h4{font:700 clamp(17px,1.65vw,20px)/1.7 var(--font-display)!important;
+  border-left:3px solid var(--appearance-accent);padding-left:10px}
+.refined-editor .cm-live-heading.cm-live-h5{font:700 17px/1.75 var(--font-display)!important;letter-spacing:.025em}
+.refined-editor .cm-live-heading.cm-live-h6{font:700 15px/1.8 var(--font-display)!important;
+  letter-spacing:.045em;color:var(--ink-2)!important}
+
+/* Distinct ordinary block quotes, without huge empty margins. */
+.article-content .markdown-quote{border-left:3px solid color-mix(in srgb,var(--appearance-accent) 63%,var(--stroke));
+  background:var(--surface-soft);border-radius:0 12px 12px 0;padding:12px 18px;margin:15px 0;
+  color:var(--ink-2);font-style:normal;box-shadow:none}
+.article-content .markdown-quote > :first-child{margin-top:0}
+.article-content .markdown-quote > :last-child{margin-bottom:0}
+.refined-editor .cm-live-quote{border-left:3px solid color-mix(in srgb,var(--appearance-accent) 65%,var(--stroke));
+  border-radius:3px 9px 9px 3px;background:color-mix(in srgb,var(--surface-soft) 76%,transparent)}
+.refined-editor .cm-live-callout,.refined-editor .cm-live-quote-source{border-left-color:var(--appearance-accent)}
+
+/* Obsidian-shaped, contained Callout layout; only muted color accents. */
+.vigil-callout{--callout-accent:var(--appearance-accent);display:block;margin:16px 0;border:1px solid var(--stroke);
+  border-left:3px solid var(--callout-accent);border-radius:12px;padding:13px 16px 14px;
+  color:var(--ink);background:color-mix(in srgb,var(--surface) 90%,var(--callout-accent) 10%);
+  font:inherit;box-shadow:none}
+.vigil-callout.callout-info,.vigil-callout.callout-note,.vigil-callout.callout-abstract{--callout-accent:#6d8e9e}
+.vigil-callout.callout-tip,.vigil-callout.callout-success{--callout-accent:#6d9382}
+.vigil-callout.callout-warning,.vigil-callout.callout-question{--callout-accent:#b68a58}
+.vigil-callout.callout-failure,.vigil-callout.callout-danger,.vigil-callout.callout-bug{--callout-accent:#b66c64}
+.vigil-callout.callout-example,.vigil-callout.callout-quote{--callout-accent:#8d7b9d}
+.vigil-callout .callout-header,.vigil-callout>summary{display:flex;align-items:center;gap:9px;
+  font-weight:700;font-size:13px;line-height:1.5;color:var(--ink);margin:0;list-style:none}
+.vigil-callout>summary{cursor:pointer;padding:0}
+.vigil-callout>summary::-webkit-details-marker{display:none}
+.vigil-callout>summary::before,.vigil-callout .callout-header::before{content:'◈';color:var(--callout-accent);font-size:13px}
+.vigil-callout>summary::after{content:'⌄';margin-left:auto;color:var(--callout-accent);transition:transform .2s}
+.vigil-callout[open]>summary::after{transform:rotate(180deg)}
+.vigil-callout .callout-content{margin-top:9px;font-weight:400;line-height:1.75}
+.vigil-callout .callout-content :first-child{margin-top:0}
+.vigil-callout .callout-content :last-child{margin-bottom:0}
+.vigil-callout .vigil-callout{margin:11px 0 2px;background:var(--surface)}
+.cm-quote-widget,.cm-active-block-preview.cm-quote-widget{font:var(--reader-font-size,15px)/1.6 var(--font-body);
+  color:var(--ink);margin:8px 0;max-width:100%}
+.cm-quote-widget .vigil-callout,.cm-quote-widget .markdown-quote{margin:0}
+.cm-live-styled{font-size:inherit}
+
+/* Safe CSS class aliases for manually chosen typefaces; local uploaded fonts are
+ * used only if the user has installed them via the existing restore helper. */
+.article-content .font-song,.cm-live-styled.font-song{font-family:"VigilTitle","Songti SC","STSong",serif}
+.article-content .font-kai,.cm-live-styled.font-kai{font-family:"KaiTi","Kaiti SC","STKaiti",serif}
+.article-content .font-sans,.cm-live-styled.font-sans{font-family:"VigilText","PingFang SC",sans-serif}
+.article-content .font-typed,.cm-live-styled.font-typed{font-family:"Courier New",monospace}
+.article-content .font-serif,.cm-live-styled.font-serif{font-family:serif}
+.article-content .font-accent,.cm-live-styled.font-accent{color:var(--appearance-accent)}
+.article-content div[class^="font-"]{padding:4px 0}
+
+:root[data-theme=night] .notebook-tab.active{background:color-mix(in srgb,var(--surface) 83%,transparent)}
+:root[data-theme=night] .vigil-callout{background:color-mix(in srgb,var(--surface) 94%,var(--callout-accent) 6%)}
+
+@media(max-width:900px){
+  .sidebar .sidebar-bottom{display:none!important}
+  .notebook-switch{gap:0;justify-content:stretch}
+  .notebook-tab{flex:1;justify-content:center;gap:6px;min-width:0;padding:9px 8px;font-size:12px}
+  .notebook-tab small{font-size:10px;max-width:105px}
+  .notebook-repo-strip{align-items:flex-start}
+  .github-library-entry{gap:14px}
+  .github-library-entry .btn{width:100%}
+}
+@media(max-width:480px){
+  .notebook-tab{font-size:11px}
+  .notebook-tab small{max-width:70px}
+  .notebook-folder-list{grid-template-columns:1fr 1fr}
+  .notebook-folder{min-width:0;padding:13px 10px}
+  .notebook-repo-actions .btn{min-height:38px}
+  .notebook-folder-actions .btn{flex:1}
+  .github-editor-origin{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .notebook-folder,.notebook-tab,.vigil-callout>summary::after{transition:none!important}
+}
