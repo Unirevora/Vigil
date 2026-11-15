@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2ea">
+  <meta name="description" content="不眠手记 Vigil — 本地优先的私人手记 MVP 可交互原型">
+  <title>不眠手记 · Vigil — MVP 原型</title>
+  <link rel="stylesheet" href="/src/styles/foundation.css">
+  <link rel="stylesheet" href="/src/styles/layout.css">
+  <link rel="stylesheet" href="/src/styles/controls.css">
+  <link rel="stylesheet" href="/src/styles/pages.css">
+  <link rel="stylesheet" href="/src/styles/responsive.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand">
+        <div class="brand-seal" aria-hidden="true">记</div>
+        <div><div class="brand-name">不眠手记</div><div class="brand-sub">VIGIL · PRIVATE JOURNAL</div></div>
+      </div>
+      <div class="side-label">YOUR SPACE / 私人书房</div>
+      <nav class="nav-list" id="sidebarNav">
+        <button class="nav-item" type="button" data-nav="home" data-action="nav" data-to="home"><span data-icon="home"></span>首页</button>
+        <button class="nav-item" type="button" data-nav="entries" data-action="nav" data-to="entries"><span data-icon="list"></span>全部手记</button>
+        <button class="nav-item" type="button" data-nav="editor" data-action="new"><span data-icon="pen"></span>写一篇</button>
+        <button class="nav-item" type="button" data-nav="data" data-action="nav" data-to="data"><span data-icon="archive"></span>门与数据</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="side-quote">
+        <div class="big">字落纸上，<br>日子便有了回声。</div>
+        <div class="small">WRITE TO REMEMBER.</div>
+      </div>
+      <div class="side-foot"><span><i class="dot"></i>仅存于这台设备</span><span>PROTOTYPE · 1.0</span></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <div class="top-eyebrow">VIGIL / NOTES FOR YOURSELF</div>
+          <div class="top-title">给每一天，留一处安静的角落。</div>
+        </div>
+        <div class="top-right">
+          <span class="today" id="topToday"></span>
+          <span class="local-chip" id="storageBadge"></span>
+        </div>
+      </header>
+      <main class="main-inner" id="mainContent" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-layer" id="modalLayer" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+      <div class="modal-mark" id="modalIcon"></div>
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+      <div class="modal-actions">
+        <button class="btn" id="modalCancel" type="button">取消</button>
+        <button class="btn btn-warm" id="modalConfirm" type="button">确认</button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="importFile" accept=".json,application/json" hidden>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "vigil-inkpress",
+  "version": "1.4.1",
+  "private": true,
+  "type": "module",
+  "description": "不眠手记 v1.4.1 — 墨绿文房、轻盈回弹、可折叠侧栏、快速命令、AES 加密备份",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "start": "node scripts/dev-server.mjs",
+    "test": "node --test tests/*.test.js",
+    "fonts:restore": "python3 scripts/restore-fonts.py",
+    "pack:fonts": "python3 scripts/pack-with-local-fonts.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

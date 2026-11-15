@@ -1,0 +1,169 @@
+@media(max-width:1250px){
+  .shell{grid-template-columns:205px minmax(0,1fr)}
+  .sidebar{padding-left:13px;padding-right:13px}
+  .main-inner{padding-left:35px;padding-right:35px}
+  .topbar{padding-left:35px;padding-right:35px}
+  .note-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .github-columns{grid-template-columns:minmax(210px,.8fr) minmax(0,1.4fr)}
+}
+@media(max-width:900px){
+  .shell{display:block}
+  .sidebar{height:auto;position:relative;padding:15px 20px 12px;display:flex;flex-direction:column}
+  .brand{margin:0 0 10px;padding:0}
+  .brand-seal{height:38px;width:38px}
+  .brand-name{font-size:20px}
+  .brand-sub{font-size:9px}
+  .side-create{position:absolute;top:17px;right:20px;min-height:38px;width:auto;padding:7px 12px;margin:0}
+  .nav-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .nav-item{font-size:11px;justify-content:center;gap:5px;padding:8px 4px;min-height:40px;white-space:nowrap}
+  .nav-item svg{width:15px;height:15px}
+  .sidebar-bottom{display:none}
+  .topbar{height:57px}
+  .main-inner{padding-top:29px}
+  .welcome-card{min-height:320px}
+  .welcome-main{padding:32px 5px 29px 33px}
+  .welcome-main h1{font-size:45px}
+  .welcome-art{min-height:320px}
+  .archive-layout{grid-template-columns:minmax(0,1fr) minmax(220px,.75fr)}
+}
+@media(max-width:660px){
+  .sidebar{padding:12px 16px 9px}
+  .side-create{right:16px;top:13px}
+  .nav-item{flex-direction:column;gap:3px;font-size:10px;line-height:1.2;min-height:53px;padding:7px 0}
+  .nav-item svg{width:18px;height:18px}
+  .topbar{padding:0 19px;height:55px}
+  .main-inner{padding:23px 18px 67px}
+  .today{display:none}
+  .page-head{align-items:flex-start;margin-bottom:21px;gap:12px}
+  .page-head h1{font-size:31px}
+  .page-head p{font-size:12px}
+  .page-head>.btn{padding:8px 11px;font-size:11px;white-space:nowrap}
+  .welcome-card{grid-template-columns:1fr;min-height:0}
+  .welcome-main{padding:30px 30px 20px}
+  .welcome-main h1{font-size:44px;margin:14px 0 10px}
+  .welcome-art{min-height:230px}
+  .art-circle{width:270px;height:270px;top:-42px;right:4%}
+  .art-letter{width:min(66%,290px);min-height:190px;padding:20px}
+  .art-rule{margin:11px 0}
+  .art-title{font-size:20px}
+  .art-text{max-height:40px}
+  .stats-row{gap:9px}
+  .stats-row>div{padding:13px 11px;display:block;text-align:center}
+  .stats-row strong{font-size:25px;display:block}
+  .stats-row span{font-size:10px}
+  .note-grid{grid-template-columns:1fr}
+  .note-card{min-height:150px}
+  .note-link{padding:18px 19px}
+  .note-link p{margin:8px 0 11px}
+  .section-title h2{font-size:23px}
+  .editor-paper{padding:17px 17px 14px}
+  .editor-title{font-size:28px}
+  .editor-meta-line{gap:9px}
+  .editor-meta-line input{width:145px}
+  .editor-meta-line select{width:107px}
+  .editor-textarea,.editor-content,.editor-preview{min-height:325px}
+  .editor-heading{flex-wrap:wrap}
+  .head-actions{gap:7px}
+  .reading-paper{padding:40px 28px 28px;min-height:430px}
+  .reading-title{font-size:32px}
+  .reader-top{flex-wrap:wrap}
+  .reader-top .head-actions .btn{font-size:11px}
+  .reader-pagination{gap:9px}
+  .pagination-card{padding:12px;font-size:13px}
+  .archive-layout{grid-template-columns:1fr}
+  .archive-sidebar{grid-template-columns:1fr 1fr}
+  .calendar-card{padding:19px}
+  .calendar-grid{gap:4px}
+  .archive-mini-card{padding:17px}
+  .github-fields{grid-template-columns:1fr}
+  .github-fields .full{grid-column:auto}
+  .github-columns{grid-template-columns:1fr}
+  .github-files{min-height:unset;max-height:290px}
+  .github-detail{min-height:280px}
+  .github-note-head{flex-wrap:wrap}
+  .github-repo-bar>div{flex-wrap:wrap}
+  .github-repo-bar small{flex-basis:100%;margin-left:28px}
+  .data-actions{grid-template-columns:1fr}
+  .data-summary{gap:8px}
+  .data-summary>div{padding:13px}
+  .data-summary strong{font-size:23px}
+  .data-summary span{font-size:10px}
+  .data-row{padding:13px 10px;gap:8px}
+  .data-row-icon{width:29px;height:30px}
+  .data-row strong{font-size:12px}
+  .data-row .btn{padding:6px 9px}
+  .data-row .icon-button{height:34px;width:34px}
+}
+@media(max-width:380px){
+  .brand-name{font-size:18px}
+  .side-create{font-size:10px;padding:6px 8px}
+  .side-create svg{width:14px}
+  .nav-item{font-size:9px}
+  .welcome-main h1{font-size:39px}
+  .art-letter{width:77%}
+  .page-head h1{font-size:28px}
+  .btn{padding:8px 12px}
+  .github-detail{padding:17px}
+  .archive-sidebar{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+
+/* v1.3: keep v1.1 ink-dark navigation without hiding seasonal entries. */
+.nav-short{display:none}
+@media(max-width:900px){
+ .sidebar{height:auto;min-height:0;position:relative;border-bottom:1px solid #262825}
+ .sidebar::before{inset:7px;border-color:rgba(197,164,113,.13)}
+ .sidebar-inner{padding:13px 20px 11px;min-height:0}
+ .sidebar-edition,.sidebar-spacer,.sidebar-letter,.sidebar-bottom{display:none}
+ .brand{margin:0 0 11px;gap:10px}
+ .brand-seal{height:40px;width:34px;font-size:23px;border-radius:3px}
+ .brand-name{font-size:21px}
+ .brand-sub{font-size:9px}
+ .side-create{top:15px;right:20px;width:auto;min-height:38px;margin:0;padding:7px 12px}
+ .nav-list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+ .nav-item{min-width:0;min-height:45px;justify-content:center;text-align:center;flex-direction:column;
+  gap:5px;padding:8px 4px;font-size:10px;white-space:nowrap}
+ .nav-item span:nth-child(1) svg{width:17px;height:17px}
+ .nav-item .nav-full{display:none}
+ .nav-item .nav-short{display:block}
+ .nav-item.active{box-shadow:inset 0 -3px var(--accent),1px 2px 0 rgba(0,0,0,.11)}
+ .topbar{background:var(--paper)}
+}
+@media(max-width:660px){
+ .sidebar-inner{padding:12px 13px 9px}
+ .side-create{right:13px;top:13px;min-height:34px;font-size:11px;padding:5px 11px}
+ .nav-list{gap:3px}
+ .nav-item{min-height:51px;padding:7px 1px;font-size:10px}
+ .nav-item svg{height:17px;width:17px}
+ .main-inner{padding:26px 16px 68px}
+ .heritage-stats{gap:8px}
+ .heritage-stat{display:block;text-align:center;padding:12px 6px}
+ .heritage-stat>span{display:block;font-size:9px}
+ .heritage-stat strong{font-size:27px}
+ .heritage-stat small{font-size:9px}
+ .home-quick-row{flex-wrap:wrap}
+ .season-teaser,.home-quick-row .draft-banner{flex-basis:100%}
+ .reading-paper::after{left:25px}
+ .page-head h1{font-size:32px}
+ .page-eyebrow{font-size:10px}
+ .archive-layout{grid-template-columns:1fr}
+}
+@media(max-width:390px){
+ .nav-item{font-size:9px}
+ .brand-name{font-size:19px}
+ .side-create{font-size:10px}
+ .heritage-copy{padding:23px 19px 21px}
+ .heritage-copy h1{font-size:42px}
+ .heritage-copy>p{font-size:12px}
+ .season-teaser{padding:12px}
+ .calendar-card{padding:14px}
+}
+
+@media(max-width:660px){
+ .archive-sidebar{grid-template-columns:minmax(0,1fr)}
+ .day-details h3{white-space:normal}
+ .day-details-actions{justify-content:flex-start;gap:16px}
+}

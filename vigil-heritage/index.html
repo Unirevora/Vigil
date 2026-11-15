@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#34332e">
+  <meta name="description" content="不眠手记 · 近代中式复古文房，逐日书写，观四时风物。">
+  <title>不眠手记 · VIGIL</title>
+  <link rel="stylesheet" href="/src/styles/foundation.css">
+  <link rel="stylesheet" href="/src/styles/layout.css">
+  <link rel="stylesheet" href="/src/styles/controls.css">
+  <link rel="stylesheet" href="/src/styles/pages.css">
+  <link rel="stylesheet" href="/src/styles/typewriter.css">
+  <link rel="stylesheet" href="/src/styles/almanac.css">
+  <link rel="stylesheet" href="/src/styles/heritage.css">
+  <link rel="stylesheet" href="/src/styles/live-editor.css">
+  <link rel="stylesheet" href="/src/styles/responsive.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-inner">
+        <div class="sidebar-edition">PRIVATE JOURNAL · 001</div>
+        <div class="brand">
+          <div class="brand-seal" aria-hidden="true">眠</div>
+          <div><div class="brand-name">不眠手记</div><div class="brand-sub">VIGIL / 铅字旧梦</div></div>
+        </div>
+        <button type="button" class="btn btn-primary side-create" data-action="new"><span data-icon="plus"></span>写一篇手记</button>
+        <nav class="nav-list" id="sidebarNav">
+          <button type="button" class="nav-item" data-nav="home" data-action="nav" data-to="home"><span data-icon="home"></span><span class="nav-full">首页</span><span class="nav-short">首页</span></button>
+          <button type="button" class="nav-item" data-nav="entries" data-action="nav" data-to="entries"><span data-icon="book"></span><span class="nav-full">全部手记</span><span class="nav-short">手记</span></button>
+          <button type="button" class="nav-item" data-nav="calendar" data-action="nav" data-to="calendar"><span data-icon="calendar"></span><span class="nav-full">日历归档</span><span class="nav-short">日历</span></button>
+          <button type="button" class="nav-item" data-nav="almanac" data-action="nav" data-to="almanac"><span data-icon="spark"></span><span class="nav-full">节气风物</span><span class="nav-short">风物</span></button>
+          <button type="button" class="nav-item" data-nav="github" data-action="nav" data-to="github"><span data-icon="github"></span><span class="nav-full">GitHub 仓库</span><span class="nav-short">仓库</span></button>
+          <button type="button" class="nav-item" data-nav="data" data-action="nav" data-to="data"><span data-icon="archive"></span><span class="nav-full">门与数据</span><span class="nav-short">数据</span></button>
+        </nav>
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-letter" aria-hidden="true"><span>纸短情长</span><span>字里有光</span></div>
+        <div class="sidebar-bottom"><span class="small-dot"></span> 仅此设备 <span class="sidebar-version">ED. 1.3</span></div>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div class="header-brand"><span class="header-monogram">V.</span><span id="pageBreadcrumb">卷首</span></div>
+        <div class="top-right"><span class="today" id="topToday"></span>
+          <button type="button" class="icon-button theme-button" title="切换纸面主题" aria-label="切换纸面主题" data-action="theme"><span data-icon="moon"></span></button>
+        </div>
+      </header>
+      <main class="main-inner" id="mainContent" tabindex="-1"></main>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-layer" id="modalLayer" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+      <div class="modal-mark" id="modalIcon"></div>
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="modalCancel">取消</button>
+        <button type="button" class="btn btn-primary" id="modalConfirm">确认</button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="importFile" accept=".json,application/json" hidden>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "vigil-notes-studio",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "description": "中式复古纸张风格的本地 Markdown 手记及 GitHub 仓库编辑器",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "start": "node scripts/dev-server.mjs",
+    "test": "node --test tests/*.test.js",
+    "fonts:restore": "python3 scripts/restore-fonts.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

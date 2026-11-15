@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ede8df">
+  <meta name="description" content="不眠手记 · 在纸页间收藏日常">
+  <title>不眠手记</title>
+  <link rel="stylesheet" href="/src/styles/foundation.css">
+  <link rel="stylesheet" href="/src/styles/layout.css">
+  <link rel="stylesheet" href="/src/styles/controls.css">
+  <link rel="stylesheet" href="/src/styles/pages.css">
+  <link rel="stylesheet" href="/src/styles/responsive.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand"><div class="brand-seal" aria-hidden="true">眠</div>
+        <div><div class="brand-name">不眠手记</div><div class="brand-sub">Vigil · 私人手记</div></div>
+      </div>
+      <button type="button" class="btn btn-primary side-create" data-action="new"><span data-icon="plus"></span>写一篇手记</button>
+      <nav class="nav-list" id="sidebarNav">
+        <button type="button" class="nav-item" data-nav="home" data-action="nav" data-to="home"><span data-icon="home"></span>概览</button>
+        <button type="button" class="nav-item" data-nav="entries" data-action="nav" data-to="entries"><span data-icon="book"></span>全部手记</button>
+        <button type="button" class="nav-item" data-nav="calendar" data-action="nav" data-to="calendar"><span data-icon="calendar"></span>日历与归档</button>
+        <button type="button" class="nav-item" data-nav="github" data-action="nav" data-to="github"><span data-icon="github"></span>GitHub 仓库</button>
+        <button type="button" class="nav-item" data-nav="data" data-action="nav" data-to="data"><span data-icon="archive"></span>数据管理</button>
+      </nav>
+      <div class="sidebar-bottom"><span class="small-dot"></span> 仅保存在当前设备 <span class="sidebar-version">v1.2</span></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div class="header-brand"><span class="header-monogram">V.</span><span id="pageBreadcrumb">你的书桌</span></div>
+        <div class="top-right"><span class="today" id="topToday"></span>
+          <button type="button" class="icon-button theme-button" title="切换明暗主题" aria-label="切换明暗主题" data-action="theme"><span data-icon="moon"></span></button>
+        </div>
+      </header>
+      <main class="main-inner" id="mainContent" tabindex="-1"></main>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-layer" id="modalLayer" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+      <div class="modal-mark" id="modalIcon"></div>
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="modalCancel">取消</button>
+        <button type="button" class="btn btn-primary" id="modalConfirm">确认</button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="importFile" accept=".json,application/json" hidden>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
