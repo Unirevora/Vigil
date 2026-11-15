@@ -12,6 +12,7 @@ import {renderMarkdown} from './core/markdown.js';
 import {mountAlmanac} from './ui/almanac-controller.js';
 import {GithubClient,GITHUB_CONFIG_KEY,normalizeRepoConfig,isMarkdownPath,normalizePath} from './github/api.js';
 import {inspectGithubRepository} from './github/connection.js';
+import {checkGithubBrowserPaths} from './github/browser-diagnostics.js';
 import {importGitCryptKeyFile,encryptGitCryptBytes,decryptGitCryptBytes,isGitCryptBlob,encodeGitCryptText,decodeGitCryptText} from './security/git-crypt.js';
 import {icon} from './ui/icons.js';
 import {entriesCards} from './ui/views/entry-cards.js';
@@ -44,7 +45,7 @@ const gh={
   config:null,connected:false,loading:false,error:'',hasToken:false,showSettings:false,
   defaultBranch:'',folder:'',files:[],note:null,editing:false,dirty:false,formDraft:null,
   draftContent:'',newFileMode:false,newPath:'',cryptoKey:null,attributes:'',
-  proxySettings:{mode:'env',host:'127.0.0.1',port:7890},proxyEffective:null,proxyLoaded:false,proxyBusy:false,proxyExpanded:false,anonymous:false,attributeWarning:'',connectionStage:''
+  proxySettings:{mode:'env',host:'127.0.0.1',port:7890},proxyEffective:null,proxyLoaded:false,proxyBusy:false,proxyExpanded:false,anonymous:false,attributeWarning:'',connectionStage:'',connectTrace:'',browserCheck:'',browserBusy:false
 };
 try{const raw=storage.getItem(GITHUB_CONFIG_KEY);if(raw)gh.config=normalizeRepoConfig(JSON.parse(raw));}catch{}
 const state={
@@ -742,7 +743,7 @@ async function ghTestNetwork(){
         const info=await response.json();
         gh.proxyEffective=info.proxy||gh.proxyEffective;
         if(!info.ok)throw new Error(`${info.message||'无法访问 GitHub'}（${info.detail||info.code||'NETWORK'}；${info.proxy?.source||'DIRECT'}）。`);
-        gh.health=`GitHub 公共 API 已响应 · ${info.proxy?.source||'DIRECT'}${info.proxy?.endpoint?' · '+info.proxy.endpoint:''} · HTTP ${info.upstreamStatus}。如私人仓库仍失败，请检查仓库地址、分支、Token 与组织权限。`;
+        gh.health=`GitHub 示例仓库 JSON 已完整读取 · ${info.proxy?.source||'DIRECT'}${info.proxy?.endpoint?' · '+info.proxy.endpoint:''} · HTTP ${info.upstreamStatus}。若连接仍失败，请使用匿名公开示例验证具体请求阶段。`;
         showToast('GitHub 公共 API 网络测试成功');return;
       }
     }
@@ -755,6 +756,28 @@ async function ghTestNetwork(){
     gh.error=`网络诊断：${err.message}`;
     showToast(gh.error,{error:true});
   }finally{gh.loading=false;render();}
+}
+
+// Check the actual BROWSER fetch path, not only the Node CLI. This never
+// attaches credentials or reuses a private repository URL / prior PAT.
+async function ghBrowserCheck(){
+  if(gh.browserBusy)return;
+  gh.formDraft={
+    repoUrl:$('#ghRepo')?.value||gh.formDraft?.repoUrl||'',
+    branch:$('#ghBranch')?.value||gh.formDraft?.branch||'',
+    folder:$('#ghFolder')?.value||gh.formDraft?.folder||''
+  };
+  gh.browserBusy=true;
+  gh.browserCheck='正在从当前浏览器分别检查四个公开 GitHub 请求…';
+  render();
+  try{
+    gh.browserCheck=(await checkGithubBrowserPaths()).text;
+  }catch(error){
+    gh.browserCheck=`浏览器检查无法完成：${String(error?.name||'NETWORK')}`;
+  }finally{
+    gh.browserBusy=false;
+    if(state.view==='github')render();
+  }
 }
 
 // GitHub browsing and editing. Repository config is stored; the token NEVER is.
@@ -778,14 +801,22 @@ async function ghConnect({publicDemo=false}={}){
   gh.formDraft={...values};
   const inputToken=anonymous?'':($('#ghToken')?.value?.trim()||'');
   const priorConfig=gitClient.config,priorToken=gitClient.token;
+  const priorReadMode=gitClient.anonymousConnectionMode,priorRelayWarning=gitClient.relayWarning;
   const changedRepo=gh.config&&(gh.config.owner!==next.owner||gh.config.repo!==next.repo);
   gitClient.setConfig(next);
   // A previous PAT is intentionally retained for editing, but an explicit
   // anonymous connection drops it rather than silently using stale auth.
-  if(anonymous)gitClient.forgetToken();
-  else if(inputToken)gitClient.setToken(inputToken);
+  if(anonymous){
+    gitClient.forgetToken();
+    // User explicitly selected anonymous browsing. If the local relay fails,
+    // a read-only browser GET may be attempted without exposing a PAT.
+    gitClient.setAnonymousConnectionMode('auto');
+  }else{
+    gitClient.setAnonymousConnectionMode('relay');
+    if(inputToken)gitClient.setToken(inputToken);
+  }
   gh.loading=true;gh.error='';gh.health='';gh.connectionStage='metadata';
-  gh.attributeWarning='';
+  gh.connectTrace='';gh.attributeWarning='';
   render();
   try{
     const {meta,files,attributes,attributesWarning}=await inspectGithubRepository(gitClient,{
@@ -796,16 +827,28 @@ async function ghConnect({publicDemo=false}={}){
     gh.defaultBranch=meta.default_branch||'main';
     gh.folder=next.folder;gh.files=files;gh.attributes=attributes;
     gh.attributeWarning=attributesWarning;
-    gh.note=null;gh.editing=false;gh.dirty=false;
+    gh.connectTrace='';gh.note=null;gh.editing=false;gh.dirty=false;
     gh.showSettings=false;gh.formDraft=null;
-    gh.health=`已通过${gitClient.transportLabel}连接 · ${meta.full_name||next.owner+'/'+next.repo}${anonymous?' · 匿名访问':''}`;
+    gh.health=`已通过${gitClient.transportLabel}连接 · ${meta.full_name||next.owner+'/'+next.repo}${anonymous?' · 匿名访问':''}${gitClient.relayWarning?' · '+gitClient.relayWarning:''}`;
     try{storage.setItem(GITHUB_CONFIG_KEY,JSON.stringify(next));}catch{}
     showToast('仓库已连接');
   }catch(err){
     gitClient.config=priorConfig;
     gitClient.setToken(priorToken);
+    gitClient.anonymousConnectionMode=priorReadMode;
+    gitClient.relayWarning=priorRelayWarning;
     gh.hasToken=gitClient.canWrite;
     gh.connectionStage=err.stage||gh.connectionStage;
+    // Safe client-side trace: transport name, HTTP status / error code only.
+    // Never includes repository URL, Authorization, file content or keys.
+    // No URLs, tokens, or response bodies. This disambiguates a rejected
+    // browser fetch from a successful response whose JSON stream failed.
+    const traceStages={fetch:'发送请求', 'response-headers':'检查响应头',
+      'response-body':'读取 JSON','response-check':'校验状态','response-verified':'完成验证'};
+    gh.connectTrace=[`连接阶段：${gh.connectionStage||'未知'}`,
+      ...gitClient.requestTrace.map(item=>`${item.route} · ${item.status?`HTTP ${item.status}`:
+        `${traceStages[item.phase]||'未知环节'} · ${item.error||'NETWORK'}${item.hint?` · ${item.hint}`:''}`}`)]
+      .join('\n');
     ghError(err);
   }finally{gh.loading=false;render();}
 }
@@ -1168,6 +1211,7 @@ document.body.addEventListener('click',async e=>{
     case 'github-connect':await ghConnect();break;
     case 'github-connect-public':await ghConnect({publicDemo:true});break;
     case 'github-test-network':await ghTestNetwork();break;
+    case 'github-browser-check':await ghBrowserCheck();break;
     case 'github-proxy-apply':await ghApplyProxy();break;
     case 'github-proxy-clash':{
       const mode=$('#ghProxyMode'),host=$('#ghProxyHost'),port=$('#ghProxyPort');

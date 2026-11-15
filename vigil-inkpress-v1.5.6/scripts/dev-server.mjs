@@ -27,8 +27,25 @@ createServer(async(req,res)=>{
       'Cache-Control':'no-store',
       'X-Content-Type-Options':'nosniff'
     }).end(bytes);
-  }catch{
-    res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'}).end('Not Found');
+  }catch(error){
+    // A rejected async handler previously tried to send a generic 404 even
+    // after a proxy response had started, risking a dropped TCP connection
+    // and an opaque TypeError in the browser. Preserve the stage and return
+    // a structured same-origin error whenever headers are not yet sent.
+    const path=String(req.url||'');
+    const github=path.startsWith('/api/github/')||path.startsWith('/api/vigil-bridge/');
+    const detail=String(error?.code||error?.name||'SERVER_ERROR').slice(0,40);
+    if(github)console.error(`[Vigil local relay] unhandled request: ${detail}`);
+    if(res.headersSent){res.destroy();return;}
+    if(github){
+      res.writeHead(500,{
+        'Content-Type':'application/json; charset=utf-8',
+        'X-Vigil-Github-Proxy':'1','Cache-Control':'no-store'
+      }).end(JSON.stringify({code:'LOCAL_RELAY_ERROR',detail,
+        message:'本地 GitHub 请求处理失败。请查看 npm run dev 所在终端的 GitHub relay 错误码。'}));
+    }else{
+      res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'}).end('Not Found');
+    }
   }
 }).listen(port,'127.0.0.1',()=>{
   console.log(`Vigil MVP: http://127.0.0.1:${port}/`);

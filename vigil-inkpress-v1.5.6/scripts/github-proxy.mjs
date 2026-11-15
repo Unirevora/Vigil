@@ -46,19 +46,38 @@ async function networkProbe(fetchImpl,timeoutMs=9000){
   const abort=new AbortController();
   const timer=setTimeout(()=>abort.abort(),timeoutMs);
   try{
+    // Same real metadata endpoint and same upstream headers/transport as a
+    // repository connection. A status line alone does NOT prove that the
+    // response body can be streamed and decoded through Clash / Node.
     const path='https://api.github.com/repos/octocat/Hello-World';
     const response=await (fetchImpl===globalThis.fetch
-      ?githubTransportFetch(path,{method:'GET',headers:{Accept:'application/vnd.github+json','User-Agent':'Vigil-Network-Check'},signal:abort.signal},process.env,runtimeProxySettings)
-      :fetchImpl(path,{method:'GET',headers:{Accept:'application/vnd.github+json','User-Agent':'Vigil-Network-Check'},signal:abort.signal}));
-    // Any real HTTP response from GitHub proves the network route works. Auth and
-    // repository-level access are deliberately separate checks.
-    if(response.body){
-      if(typeof response.body.resume==='function')response.body.resume();
-      else if(typeof response.body.cancel==='function')await response.body.cancel();
+      ?githubTransportFetch(path,{method:'GET',headers:{
+          Accept:'application/vnd.github+json',
+          'X-GitHub-Api-Version':'2022-11-28',
+          'User-Agent':'Vigil-Local-1.5.6'
+        },signal:abort.signal},process.env,runtimeProxySettings)
+      :fetchImpl(path,{method:'GET',headers:{
+          Accept:'application/vnd.github+json',
+          'X-GitHub-Api-Version':'2022-11-28',
+          'User-Agent':'Vigil-Local-1.5.6'
+        },signal:abort.signal}));
+    // Fully consume stream, with stream errors handled by this try/catch.
+    // The old .resume() returned immediately and could misleadingly report
+    // HTTP 200 even when the body never reached the app.
+    const raw=await boundedUpstreamBody(response);
+    let decoded;
+    try{decoded=JSON.parse(raw);}catch{
+      return {ok:false,code:'GITHUB_INVALID_RESPONSE',detail:'INVALID_JSON',
+        upstreamStatus:response.status,message:'GitHub API 已返回响应头，但仓库数据正文未完整送达或不是有效 JSON。'};
     }
-    return {ok:true,upstreamStatus:response.status,message:response.ok?'GitHub 公共 API 可访问':'GitHub 已响应，但返回了 HTTP '+response.status};
+    if(response.ok&&(!decoded||typeof decoded.full_name!=='string')){
+      return {ok:false,code:'GITHUB_INVALID_RESPONSE',detail:'MISSING_REPOSITORY',
+        upstreamStatus:response.status,message:'GitHub API 返回了 HTTP 200，但没有可验证的仓库信息。'};
+    }
+    return {ok:true,upstreamStatus:response.status,bodyVerified:true,
+      message:response.ok?'GitHub 公共仓库数据已完整读取':'GitHub 返回 HTTP '+response.status+'，数据正文已读取'};
   }catch(error){
-    const detail=String(error?.cause?.code||error?.code||'NETWORK').slice(0,36);
+    const detail=String(error?.cause?.code||error?.code||error?.name||'NETWORK').slice(0,36);
     const code=failureCode(error,abort.signal.aborted);
     return {ok:false,code,detail,message:networkMessage(code,detail)};
   }finally{clearTimeout(timer);}
@@ -94,7 +113,11 @@ async function boundedUpstreamBody(response){
 }
 export async function handleGithubProxy(req,res,{fetchImpl=globalThis.fetch,timeoutMs=16000}={}){
   const incoming=new URL(req.url||'/', 'http://127.0.0.1');
-  if(!incoming.pathname.startsWith('/api/github/'))return false;
+  // An alternate, anonymous-read-only route is provided for browsers where
+  // privacy extensions or system proxy rules interfere with /api/github/repos.
+  // Both prefixes share the same strict repository path validation.
+  const alternate=incoming.pathname.startsWith('/api/vigil-bridge/');
+  if(!alternate&&!incoming.pathname.startsWith('/api/github/'))return false;
   if(!approvedOrigin(req)){
     send(res,403,{code:'ORIGIN_DENIED',message:'仅允许从本机同源页面连接 GitHub。'});return true;
   }
@@ -123,10 +146,13 @@ export async function handleGithubProxy(req,res,{fetchImpl=globalThis.fetch,time
     const result=await networkProbe(fetchImpl,Math.min(timeoutMs,9500));
     send(res,result.ok?200:502,{...result,local:true,proxy:proxyState().effective});return true;
   }
+  if(alternate && (req.method!=='GET'||Boolean(req.headers.authorization))){
+    send(res,403,{code:'ANONYMOUS_READ_ONLY',message:'备用同源地址仅允许无 Token 的公开仓库读取。'});return true;
+  }
   if(!['GET','PUT'].includes(req.method)){
     send(res,405,{code:'METHOD_NOT_ALLOWED',message:'不支持此 GitHub 请求方法。'});return true;
   }
-  const route=incoming.pathname.slice('/api/github'.length);
+  const route=incoming.pathname.slice((alternate?'/api/vigil-bridge':'/api/github').length);
   let decoded;
   try{decoded=decodeURIComponent(route);}catch{decoded='';}
   if(!REPO_ROUTE.test(route)||!REPO_ROUTE.test(decoded)||
@@ -180,8 +206,10 @@ export async function handleGithubProxy(req,res,{fetchImpl=globalThis.fetch,time
   }catch(error){
     const code=failureCode(error,abort.signal.aborted);
     // Error codes are diagnostic, never include token, URL query or body.
-    const detail=text(error?.cause?.code||error?.code).slice(0,32) || (code==='GITHUB_TIMEOUT'?'TIMEOUT':'NETWORK');
-    send(res,502,{code,detail,transport:proxyState().effective.source,message:networkMessage(code,detail)});
+    const detail=text(error?.cause?.code||error?.code||error?.name).slice(0,32) || (code==='GITHUB_TIMEOUT'?'TIMEOUT':'NETWORK');
+    const phase=route.includes('/contents')?'contents':'metadata';
+    console.warn(`[Vigil GitHub relay] ${phase}: ${code} / ${detail}`);
+    send(res,502,{code,detail,phase,transport:proxyState().effective.source,message:networkMessage(code,detail)});
   }finally{clearTimeout(timer);}
   return true;
 }

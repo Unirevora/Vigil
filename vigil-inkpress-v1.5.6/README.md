@@ -1,12 +1,29 @@
+> **最新 v1.5.6 GitHub fetch 生命周期热修复：** 修复了一个可控复现的情况：浏览器四项链路检测全部 PASS，但仓库连接在 `metadata` 阶段连续出现三个 `TypeError`。应用旧代码在页面启动时缓存 `window.fetch`，而诊断调用的是当时最新的 `fetch`；现在仓库连接也在请求时获取当前函数，并显示具体失败步骤。**尚不能断言用户本机的原因完全一致**。见 [本次修复与验证](docs/GITHUB-FETCH-LIFECYCLE-HOTFIX.md)。版本号保持 **1.5.6**。
+
+> **v1.5.6 GitHub 浏览器仓库连接热修复：** 若 Node 五项测试和浏览器四项链路检查全部 PASS，但仍无法连接公开仓库，请使用本次修复包。匿名仓库读取现在与探测使用同一 HTTP 请求参数，并提供脱敏的实际连接阶段/通道日志。详见 [修复说明](docs/GITHUB-BROWSER-REQUEST-PARITY.md)。版本号保持 `1.5.6`。
+
 # 不眠手记 · VIGIL Inkpress v1.5.6
 
 > 墨夜归整：复古文房与液态玻璃写作工作台。此版本重点修复夜间模式、顶栏视觉、GitHub 本地网络链路，并降低发布体积。
+
+## GitHub 仓库信息阶段 TypeError · 最新连接修复（v1.5.6，版本不变）
+
+如果 **GitHub 网络测试显示 HTTP 200，但公开仓库连接仍在元数据阶段提示 `TypeError`**，请使用本次修复并重启 Node 服务。网络测试已改为校验完整仓库 JSON；“一键连接公开示例（匿名）”在本地 relay 不可用时，可尝试**不携带 Token 的浏览器匿名读取**，界面会明确标出实际通道与 relay 的失败原因。
+
+要检查你的 Clash 7897 与真正的仓库请求：
+
+```bash
+npm run dev                    # 终端一：启动网站
+npm run diagnose:github        # 终端二：在网站运行期间执行
+```
+
+第二条命令分别检测服务、代理、GitHub 完整 JSON、仓库元数据及目录。不发送令牌、不请求私人仓库。**认证请求和提交没有自动跨域回退**。详细故障步骤：[`docs/GITHUB-CONNECTION-RESCUE.md`](docs/GITHUB-CONNECTION-RESCUE.md)；测试边界：[`docs/QA-1.5.6-CONNECTION-RESCUE.md`](docs/QA-1.5.6-CONNECTION-RESCUE.md)。
 
 ## Clash 全局代理端口 7897 · 二次热修复
 
 如果 GitHub 页面显示「DIRECT · HTTP 200」，但「连接仓库」仍提示 `TypeError`，请在「GitHub → 本地网络与代理」点击 **Clash 7897** 快捷按钮。它会显式指定 `HTTP 127.0.0.1:7897` 并测试连接，不要求 Node 自动继承系统代理。测试成功后显示的出口应包含 `MANUAL`。需要时可切换 SOCKS5 使用同一个混合端口。
 
-另外修复了本地同源 GET 请求失败后静默改走浏览器跨域直连，导致错误被二次 TypeError 掩盖的问题。详见 [`docs/GITHUB-CLASH-7897.md`](docs/GITHUB-CLASH-7897.md) 与 [`docs/QA-1.5.6-CLASH-7897.md`](docs/QA-1.5.6-CLASH-7897.md)。版本号仍为 **1.5.6**。
+前一补丁已禁止一般请求在同源 GET 失败后静默退回浏览器；最新补丁**只对用户明确选择的匿名公开读取**提供可标识的备用路径。详见 [`docs/GITHUB-CLASH-7897.md`](docs/GITHUB-CLASH-7897.md) 与 [`docs/QA-1.5.6-CLASH-7897.md`](docs/QA-1.5.6-CLASH-7897.md)。版本号仍为 **1.5.6**。
 
 ## GitHub 全局代理仍连接失败？（v1.5.6 连接补丁）
 
@@ -103,3 +120,17 @@ vendor/                     # CodeMirror / KaTeX 本地依赖
 [深色模式首页](docs/preview-156-home-night.png) · [深色模式线索页](docs/preview-156-insights-night.png) · [浅色模式首页](docs/preview-156-home-paper.png) · [手机夜间模式](docs/preview-156-mobile-night.png)
 
 历史功能规划及原始更新日志保存在 `docs/MVP.md` 与 `docs/CHANGELOG-original.md`；已知不支持的旧版数据迁移格式与真实联网验证限制请参阅各专项文档。
+
+## GitHub 公共网络正常但仓库连接失败（1.5.6 热修复）
+
+「GitHub → 本地网络与代理」的网络测试仅验证 API 连通。连接仓库前先点 **「一键连接公开示例（匿名）」**，可排除旧 Token、错误目录或分支的影响。若仍失败，错误会说明失败在仓库信息还是目录阶段。详情见 [`docs/GITHUB-REPO-PIPELINE-HOTFIX.md`](docs/GITHUB-REPO-PIPELINE-HOTFIX.md)。
+
+### v1.5.6 · 浏览器仓库连接专用修复
+
+如果 `npm run diagnose:github` 显示 5 项或 6 项 PASS，但页面连接 `octocat/Hello-World` 仍出现 `TypeError`，**不要继续更改 Clash 代理端口**：Node 与 GitHub 已可通信，问题出在浏览器请求链路。
+
+进入 GitHub 页面，点击新增的 **「浏览器链路检查」**。它使用当前浏览器实际请求四种公开只读通道并显示成功/失败，不读取 PAT 或私人仓库：本地探测、仓库主同源路径、仓库备用同源路径、GitHub 浏览器匿名直连。
+
+匿名公开仓库在 `/api/github/repos/...` 被浏览器拦截时，会优先尝试 `/api/vigil-bridge/repos/...`。后者由相同的 Node 代理实现，拥有相同路径校验，但**只允许无 Token GET**；私有仓库、Token 读取、PUT 提交不会启用此通道，也不会执行不确定的提交重试。
+
+详情见 [`docs/GITHUB-BROWSER-BRIDGE.md`](docs/GITHUB-BROWSER-BRIDGE.md)。

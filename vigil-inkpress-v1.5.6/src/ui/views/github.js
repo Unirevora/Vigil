@@ -22,6 +22,7 @@ export function githubView(state) {
       <div class="connect-actions"><button class="btn btn-primary" data-action="github-connect" ${gh.loading?'disabled':''}>${icon('github')} ${gh.connected?'更新连接':'连接仓库'}</button>
         <button type="button" class="btn btn-quiet" data-action="github-connect-public" ${gh.loading?'disabled':''}>${icon('check')} 一键连接公开示例（匿名）</button>
         <button type="button" class="btn btn-quiet" data-action="github-test-network" ${gh.loading?'disabled':''}>${icon('check')} 测试 GitHub 网络</button>
+        <button type="button" class="btn btn-quiet" data-action="github-browser-check" ${gh.browserBusy?'disabled':''}>${icon('search')} ${gh.browserBusy?'诊断中…':'浏览器链路检查'}</button>
         <span>编辑需要仓库 Contents 读写权限；令牌不会写入本地存储。</span></div>
       <details class="github-proxy-panel" ${gh.proxyExpanded?'open':''}>
         <summary>${icon('settings')} <strong>本地网络与代理</strong> <span>${gh.proxyEffective?`${escapeHtml(gh.proxyEffective.mode==='direct'?'直连':gh.proxyEffective.mode.toUpperCase())} · ${escapeHtml(gh.proxyEffective.source||'')}`:'支持 HTTP / SOCKS5'}</span>${icon('chevron-down')}</summary>
@@ -40,11 +41,13 @@ export function githubView(state) {
           ${gh.proxyEffective?`<p class="github-proxy-effective">当前出口：${escapeHtml(gh.proxyEffective.source||'')}${gh.proxyEffective.endpoint?' · '+escapeHtml(gh.proxyEffective.endpoint):''}</p>`:''}
         </div>
       </details>
-      <p class="github-connection-tip">「测试 GitHub 网络」会实际请求公开 GitHub API；本地服务就绪并不代表外网已连通。先确认网络，再连接自己的仓库。公开仓库只读无需 Token。</p>
+      <p class="github-connection-tip">「测试 GitHub 网络」通过 Node 检查外网；「浏览器链路检查」从当前网页分别请求主、备用和直连通道。两项检测都不使用 Token。公开仓库无需 Token 即可只读。</p>
     </section>`:''}
     ${gh.health?`<p class="github-health">${icon('check')} ${escapeHtml(gh.health)}</p>`:''}
+    ${gh.browserCheck?`<pre class="github-browser-check" role="status">${escapeHtml(gh.browserCheck)}</pre>`:''}
     ${gh.attributeWarning&&gh.connected?`<p class="github-attribute-warning">${icon('alert')} 已连接，但 .gitattributes 未能检查：${escapeHtml(gh.attributeWarning)}。阅读不受影响，写入时仍会强制检查加密规则。</p>`:''}
     ${gh.error?`<div class="inline-error" role="alert">${icon('alert')} ${escapeHtml(gh.error)}</div>`:''}
+    ${gh.error&&gh.connectTrace?`<details class="github-request-trace"><summary>查看这次连接的实际请求阶段与通道</summary><pre>${escapeHtml(gh.connectTrace)}</pre><small>仅显示阶段、通道及状态，不包含仓库地址、令牌或正文。</small></details>`:''}
     ${gh.loading?`<div class="loading-note">正在读取 GitHub 仓库…</div>`:''}
     ${gh.connected?`<section class="github-workspace">
       <div class="github-repo-bar">

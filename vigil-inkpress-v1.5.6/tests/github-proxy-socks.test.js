@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import net from 'node:net';
 import http from 'node:http';
 import {once} from 'node:events';
+import {Readable} from 'node:stream';
 import {
   githubProxyEnvironment,normalizeGithubProxySettings,openSocks5Tunnel,githubTransportFetch
 } from '../scripts/github-transport.mjs';
@@ -107,7 +108,7 @@ test('manual proxy does not permit arbitrary URL targets',async()=>{
 
 test('local relay exposes real upstream diagnostic distinct from health',async()=>{
   const server=http.createServer((req,res)=>handleGithubProxy(req,res,{
-    fetchImpl:async()=>({ok:true,status:200,body:null}),timeoutMs:2000
+    fetchImpl:async()=>({ok:true,status:200,body:Readable.from([JSON.stringify({full_name:'octocat/Hello-World'})])}),timeoutMs:2000
   }));
   server.listen(0,'127.0.0.1');await once(server,'listening');
   const port=server.address().port;
@@ -128,5 +129,21 @@ test('local relay exposes real upstream diagnostic distinct from health',async()
     assert.equal(blocked.status,400);
     const crossOrigin=await fetch(base+'/api/github/proxy',{method:'POST',headers:{Origin:'https://evil.example.com','Content-Type':'application/json'},body:'{}'});
     assert.equal(crossOrigin.status,403);
+  }finally{await new Promise(resolve=>server.close(resolve));}
+});
+
+
+test('diagnose does not claim HTTP 200 success if repository JSON cannot be read',async()=>{
+  const server=http.createServer((req,res)=>handleGithubProxy(req,res,{
+    fetchImpl:async()=>({ok:true,status:200,body:Readable.from(['incomplete response'])}),timeoutMs:2000
+  }));
+  server.listen(0,'127.0.0.1');await once(server,'listening');
+  try{
+    const response=await fetch(`http://127.0.0.1:${server.address().port}/api/github/diagnose`);
+    assert.equal(response.status,502);
+    const result=await response.json();
+    assert.equal(result.ok,false);
+    assert.equal(result.code,'GITHUB_INVALID_RESPONSE');
+    assert.equal(result.detail,'INVALID_JSON');
   }finally{await new Promise(resolve=>server.close(resolve));}
 });

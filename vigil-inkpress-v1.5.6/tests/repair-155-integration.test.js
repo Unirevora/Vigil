@@ -18,7 +18,7 @@ test('浏览器直连 GitHub 时不发送多余版本头，避免 CORS 预检失
   await api.getRepository();
   assert.equal(seen.url,'https://api.github.com/repos/octocat/Hello-World');
   assert.ok(!Object.hasOwn(seen.headers,'X-GitHub-Api-Version'));
-  assert.equal(seen.headers.Accept,'application/vnd.github+json');
+  assert.equal(seen.headers.Accept,'application/json'); // match successful browser probe
 });
 
 test('本地转发仍保留明确且支持的 GitHub API 版本',()=>{

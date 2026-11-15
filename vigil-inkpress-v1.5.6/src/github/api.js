@@ -42,21 +42,43 @@ export function encodeGithubBase64(content) {
 }
 export class GithubClient {
   constructor(fetcher=globalThis.fetch){
-    this.fetcher=fetcher;
+    // Keep test-supplied fetchers fixed, but never capture the page's native
+    // fetch at application startup. Browser extensions / network shims can
+    // replace window.fetch after module initialization. The diagnostics used
+    // the current global fetch while this client held a stale reference,
+    // causing every repository route to report TypeError despite 4 PASS probes.
     this.useLocalRelay=fetcher===globalThis.fetch;
+    this.fetcher=this.useLocalRelay
+      ? (url,options)=>globalThis.fetch(url,options)
+      : fetcher;
     this.transport='direct';
     this.token='';
     this.config=null;
+    // Explicit opt-in, anonymous GET only. Never retry authenticated traffic
+    // or PUT after an uncertain result. Set on every connection attempt.
+    this.anonymousConnectionMode='relay';
+    this.relayWarning='';
+    this.requestTrace=[]; // Request names / HTTP statuses only; never token or URLs.
   }
-  get transportLabel(){return this.transport==='local-relay'?'本地同源通道':'浏览器直连';}
+  get transportLabel(){return this.transport==='local-relay'?'本地同源通道':this.transport==='browser-anonymous'?'浏览器匿名直连':'浏览器直连';}
   get canUseLocalRelay(){
     if(!this.useLocalRelay || typeof location==='undefined')return false;
     return /^https?:$/.test(location.protocol) &&
       /^(?:localhost|127\.0\.0\.1)$/i.test(location.hostname);
   }
-  setToken(token){this.token=String(token||'').trim();}
+  setToken(token){
+    this.token=String(token||'').trim();
+    // An authenticated connection never inherits anonymous direct routing.
+    if(this.token)this.anonymousConnectionMode='relay';
+  }
   forgetToken(){this.token='';}
-  setConfig(config){this.config=normalizeRepoConfig(config);}
+  setConfig(config){this.config=normalizeRepoConfig(config);this.relayWarning='';}
+  setAnonymousConnectionMode(mode='relay'){
+    if(!['relay','auto','direct','alternate'].includes(mode))throw new Error('不支持的 GitHub 匿名请求模式');
+    if(this.token&&mode!=='relay')throw new Error('含令牌的仓库不能使用匿名浏览器通道');
+    this.anonymousConnectionMode=mode;
+    this.relayWarning='';
+  }
   get canWrite(){return Boolean(this.token);}
   headers(){
     return {
@@ -67,79 +89,146 @@ export class GithubClient {
       ...(this.token?{'Authorization':`Bearer ${this.token}`}:{})
     };
   }
+  // The anonymous browser diagnostic uses a plain JSON Accept header, no
+  // credentials, no redirect and no caching. Repository reads MUST use the
+  // same request shape; the previous vendor-specific Accept differed and
+  // could be intercepted even when all four diagnostics passed.
   async request(path,{method='GET',body=null,query=null}={}){
     if(!this.config)throw new Error('尚未配置 GitHub 仓库');
     const url=new URL(`https://api.github.com/repos/${encodeURIComponent(this.config.owner)}/${encodeURIComponent(this.config.repo)}${path?'/'+path:''}`);
     if(query)for(const [key,value] of Object.entries(query))if(value!==undefined&&value!==null&&value!=='')url.searchParams.set(key,String(value));
-    const options={
-      method,
-      headers:{...this.headers(),...(body?{'Content-Type':'application/json'}:{})},
-      ...(body?{body:JSON.stringify(body)}:{})
-    };
-    const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),18000);
-    options.signal=controller.signal;
-    let response,transport='direct';
-    try{
-      // The local Node server relays a narrow allowlisted set of REST calls
-      // through its own origin: no browser preflight / cross-origin token leak.
-      // A static web host without this route keeps the direct API fallback.
-      if(this.canUseLocalRelay){
-        const relay=`/api/github${url.pathname}${url.search}`;
-        try{
-          response=await this.fetcher(relay,options);
-        }catch(localError){
-          // Never silently retry a failed localhost relay against the browser
-          // API: the second request can fail CORS and obscure the real failure
-          // with an unhelpful TypeError (especially when using a PAT).
-          // PUT is particularly unsafe to retry after an unknown outcome.
-          const detail=localError?.name==='AbortError'?'TIMEOUT':
-            String(localError?.cause?.code||localError?.code||localError?.name||'NETWORK').slice(0,40);
-          throw new Error(method==='PUT'
-            ?'本地同源通道提交连接中断。为避免重复提交，请先检查仓库文件是否已更新。'
-            :`本地 GitHub 同源转发请求失败（${detail}），不会改用浏览器直连以掩盖错误。请确认通过 npm run dev 启动，并在「本地网络与代理」选择本机代理后重试。`);
+    const anonymous=method==='GET'&&!this.token;
+    const direct={name:'浏览器匿名直连',transport:'browser-anonymous',url:url.toString()};
+    const local=prefix=>({name:prefix==='/api/github'?'本地主通道':'本地备用通道',
+      transport:'local-relay',url:`${prefix}${url.pathname}${url.search}`});
+    const routes=this.canUseLocalRelay
+      ? (anonymous&&this.anonymousConnectionMode==='direct'?[direct]
+        :anonymous&&this.anonymousConnectionMode==='alternate'?[local('/api/vigil-bridge'),direct]
+        :anonymous&&this.anonymousConnectionMode==='auto'?[local('/api/github'),local('/api/vigil-bridge'),direct]
+        :[local('/api/github')])
+      :[direct];
+    const trail=[];
+    this.requestTrace=[];
+    let data=null;
+    for(let i=0;i<routes.length;i++){
+      const route=routes[i];
+      const controller=new AbortController();
+      // Fresh signal per attempt. A timed-out primary route must never
+      // poison the alternate/direct routes with an already-aborted signal.
+      const timer=setTimeout(()=>controller.abort(),15000);
+      let operation='request';
+      try{
+        const options=anonymous?{
+          method:'GET',headers:{Accept:'application/json'},
+          credentials:'omit',cache:'no-store',redirect:'error',signal:controller.signal
+        }:{
+          method,headers:{...this.headers(),...(body?{'Content-Type':'application/json'}:{})},
+          ...(body?{body:JSON.stringify(body)}:{}),
+          credentials:'omit',cache:'no-store',redirect:'error',signal:controller.signal
+        };
+        // Stage-specific error trace. Never store URLs, private paths, tokens,
+        // or response bodies in requestTrace, even after a failed request.
+        operation='fetch';
+        const response=await this.fetcher(route.url,options);
+        operation='response-headers';
+        // Disallow a stale static server or unrelated localhost handler from
+        // masquerading as Vigil's relay. Anonymous GET can safely try the
+        // next route, but authenticated traffic and writes must never retry.
+        if(route.transport==='local-relay'&&response.headers?.get?.('X-Vigil-Github-Proxy')!=='1'){
+          // On a static localhost server the endpoint may be a generic HTML
+          // fallback. Allow only an anonymous GET to try direct GitHub.
+          if(anonymous&&routes.length===1)routes.push(direct);
+          throw new Error('LOCAL_RELAY_MISSING');
         }
-        if(response?.headers?.get?.('X-Vigil-Github-Proxy')==='1'){
-          transport='local-relay';
-        }else if(method==='GET'&&!this.token){
-          // A plain static server running on localhost may have no relay route;
-          // preserve anonymous public browsing only in this verified case.
-          response=await this.fetcher(url.toString(),options);
-        }else{
-          throw new Error('本地同源转发未启用，不能安全使用访问令牌或确认提交状态。请以 npm run dev 启动项目。');
+        let bodyData;
+        operation='response-body';
+        try{bodyData=await response.json();}
+        catch(error){
+          if(response.ok)throw new Error('INVALID_JSON_BODY');
+          bodyData={};
         }
-      }else{
-        response=await this.fetcher(url.toString(),options);
-      }
-    }catch(error){
-      if(error?.message?.startsWith('本地同源')||error?.message?.startsWith('本地 GitHub 同源转发'))throw error;
-      const detail=error?.name==='AbortError'?'TIMEOUT':
-        String(error?.cause?.code||error?.code||error?.name||'NETWORK').slice(0,40);
-      const tip=this.canUseLocalRelay
-        ?'无法连接 api.github.com；已尝试本机转发或官方 API。请先使用「测试 GitHub 网络」，再检查本机 DNS 与 HTTPS_PROXY。'
-        :'浏览器直连 api.github.com 失败。请在本机启动 npm run dev 并使用 127.0.0.1:5173 打开，或检查站点网络策略。';
-      throw new Error(`GitHub 网络请求失败（${detail}）。${tip}`);
-    }finally{clearTimeout(timeout);}
-    this.transport=transport;
-    let data;
-    try{data=await response.json();}catch{data={};}
-    if(!response.ok){
-      if(response.status===401)throw new Error('GitHub 401：Token 无效或已过期。若连接公开仓库，请勾选「匿名读取公开仓库」以忽略本次会话中的旧令牌。');
-      if(response.status===403){
-        const rate=response.headers?.get?.('X-RateLimit-Remaining');
-        throw new Error(rate==='0'?'GitHub 403：API 请求额度已耗尽，请稍后重试。':'GitHub 403：访问被拒绝，请检查仓库权限、组织 SSO 或频率限制。');
-      }
-      if(response.status===404)throw new Error('GitHub 404：仓库或文件不存在，也可能是目录错误或私有仓库的读取权限不足。');
-      if(response.status===409)throw new Error('文件版本冲突：远端内容已变化。你的修改仍在编辑框，请复制备份后刷新。');
-      if(response.status===422)throw new Error('GitHub 422：请检查路径、分支名称、文件 SHA 或权限。');
-      if(response.status===502&&['GITHUB_UNREACHABLE','GITHUB_TIMEOUT'].includes(data.code))
-        throw new Error(`${String(data.message||'GitHub 连接失败').slice(0,180)}（${data.detail||data.code}；${data.transport||'DIRECT'}）。请在 GitHub 页面 →「本地网络与代理」配置本机 HTTP/SOCKS5 端口并重新测试。`);
-      throw new Error(`GitHub HTTP ${response.status}（${transport==='local-relay'?'本地同源通道':'浏览器直连'}）：${String(data.message||'请求失败').slice(0,130)}`);
+        operation='response-check';
+        if(!response.ok){
+          const status=response.status;
+          // A relay-side 502 is a transport failure, not a GitHub 404 or
+          // authorization decision. Anonymous reads may try the next route.
+          if(anonymous&&status===502&&i<routes.length-1){
+            trail.push(`${route.name}: HTTP 502`);
+            this.requestTrace.push({route:route.name,status:502});
+            continue;
+          }
+          if(status===401)throw new Error('GitHub 401：Token 无效或已过期。公开仓库请选匿名读取。');
+          if(status===403){
+            const remaining=response.headers?.get?.('X-RateLimit-Remaining');
+            throw new Error(remaining==='0'?'GitHub 403：API 请求额度已耗尽，请稍后重试。':'GitHub 403：访问被拒绝，请检查权限、组织 SSO 或请求限制。');
+          }
+          if(status===404)throw new Error('GitHub 404：仓库或文件不存在，也可能是目录错误或私有仓库读取权限不足。');
+          if(status===409)throw new Error('文件版本冲突：远端内容已变化。请备份当前修改，刷新后重试。');
+          if(status===422)throw new Error('GitHub 422：请检查路径、分支、文件 SHA 或权限。');
+          if(status===502&&['GITHUB_UNREACHABLE','GITHUB_TIMEOUT'].includes(bodyData.code)){
+            throw new Error(`${String(bodyData.message||'GitHub 连接失败').slice(0,180)}（${bodyData.detail||bodyData.code}；${bodyData.transport||'DIRECT'}）。`);
+          }
+          throw new Error(`GitHub HTTP ${status}（${route.name}）：${String(bodyData.message||'请求失败').slice(0,130)}`);
+        }
+        // HTTP 200 alone does not mean a successful repository GET: the
+        // anonymous probes verify valid JSON structure. Verify it here too.
+        if(anonymous && path==='' && (!bodyData||typeof bodyData.full_name!=='string'))throw new Error('INVALID_REPOSITORY_JSON');
+        if(anonymous && /^contents(?:\/|$)/.test(path) && path==='contents' && !Array.isArray(bodyData)){
+          throw new Error('INVALID_DIRECTORY_JSON');
+        }
+        operation='response-verified';
+        this.transport=route.transport;
+        this.requestTrace.push({route:route.name,status:response.status});
+        if(anonymous && i>0){
+          this.relayWarning=`${trail.join('；')}；已使用${route.name==='本地备用通道'?'备用本地通道':route.name}`;
+          if(route.url.startsWith('/api/vigil-bridge/'))this.anonymousConnectionMode='alternate';
+          if(route.transport==='browser-anonymous')this.anonymousConnectionMode='direct';
+        }
+        data=bodyData;
+        return data;
+      }catch(error){
+        // Actual HTTP errors (401/403/404/409 etc.) must not be hidden by a
+        // browser fallback. Only network/stream/invalid JSON problems can
+        // safely retry for anonymous GETs.
+        const recoverable=error?.name==='TypeError'||error?.name==='AbortError'||
+          ['LOCAL_RELAY_MISSING','INVALID_JSON_BODY','INVALID_REPOSITORY_JSON','INVALID_DIRECTORY_JSON'].includes(error?.message);
+        // A TypeError may mean either a fetch rejection or an application-side
+        // JS error. The old trace threw away that distinction entirely.
+        const detail=error?.name==='AbortError'?'TIMEOUT':
+          String(error?.cause?.code||error?.code||(error?.name==='TypeError'?'TypeError':error?.message)||error?.name||'NETWORK').slice(0,60);
+        const phase=operation;
+        const hint=error?.name==='TypeError'
+          ? (/illegal invocation/i.test(String(error?.message||''))?'ILLEGAL_INVOCATION':
+             /failed to fetch|networkerror|load failed/i.test(String(error?.message||''))?'FETCH_REJECTED':'JS_TYPE_ERROR')
+          : undefined;
+        trail.push(`${route.name}: ${phase}/${detail}${hint?'/'+hint:''}`);
+        this.requestTrace.push({route:route.name,phase,error:detail,...(hint?{hint}:{})});
+        if(anonymous&&recoverable&&i<routes.length-1)continue;
+        if(!anonymous && method==='PUT' && recoverable)
+          throw new Error('本地同源通道提交连接中断。为避免重复提交，请先检查远端文件是否已经更新。');
+        if(anonymous && recoverable){
+          if(error?.message==='INVALID_REPOSITORY_JSON')
+            throw new Error('GitHub 仓库元数据缺失或响应无效（HTTP 200，当前路径）。');
+          if(error?.message==='INVALID_JSON_BODY')
+            throw new Error('GitHub HTTP 200 的 JSON 正文不完整或格式错误。');
+          if(routes.length>=3 && i===routes.length-1){
+            const descriptions=trail.map(x=>x.replace('本地主通道','主同源').replace('本地备用通道','备用同源').replace('浏览器匿名直连','浏览器直连'));
+            throw new Error(`匿名仓库三个通道均未连通：${descriptions.join('；')}。请打开开发者工具检查应用请求。`);
+          }
+          throw new Error(`本地 GitHub 同源转发请求失败（${trail.join(' → ')}）。请在 GitHub 页面查看具体阶段。`);
+        }
+        if(recoverable)throw new Error(`本地 GitHub 同源转发请求失败（${detail}，${route.name}）。请检查浏览器与本地服务日志。`);
+        throw error;
+      }finally{clearTimeout(timer);}
     }
-    return data;
+    throw new Error(`GitHub 请求没有可用通道（${trail.join(' → ')}）。`);
   }
   async getRepository(){
-    return this.request('');
+    const data=await this.request('');
+    if(!data||typeof data.full_name!=='string'||!data.full_name.includes('/')){
+      throw new Error(`GitHub 仓库元数据缺失或响应无效（${this.transportLabel}）。这可能是代理返回了不完整的正文。`);
+    }
+    return data;
   }
   contentPath(path=''){
     return `contents${normalizePath(path)?'/'+encodeParts(path):''}`;
