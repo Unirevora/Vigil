@@ -1,0 +1,108 @@
+/* Element defaults, wallpaper layer and page background. */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;font:14px/1.7 var(--text-font);-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+::selection{background:var(--accent-soft)}
+svg{width:17px;height:17px;display:inline-block;vertical-align:middle;flex:none}
+h1{margin:0}
+h2{margin:0}
+h3{margin:0}
+p{margin:0}
+h1{font-weight:500}
+h2{font-weight:500}
+h3{font-weight:500}
+a{color:var(--accent);text-underline-offset:3px}
+/* v1.3 · 以 v1.1 的铅字旧梦为基底，只重整圆角和信息秩序。 */
+:root{--font-display:"VigilTitle","Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;--font-body:"VigilText","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;--font-typed:"Courier New","Liberation Mono",monospace;--title-font:var(--font-display);--text-font:var(--font-body)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:15;background-image:url("/assets/paper-grain.svg");mix-blend-mode:multiply}
+:root[data-theme=night] body::after{opacity:.055;mix-blend-mode:screen}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  *::before{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+/*
+ * VIGIL Inkpress 1.4 — high-fidelity site styling based on the user's supplied
+ * Chinese vintage reference. Real DOM controls and content remain interactive.
+ * Reference artwork is confined to /assets/typewriter-still-life.png and the
+ * small decorative motif crops; it is NOT a whole-page screenshot background.
+ */
+:root{color-scheme:light;--accent:#a83f2a;--accent-soft:#f3dfca;--green:#29483d;--green-soft:#e1e4d5;--paper:#f7ead5}
+body{font-size:15px;background-blend-mode:multiply,normal}
+body::before{content:"";position:fixed;z-index:0;inset:0;pointer-events:none}
+body[data-wallpaper="custom"]::before{background-size:cover;background-position:center center}
+body[data-wallpaper="paper"]::before{background-image:url('/assets/wallpaper-paper.svg');background-size:cover}
+body[data-wallpaper="mountains"]::before{background-image:url('/assets/wallpaper-mist-3200.webp');background-size:cover}
+body[data-wallpaper="sage"]::before{background-image:url('/assets/wallpaper-sage.svg');background-size:cover}
+body[data-wallpaper="sea"]::before{background-image:url('/assets/wallpaper-moon-3200.webp');background-size:cover}
+body[data-wallpaper="none"]::before{background:none}
+body[data-paper-texture="off"]::after{display:none!important}
+body{color:var(--ink)}
+body::before{background-image:url('/assets/wallpaper-mist-3200.webp')}
+body[data-wallpaper=none]::before{background:none}
+:root[data-theme=night] body[data-wallpaper=paper]::before{background-image:url('/assets/wallpaper-paper.svg')}
+body{background:var(--bg)!important;background-image:none!important}
+:root[data-theme=night] body[data-wallpaper=mountains]::before{background-image:url('/assets/wallpaper-moon-3200.webp')!important}
+/* Subdue unrelated decorations rather than destroying vintage identity. */
+body::after{opacity:.016!important}
+/* 1.5.1 polish pass: simplified editor shell, right outline sidebar, tighter reading rhythm */
+body[data-wallpaper=sage]::before{filter:saturate(.8) blur(.2px)!important}
+:root[data-theme=night] body[data-wallpaper=paper]::before{opacity:.18!important}
+:root[data-theme=night] body[data-wallpaper=mountains]::before{opacity:.24!important}
+:root[data-theme=night] body[data-wallpaper=sage]::before{opacity:.19!important}
+:root[data-theme=night] body[data-wallpaper=sea]::before{opacity:.28!important}
+html{scroll-padding-top:90px}
+summary{-webkit-tap-highlight-color:transparent}
+summary:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3px}
+[tabindex]:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3px}
+/* Mobile: a compact brand row, useful utility bar, and genuinely touch-sized controls. */
+@media (max-width:900px){
+  html{scroll-padding-top:65px}
+  /* CodeMirror's internal textarea/sizer may overshoot by a fractional pixel. */
+  html{overflow-x:clip}
+  body{overflow-x:clip}
+}
+:root[data-motion=off] *{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}
+:root[data-motion=off] *::before{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}
+:root[data-motion=off] *::after{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}
+/* Night mode: neutral graphite, neither bottle green nor blue-green.
+ * These tokens override the seven historical theme layers consistently. */
+:root[data-theme=night]{--color-focus:#c28e80}
+:root[data-theme=night] body::before{filter:grayscale(1) brightness(.33) contrast(.90)!important;opacity:calc(var(--wallpaper-alpha) * .43)!important}
+:root[data-theme=night] :is(.heritage-hero,.heritage-copy){background:linear-gradient(120deg,#333138,#282a30)!important}
+:root[data-theme=night] :is(.season-teaser,.home-quick-row .draft-banner){background:#36343b!important;color:var(--ink)!important}
+:root[data-theme=night] :is(.note-card,.reading-paper,.editor-paper,.calendar-card,
+ .archive-mini-card,.filter-panel,.github-files,.github-detail,.data-action-card,
+ .season-current,.hou-panel,.dial-panel,.about-section){background-color:color-mix(in srgb,var(--surface) 96%,transparent)!important;border-color:var(--stroke)!important}
+:root[data-theme=night] :is(.day.heat-1,.day.heat-2,.day.heat-3,.day.heat-4):not(.is-term){background:#393740!important}
+/* Four distinct background scenes. No recycled sage/dawn asset. The exact
+   same URL is supplied to the glass renderer by applyAppearance(). */
+body::before{opacity:var(--wallpaper-alpha)!important;background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;transition:opacity .35s ease,filter .35s ease}
+body[data-wallpaper=paper]::before{opacity:var(--wallpaper-alpha)!important;background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;transition:opacity .35s ease,filter .35s ease}
+body[data-wallpaper=mountains]::before{opacity:var(--wallpaper-alpha)!important;background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;transition:opacity .35s ease,filter .35s ease}
+body[data-wallpaper=sage]::before{opacity:var(--wallpaper-alpha)!important;background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;transition:opacity .35s ease,filter .35s ease}
+body[data-wallpaper=sea]::before{opacity:var(--wallpaper-alpha)!important;background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;transition:opacity .35s ease,filter .35s ease}
+body[data-wallpaper=custom]::before{opacity:var(--wallpaper-alpha)!important;background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;transition:opacity .35s ease,filter .35s ease}
+body[data-wallpaper=paper]::before{background-image:url('/assets/wallpaper-dawn-1672.webp')!important}
+body[data-wallpaper=mountains]::before{background-image:url('/assets/wallpaper-cloud-mist-2560.webp')!important}
+body[data-wallpaper=sage]::before{background-image:url('/assets/wallpaper-garden-1672.webp')!important}
+body[data-wallpaper=sea]::before{background-image:url('/assets/wallpaper-moonrise-1672.webp')!important}
+body[data-wallpaper=custom]::before{background-image:var(--wallpaper-image)!important}
+:root[data-theme=night] body[data-wallpaper=none]::before{background-image:none!important}
+/* The selected image remains behind BOTH palettes. A neutral night scrim is
+   delivered via the image filter rather than a page-wide black header. */
+body:not([data-wallpaper=none])::before{opacity:var(--wallpaper-alpha,.24)!important;background-repeat:no-repeat!important;background-position:center 42%!important;background-size:cover!important}
+body[data-wallpaper=none]::before{opacity:0!important;background-image:none!important}
+:root[data-theme=night]{color-scheme:dark;--bg:#191b20;--side:#22262c;--surface:#30333a;--surface-soft:#393d45;--paper:#30333a;--paper-light:#343840;--ink:#f2f1ed;--ink-2:#d3d7d4;--muted:#afb8b5;--stroke:#4b505a;--stroke-2:#626873;--green-soft:#3c4648;--shadow:0 13px 33px rgba(4,8,14,.16);--color-paper:#191b20;--color-ink:#f2f1ed;--color-glass-scene:#222b31;--color-glass-mist:#363f44}
+:root[data-theme=night] body{color:var(--ink);background-color:var(--bg)!important;background-image:radial-gradient(ellipse at 16% 0%,rgba(117,117,128,.14),transparent 55%),
+    radial-gradient(ellipse at 100% 100%,rgba(78,90,94,.14),transparent 56%)!important}
+:root[data-theme=night] body:not([data-wallpaper=none])::before{opacity:var(--wallpaper-alpha-night,.39)!important;filter:brightness(.57) saturate(.72) contrast(1.07)!important}
+:root[data-theme=night] body[data-wallpaper=none]::before{filter:none!important;opacity:0!important}
+:root[data-theme=night] :is(.calendar-tip,.lunar-meta,.reading-content,.editor-paper,.settings-group){color:var(--ink-2)}
+html :is(button,a,input,textarea,select):focus-visible{outline:2px solid var(--focus-ring)!important;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){
+  body::before{transition:none!important}
+}
+

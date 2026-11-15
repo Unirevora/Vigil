@@ -1,0 +1,98 @@
+/* Modal, toast, command palette and passphrase dialog. */
+.toast{position:fixed;right:24px;bottom:24px;z-index:30;background:var(--ink);color:var(--surface);padding:12px 19px;border-radius:13px;max-width:min(450px,90vw);font-size:12px;box-shadow:0 13px 38px rgba(0,0,0,.14);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.bad{background:#9f4e41;color:#fff}
+.modal-layer{display:none;position:fixed;inset:0;z-index:29;background:rgba(27,32,29,.48);padding:20px;place-items:center;backdrop-filter:blur(4px)}
+.modal-layer.open{display:grid}
+.modal{background:var(--surface);border:1px solid var(--stroke);border-radius:22px;padding:28px;width:min(100%,430px);box-shadow:0 30px 100px rgba(0,0,0,.17)}
+.modal-mark{width:42px;height:42px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);border-radius:12px;margin-bottom:15px}
+.modal h2{font:25px var(--title-font);margin-bottom:8px}
+.modal p{color:var(--ink-2);font-size:12px;line-height:1.85;white-space:pre-line;margin-bottom:23px}
+.modal-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px}
+.command-result{transition:transform .46s var(--vigil-spring),
+    background-color .22s ease,border-color .24s ease,color .2s ease,
+    box-shadow .35s var(--vigil-ease)}
+/* Ink-paper dialogs move like a light sheet settling on the desk. */
+.modal-layer.open .modal{animation:dialog-spring .48s var(--vigil-spring) both}
+.toast.show{animation:toast-tap .48s var(--vigil-spring)}
+/* Native hidden attribute must win against CSS display on overlays. */
+.command-layer[hidden]{display:none!important}
+.passphrase-layer[hidden]{display:none!important}
+.passphrase-confirm[hidden]{display:none!important}
+.command-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:clamp(36px,13vh,134px) 16px 24px;background:rgba(23,34,28,.63);backdrop-filter:blur(5px)}
+.passphrase-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:clamp(36px,13vh,134px) 16px 24px;background:rgba(23,34,28,.63);backdrop-filter:blur(5px)}
+.command-dialog{width:min(590px,100%);border:1px solid #bfa081;max-height:min(73vh,680px);display:flex;flex-direction:column;overflow:hidden;animation:dialog-spring .46s var(--vigil-spring) both}
+.command-input-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--stroke-2);padding:17px 20px}
+.command-input-row>svg{color:var(--accent);width:21px;height:21px}
+.command-input-row input{min-width:0;flex:1;outline:none;border:0;background:transparent;color:var(--ink);font:15px var(--font-body)}
+.command-input-row input::-webkit-search-cancel-button{cursor:pointer}
+.command-input-row kbd{font:10px var(--font-typed);color:var(--muted);border:1px solid var(--stroke);border-radius:5px;padding:3px 6px}
+.command-results{overflow:auto;padding:9px;max-height:480px;min-height:95px}
+.command-result{display:flex;align-items:center;gap:13px;text-align:left;width:100%;border:1px solid transparent;color:var(--ink);background:transparent;padding:8px 12px;cursor:pointer}
+.command-result:hover{transform:translateX(3px)}
+.command-result.active{transform:translateX(3px)}
+.command-result-icon{flex:none;display:grid;place-items:center;width:35px;height:35px;border:1px solid #c8b398;border-radius:8px}
+.command-result-icon svg{width:18px;height:18px}
+.command-result-labels{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.command-result-labels strong{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.command-result-labels small{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.command-enter{color:var(--accent);font:17px var(--font-display)}
+.command-empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:12px}
+.command-footer{display:flex;justify-content:space-between;gap:12px;padding:11px 19px;border-top:1px solid var(--stroke);color:var(--muted);font:10px var(--font-typed)}
+.passphrase-dialog{width:min(465px,100%);border:1px solid #ba9b74;border-radius:15px;background:var(--paper-light);padding:30px 31px 26px;box-shadow:0 30px 85px rgba(8,16,12,.3);display:flex;flex-direction:column;gap:12px;animation:dialog-spring .46s var(--vigil-spring) both}
+.passphrase-seal{display:grid;place-items:center;width:37px;height:41px;border:1.5px solid var(--accent);font:24px var(--font-display);color:var(--accent);transform:rotate(-4deg);margin-bottom:4px}
+.passphrase-dialog h2{font:27px var(--font-display)}
+.passphrase-dialog p{font-size:12px;color:var(--muted);line-height:1.8}
+.passphrase-dialog label{color:var(--ink);font-size:12px;font-weight:600}
+.passphrase-dialog input{display:block;width:100%;min-height:44px;border:1px solid var(--stroke-2);border-radius:8px;background:#fff8eb;color:#292d28;padding:9px 12px;outline:none;font:15px sans-serif}
+.passphrase-dialog input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(163,70,49,.1)}
+.passphrase-confirm{display:flex;flex-direction:column;gap:9px}
+.passphrase-hint.error{color:#a24430}
+.passphrase-dialog .modal-actions{margin-top:10px}
+:root[data-theme=night] .passphrase-dialog{background:var(--surface);color:var(--ink)}
+:root[data-theme=night] .command-input-row{background:var(--surface-soft)}
+:root[data-theme=night] .command-result-icon{border-color:var(--stroke)}
+:root[data-theme=night] .passphrase-dialog input{background:var(--surface-soft);color:var(--ink)}
+@media (max-width:640px){
+  .command-layer{padding-top:55px}
+  .passphrase-layer{padding-top:55px}
+  .command-dialog{max-height:78vh}
+  .command-footer span:last-child{display:none}
+  .passphrase-dialog{padding:24px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .command-result{animation:none!important;transition:none!important;transform:none!important}
+  .command-dialog{animation:none!important}
+  .passphrase-dialog{animation:none!important}
+  .modal-layer.open .modal{animation:none!important}
+  .toast.show{animation:none!important}
+}
+.command-result.active .command-result-icon{color:var(--appearance-accent)!important}
+/* Temporary popovers tinted, not fully transparent, to protect labels. */
+.command-dialog{border-radius:28px;box-shadow:0 16px 40px rgba(19,37,41,.18)}
+.command-input-row{background:rgba(255,255,255,.38);border-radius:28px 28px 0 0}
+.command-result{border-radius:14px;min-height:50px}
+.command-dialog{-webkit-backdrop-filter:blur(18px) saturate(1.15);backdrop-filter:blur(18px) saturate(1.15)}
+.command-dialog{background:color-mix(in srgb,var(--surface) 91%,transparent)!important}
+.command-result.active{background:var(--appearance-accent-soft)!important;border-color:color-mix(in srgb,var(--appearance-accent) 20%,var(--stroke))!important}
+.command-result:hover{background:var(--appearance-accent-soft)!important;border-color:color-mix(in srgb,var(--appearance-accent) 20%,var(--stroke))!important}
+.command-result-icon{background:var(--appearance-accent-soft)!important;color:var(--appearance-accent)!important}
+:root[data-theme=night] .command-dialog{background:rgba(44,44,51,.97)!important;color:var(--ink)!important}
+:root[data-theme=night] .command-result.active{background:#413b43!important;border-color:#615560!important}
+:root[data-theme=night] .command-result:hover{background:#413b43!important;border-color:#615560!important}
+:root[data-theme=night] .command-result-icon{background:#413941!important}
+@layer overrides{
+  .modal-layer .modal{background-color:var(--glass-dialog-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .command-dialog{background-color:var(--glass-dialog-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .passphrase-dialog{background-color:var(--glass-dialog-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .modal-layer .modal{background-color:var(--surface)!important}
+    .command-dialog{background-color:var(--surface)!important}
+    .passphrase-dialog{background-color:var(--surface)!important}
+  }
+  @media (prefers-reduced-transparency:reduce){
+    .modal-layer .modal{background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+    .command-dialog{background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+    .passphrase-dialog{background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  }
+}

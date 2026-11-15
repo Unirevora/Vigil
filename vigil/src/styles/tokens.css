@@ -1,0 +1,67 @@
+/* Design tokens: fonts, colour and spacing variables, light/night themes. */
+@font-face{font-family:VigilTitle;src:url("/fonts/titlefont.ttf") format("truetype");font-display:swap}
+@font-face{font-family:VigilText;src:url("/fonts/textfont.ttf") format("truetype");font-display:swap}
+/* The night mode preserves the same antique print palette without bleaching it. */
+:root[data-theme=night]{--accent:#ce846a;--accent-soft:#49392f;--green:#6d8876}
+/* VIGIL 1.4.1 — spring paper motion + collapsible ink sidebar.
+ * Overrides only interaction and spacing, preserves v1.4.0 inkpress artwork.
+ */
+:root{--vigil-ease:cubic-bezier(.23,.84,.26,1);--sidebar-width:clamp(226px,15.9vw,270px);--sidebar-closed:79px}
+/* VIGIL 1.4.2: user-configurable backgrounds and theme ink, preserving 1.4.1 artwork. */
+:root{--appearance-accent:#a83f2a;--appearance-accent-soft:#f2dec9;--appearance-contrast:#fff7e6;--wallpaper-image:none;--wallpaper-alpha:.24;--paper-opacity:91%;--reader-font-size:16px;--reader-leading:2;--workspace-max-width:1460px}
+/* VIGIL 1.5 · Ink and Liquid Glass. Optical controls, stable manuscript surfaces.
+ * Real scene displacement through SVG feDisplacementMap in supported browsers.
+ * Fallback remains tinted + subtly blurred; no rainbow borders or neon glow.
+ */
+:root{--color-paper:#f3f2ed;--color-ink:#202929;--color-glass-scene:#25414a;--color-glass-mist:#e4efeb;--color-glass-glint:#fff;--vigil-spring:cubic-bezier(.2,1.22,.31,1)}
+/* VIGIL · 1.5.1 | calm writing, high-resolution scenes, live syntax.
+ * Retain ink-green + soft paper; remove duplicated borders and decorative noise.
+ */
+:root{--bg:#f2f3ef;--surface:#fffefa;--surface-soft:#f5f5ef;--paper-light:#fffefa;--ink:#263333;--ink-2:#52615d;--muted:#81908a;--stroke:#e5e7dc;--stroke-2:#d7dbd1;--side:#243d3b;--shadow:0 8px 25px rgba(31,54,48,.045)}
+:root{--glass-scene-url:url('/assets/wallpaper-mist-3200.webp')}
+:root[data-theme=night]{--glass-scene-url:url('/assets/wallpaper-moon-3200.webp')}
+/* VIGIL 1.5.2 · Quiet editorial refinement.
+   Airy writing surfaces, a single icon language, and deliberate touch layouts. */
+:root{--vigil-hairline:color-mix(in srgb,var(--ink-2) 15%,transparent);--vigil-soft-shadow:0 12px 34px rgba(29,53,47,.045);--vigil-interactive:44px}
+/* VIGIL 1.5.3 · 澄墨：one chromatic system, frosted lacquer navigation,
+   flat settings tabs, native-select enhancement with a real keyboard listbox.
+   Manuscript and data cards remain opaque for legibility. */
+:root{--sidebar-glass-top:rgba(52,49,46,.86);--sidebar-glass-bottom:rgba(39,48,46,.91);--sidebar-solid:#2b3732;--sidebar-accent-ink:#e7ede4;--sidebar-edge:#a2afa6;--sidebar-glass-blur:24px;--glass-material:rgba(237,246,241,.72);--glass-foreground:#243b3b}
+:root{--color-focus:var(--appearance-accent)}
+/* VIGIL 1.5.4 · 岁时合卷
+ * One calm header, rounded lightweight tabs, one two-mode calendar, an honest About panel.
+ * Scoped overrides deliberately undo conflicting 1.5.2/1.5.3 tab and top-bar styles.
+ */
+:root{--soft-panel-shadow:0 12px 30px rgba(28,53,47,.045)}
+/* 不眠手记 1.5.5 / Editorial hierarchy
+   Single title source per screen, calm toolbar, clear information rhythm.
+   Keep ink and paper; do not add a second decorative visual system. */
+:root{--page-title-size:clamp(36px,3.35vw,52px);--page-title-leading:1.14;--page-title-weight:600}
+@media (max-width:900px){
+  :root{--page-title-size:clamp(34px,5.3vw,43px)}
+}
+@media (max-width:640px){
+  :root{--page-title-size:clamp(31px,8.2vw,38px)}
+}
+/* VIGIL 1.5.5 maintenance: one visible wallpaper, one optical scene, true frosted rail.
+ * Load this AFTER all legacy v1.4 / 1.5 styles. No new design system.
+ */
+:root{--glass-scene-opacity:.52;--wallpaper-alpha-night:.39;--settings-preview-image:url('/assets/wallpaper-dawn-1672.webp')}
+/* VIGIL 1.5.6 · Stable material and contrast contract.
+   This file deliberately loads LAST: it resolves inherited 1.1–1.5.5 rules
+   without changing document structure or user data. */
+:root{--paper-alpha:91%;--wallpaper-opacity:.24;--sidebar-blur:24px;--focus-ring:var(--appearance-accent,#a84b37)}
+/* VIGIL v1.7.1 · One tab language, more frosted glass, editor tools in the properties row,
+   and an outline column that slides open beside the manuscript.
+
+   Legacy rules style tabs and panels with !important at many different specificities.
+   Rules that must win over them live in @layer overrides:
+   an !important declaration inside a cascade layer beats every unlayered !important
+   declaration, regardless of selector specificity — no specificity arms race. */
+:root{--vigil-tab-bar:4px;--outline-width:288px;--glass-panel-alpha:calc(var(--paper-opacity,91%) * .74);--glass-panel-bg:color-mix(in srgb,var(--surface) var(--glass-panel-alpha),transparent);--glass-panel-blur:blur(22px) saturate(1.45);--glass-paper-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .86),transparent);--glass-panel-edge:rgba(255,255,255,.62);--glass-panel-shadow:0 12px 32px rgba(31,49,44,.07),inset 0 1px rgba(255,255,255,.7)}
+:root[data-theme=night]{--glass-panel-alpha:calc(var(--paper-opacity,91%) * .8);--glass-panel-edge:rgba(255,255,255,.1);--glass-panel-shadow:0 14px 36px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.07)}
+
+/* Dialogs sit on a dark scrim: a thinner glass would mix with it into muddy grey and
+   wash out the text, so they use a denser glass than cards and panels. */
+:root{--glass-dialog-bg:color-mix(in srgb,var(--surface) 92%,transparent)}
+:root[data-theme=night]{--glass-dialog-bg:color-mix(in srgb,var(--surface) 90%,transparent)}

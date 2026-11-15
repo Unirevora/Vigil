@@ -1,0 +1,22 @@
+{
+  "name": "vigil-inkpress",
+  "version": "1.7.3",
+  "private": true,
+  "type": "module",
+  "description": "不眠手记 v1.7.3：本地与 GitHub 双文库、统一三态编辑器、Obsidian Callout 与安全字体样式",
+  "scripts": {
+    "dev": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
+    "start": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
+    "test": "node --test tests/*.test.js",
+    "fonts:restore": "python3 scripts/restore-fonts.py",
+    "pack:fonts": "python3 scripts/pack-with-local-fonts.py",
+    "build:css": "node scripts/build-css.mjs",
+    "diagnose:github": "node scripts/diagnose-github.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "version:check": "node scripts/version.mjs --check",
+    "version:set": "node scripts/version.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

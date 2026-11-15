@@ -1,0 +1,66 @@
+/* Liquid-glass lens controls and the spectral drape. */
+.liquid-svg-defs{position:absolute!important;width:0!important;height:0!important;overflow:hidden!important;pointer-events:none}
+.liquid-glass::before{content:"";position:absolute;z-index:1;pointer-events:none;inset:0;border-radius:inherit;background:linear-gradient(172deg,rgba(255,255,255,.52) 0,rgba(255,255,255,.10) 24%,transparent 60%);box-shadow:inset 0 1px 0 rgba(255,255,255,.76),inset 1px 0 0 rgba(255,255,255,.2)}
+.liquid-glass::after{content:"";position:absolute;pointer-events:none;inset:0;border-radius:inherit;z-index:1;box-shadow:inset 0 0 0 .6px rgba(63,91,91,.11)}
+.glass-lens-underlay{pointer-events:none;position:absolute;inset:0;z-index:0;overflow:hidden;border-radius:inherit}
+.glass-lens-scene{position:absolute;display:block;width:var(--lens-width,100vw);height:var(--lens-height,100vh);top:var(--lens-top,0px);left:var(--lens-left,0px);max-width:none;max-height:none;background-image:var(--glass-scene-url);background-position:center center;background-size:cover;background-repeat:no-repeat}
+.glass-optics-on .glass-lens-underlay{opacity:.43}
+.liquid-glass > :not(.glass-lens-underlay){position:relative;z-index:2}
+.liquid-glass:hover:not(:disabled){box-shadow:0 13px 27px rgba(19,37,41,.16),inset 0 1px 0 rgba(255,255,255,.82)!important}
+.liquid-glass.glass-pressed{transform:scale(.96)!important;transition-duration:.11s!important}
+.liquid-glass:focus-visible{outline:2px solid var(--color-focus)!important;outline-offset:3px!important}
+.liquid-glass :focus-visible{outline:2px solid var(--color-focus)!important;outline-offset:3px!important}
+:root[data-theme=night] .liquid-glass::before{background:linear-gradient(165deg,rgba(255,255,255,.17),transparent 55%)}
+@media (prefers-reduced-motion:reduce){
+  .liquid-glass{transition:none!important;animation:none!important}
+  .liquid-glass.glass-pressed{transform:none!important}
+  .glass-optics-on .glass-lens-underlay{filter:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .liquid-glass{background:#e3efea!important}
+  :root[data-theme=night] .liquid-glass{background:#30484b!important}
+}
+/* Explicit scene refraction on browsers with unreliable SVG backdrop composition. */
+.glass-lens-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none;pointer-events:none}
+.glass-scene-ready .glass-lens-canvas{display:block}
+.glass-scene-ready .glass-lens-scene{display:none}
+.glass-optics-on.glass-scene-ready .glass-lens-underlay{opacity:.55}
+@media (prefers-reduced-motion:reduce){
+  .glass-lens-canvas{display:none!important}
+}
+@media (prefers-reduced-transparency:reduce){
+  .glass-lens-canvas{display:none!important}
+}
+/* All floating controls use the same adaptable glass material. */
+.liquid-glass:not(.sidebar){border-color:rgba(255,255,255,.57)!important}
+@media (prefers-reduced-transparency:reduce){
+  .liquid-glass{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+/* The canvas follows the wallpaper, under every interactive element. */
+.spectral-drape{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;touch-action:none;display:block;mix-blend-mode:multiply}
+.spectral-drape[hidden]{display:none!important}
+:root[data-theme=night] .spectral-drape{mix-blend-mode:screen;opacity:.80}
+:root[data-theme=night] .liquid-glass:not(.sidebar){background:rgba(53,53,62,.78)!important;color:var(--ink)!important}
+/* The effect is opt-in: no canvas veil or idle animation when disabled. */
+.spectral-drape{opacity:0;transition:opacity .55s ease;will-change:opacity}
+.spectral-drape.is-active{opacity:.94}
+:root[data-theme=night] .spectral-drape.is-active{opacity:.82}
+@media (prefers-reduced-motion:reduce){
+  .spectral-drape{transition:none!important}
+}
+.liquid-glass:not(.sidebar)::before{background:linear-gradient(164deg,rgba(255,255,255,.35),rgba(255,255,255,.045) 28%,transparent 68%)!important}
+.glass-lens-underlay{opacity:.78!important}
+.glass-scene-ready .glass-lens-underlay{opacity:.87!important}
+.glass-lens-canvas{opacity:var(--glass-scene-opacity,.52)!important}
+.glass-lens-scene{opacity:var(--glass-scene-opacity,.52)!important}
+.glass-optics-on .glass-lens-underlay{filter:url(#vigil-glass-bend)}
+:root[data-theme=night] .liquid-glass:not(.sidebar){border-color:rgba(252,254,255,.24)!important;box-shadow:0 10px 28px rgba(0,0,0,.19),inset 0 1px rgba(255,255,255,.24)!important}
+@media (prefers-reduced-transparency:reduce){
+  .glass-lens-underlay{display:none!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .glass-lens-canvas{transition:none!important}
+  .glass-lens-scene{transition:none!important}
+}
+:root[data-theme=night] .glass-lens-scene{filter:brightness(.57) saturate(.72) contrast(1.07)!important}
+:root[data-theme=night] .glass-lens-canvas{filter:brightness(.57) saturate(.72) contrast(1.07)!important}

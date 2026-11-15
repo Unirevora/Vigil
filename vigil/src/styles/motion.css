@@ -1,0 +1,20 @@
+/* Keyframes and motion preferences. */
+@keyframes nav-ink-pop{
+  0%{transform:scale(.78) rotate(-8deg)}
+  65%{transform:scale(1.17) rotate(3deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+@keyframes hero-breathe{
+  from{transform:scale(1) translateY(0)}
+  to{transform:scale(1.007) translateY(-2px)}
+}
+@keyframes dialog-spring{
+  0%{opacity:0;transform:translateY(18px) scale(.958)}
+  72%{opacity:1;transform:translateY(-3px) scale(1.012)}
+  100%{opacity:1;transform:none}
+}
+@keyframes toast-tap{
+  0%{transform:translateY(20px) scale(.96);opacity:0}
+  70%{transform:translateY(-4px) scale(1.01);opacity:1}
+  100%{transform:none;opacity:1}
+}

@@ -1,0 +1,203 @@
+/* Reading page and Markdown typography (callouts, KaTeX, quotes). */
+.dot-sep{margin:0 7px}
+.favorite-button{position:absolute;right:17px;top:17px;border:0;background:transparent;padding:4px;border-radius:8px}
+.favorite-button svg{height:18px;width:18px}
+.favorite-button.is-favorite svg{fill:var(--accent-soft)}
+/* Reader */
+.reader-top{display:flex;align-items:center;justify-content:space-between}
+.reading-paper::before{border-left:2px solid var(--accent-soft)}
+.reading-date{font-size:12px;margin-bottom:15px}
+.reading-title{overflow-wrap:anywhere}
+.reading-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}
+.article-content{font:16px/2.15 var(--text-font);overflow-wrap:anywhere}
+.article-content h1{color:var(--ink)}
+.article-content h2{color:var(--ink)}
+.article-content h3{color:var(--ink)}
+.article-content h1{font-size:30px}
+.article-content h2{font-size:25px}
+.article-content h3{font-size:21px}
+.article-content blockquote{border-left:3px solid var(--accent);padding:3px 0 3px 17px;color:var(--muted)}
+.article-content ul{padding-left:26px}
+.article-content ol{padding-left:26px}
+.article-content code{padding:2px 5px;background:var(--surface-soft);border-radius:5px;font:13px/1.5 ui-monospace,Consolas,monospace}
+.article-content pre{background:var(--surface-soft);padding:16px 19px;border-radius:12px}
+.article-content pre code{padding:0;background:transparent}
+.article-content a{color:var(--accent)}
+.article-content hr{border:0;border-top:1px solid var(--stroke);margin:29px 0}
+.reading-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--stroke);margin-top:55px;padding-top:18px;color:var(--muted);font-size:11px}
+.reader-pagination{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.pagination-card{min-width:0;max-width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--stroke);border-radius:15px;padding:15px 18px;color:var(--ink);font:16px var(--title-font)}
+.pagination-card span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pagination-card small{display:block;font:11px var(--text-font);color:var(--muted)}
+.pagination-card.align-right{margin-left:auto;text-align:right}
+.favorite-button{color:#aa9580}
+.favorite-button.is-favorite{color:var(--accent)}
+/* Reader stationery: retain the v1.1 red ruling margin and paper-edge inset. */
+.reading-paper{position:relative;isolation:isolate}
+.reading-paper::before{content:"";position:absolute;inset:10px;border:1px solid rgba(158,122,72,.22);border-radius:10px;pointer-events:none}
+.reading-paper::after{content:"";position:absolute;left:43px;top:44px;bottom:44px;width:1px;background:rgba(163,70,49,.32)}
+.article-content{font-family:var(--font-body)}
+.article-content h1{font-family:var(--font-display)}
+.article-content h2{font-family:var(--font-display)}
+.article-content h3{font-family:var(--font-display)}
+@media (max-width:660px){
+  .reading-paper{padding:40px 28px 28px;min-height:430px}
+  .reading-title{font-size:32px}
+  .reader-top{flex-wrap:wrap}
+  .reader-top .head-actions .btn{font-size:11px}
+  .reader-pagination{gap:9px}
+  .pagination-card{padding:12px;font-size:13px}
+  .reading-paper::after{left:25px}
+}
+.reading-paper{background-blend-mode:soft-light}
+.reading-date{font:14px var(--font-display)}
+.reading-title{font:48px/1.4 var(--font-display)}
+:root[data-theme=night] .reading-paper{background-color:var(--surface)}
+.favorite-button{transition:transform .46s var(--vigil-spring),
+    background-color .22s ease,border-color .24s ease,color .2s ease,
+    box-shadow .35s var(--vigil-ease)}
+.pagination-card{transition:transform .46s var(--vigil-spring),
+    background-color .22s ease,border-color .24s ease,color .2s ease,
+    box-shadow .35s var(--vigil-ease)}
+.reading-date{color:var(--appearance-accent)!important}
+.article-content{font-size:var(--reader-font-size)}
+.font-family-setting{display:flex;align-items:center;gap:12px;font-size:12px;margin-bottom:15px}
+.font-family-setting select{min-height:39px;border:1px solid var(--stroke-2);background:var(--surface-soft);border-radius:9px;padding:6px 11px;color:var(--ink);flex:1;min-width:0}
+.math-inline math{display:inline;font-family:serif}
+.math-display{display:block;overflow-x:auto;margin:17px 0;padding:13px 18px;text-align:center;background:rgba(136,116,89,.065);border-left:2px solid var(--appearance-accent);border-radius:4px}
+.math-display math{font-family:serif;font-size:1.16em}
+.math-error{font-family:ui-monospace,Consolas,monospace;font-size:.89em;color:var(--appearance-accent);text-decoration:underline wavy;text-underline-offset:4px}
+.article-content table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.91em}
+.article-content th{padding:9px 12px;border:1px solid var(--stroke-2);text-align:left}
+.article-content td{padding:9px 12px;border:1px solid var(--stroke-2);text-align:left}
+.article-content th{background:var(--surface-soft);font-weight:600}
+.article-content .task-list{list-style:none;padding-left:5px}
+.article-content .task-list input{accent-color:var(--appearance-accent);margin-right:10px;pointer-events:none}
+.article-content pre{max-width:100%;overflow-x:auto}
+.article-content .wiki-link{display:inline;vertical-align:baseline;padding:0 3px;border:0;background:none;color:var(--appearance-accent);font:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px}
+.article-content .wiki-link:hover{background:var(--accent-soft);border-radius:4px}
+/* Long text and form surfaces must remain opaque, never optically refracted. */
+.article-content{color:var(--ink-2)}
+.reading-title{letter-spacing:-.015em}
+.reader-backlinks{padding:22px;border:1px solid var(--stroke);border-radius:22px;background:var(--surface)}
+.reader-backlinks h3{font:21px var(--font-display);margin-bottom:12px}
+.reader-backlinks button{border:0;border-bottom:1px solid var(--stroke);background:none;text-align:left;width:100%;padding:11px 2px;color:var(--ink);font-size:12px;cursor:pointer}
+.reading-paper{border-color:var(--stroke)!important}
+/* Long text gets an opaque surface; not liquid glass. */
+.article-content{line-height:1.82;letter-spacing:.006em}
+.article-content p{margin:0 0 1.0em!important;line-height:1.85!important}
+.article-content p:last-child{margin-bottom:0!important}
+.article-content h1{margin:1.25em 0 .45em!important;line-height:1.35!important}
+.article-content h2{margin:1.25em 0 .45em!important;line-height:1.35!important}
+.article-content h3{margin:1.25em 0 .45em!important;line-height:1.35!important}
+.article-content h1:first-child{margin-top:0!important}
+.article-content h2:first-child{margin-top:0!important}
+.article-content h3:first-child{margin-top:0!important}
+.article-content ul{margin:.5em 0 1em!important}
+.article-content ol{margin:.5em 0 1em!important}
+.article-content li{margin:.1em 0!important}
+.article-content pre{margin:.75em 0 1em!important}
+.article-content blockquote{margin:.8em 0 1.1em!important}
+.article-content .markdown-empty{color:var(--muted)}
+.reading-paper::before{display:none!important}
+.reading-paper::after{display:none!important}
+/* Native MathML needs an intrinsic inline box. Without this, Chromium can
+   allocate the full paragraph width to <math> and strand punctuation on
+   a separate line. */
+.article-content .math-inline{display:inline-block!important;vertical-align:baseline;white-space:nowrap;width:max-content;max-width:100%}
+.article-content .math-inline .katex{display:inline-block;width:max-content;max-width:100%}
+.article-content .math-inline math{display:inline-block!important;width:max-content!important;max-width:100%}
+.reading-paper .article-content :first-child{margin-top:0!important}
+/* Reading: text as the centerpiece; compact paragraphs without crowding. */
+.reader-top{max-width:960px;margin:0 auto 15px;gap:12px}
+.reader-top .head-actions{gap:8px}
+.reader-top .head-actions .btn{border-radius:12px;padding:7px 12px}
+.reading-paper{width:100%;max-width:960px;margin:0 auto;min-height:0!important;padding:43px clamp(28px,5.5vw,74px) 25px!important;border:1px solid var(--stroke)!important;border-radius:19px!important;background:var(--surface)!important;box-shadow:var(--vigil-soft-shadow)!important}
+.reading-paper .reading-date{font-size:12px;letter-spacing:.075em;margin-bottom:9px;color:var(--muted)}
+.reading-paper .reading-title{margin:0 0 10px}
+.reading-paper .reading-tags{margin:8px 0 4px}
+.reading-paper .article-content{max-width:790px;margin:19px auto 0!important;font-size:var(--reader-font-size);line-height:var(--reader-leading);letter-spacing:.008em;overflow-wrap:anywhere}
+.reading-paper .article-content p{margin:0 0 .78em!important;line-height:1.84!important}
+.reading-paper .article-content h1{margin:1.18em 0 .42em!important;line-height:1.35!important}
+.reading-paper .article-content h2{margin:1.18em 0 .42em!important;line-height:1.35!important}
+.reading-paper .article-content h3{margin:1.18em 0 .42em!important;line-height:1.35!important}
+.reading-paper .article-content h1:first-child{margin-top:0!important}
+.reading-paper .article-content h2:first-child{margin-top:0!important}
+.reading-paper .article-content h3:first-child{margin-top:0!important}
+.reading-paper .article-content > :last-child{margin-bottom:0!important}
+.reading-paper .reading-foot{margin-top:27px;padding-top:14px;border-top:1px solid var(--stroke);opacity:.8}
+.reader-pagination{max-width:960px;margin:14px auto 0}
+.reader-backlinks{max-width:960px;margin:14px auto 0}
+@media (max-width:680px){
+  .reader-top{margin-bottom:10px;gap:8px}
+  .reader-top>.text-button{font-size:12px}
+  .reader-top .head-actions{gap:6px;flex-wrap:wrap}
+  .reader-top .head-actions .btn{min-height:35px;padding:6px 10px;font-size:11px}
+  .reading-paper{padding:26px 22px 19px!important;border-radius:15px!important}
+  .reading-paper .reading-date{font-size:11px;margin-bottom:6px}
+  .reading-paper .reading-title{font-size:clamp(28px,8vw,37px);line-height:1.22;margin-bottom:8px}
+  .reading-paper .article-content{margin-top:14px!important;font-size:15px;line-height:1.76}
+  .reading-paper .article-content p{margin-bottom:.76em!important;line-height:1.79!important}
+  .reading-paper .article-content h1{font-size:26px}
+  .reading-paper .article-content h2{font-size:22px}
+  .reading-paper .article-content h3{font-size:19px}
+  .reading-paper .reading-foot{margin-top:18px;padding-top:11px}
+  .reader-pagination{margin-top:10px}
+  .reader-backlinks{padding:15px;margin-top:10px}
+}
+/* Dynamic document titles keep their own semantics but share the scale. */
+.reading-paper .reading-title{font-family:var(--font-display)!important;font-size:var(--page-title-size)!important;line-height:1.23!important;font-weight:var(--page-title-weight)!important;letter-spacing:-.02em!important}
+.reader-top{margin-top:0}
+/* Ensure a readable sheet on text-heavy pages even at high wallpaper opacity. */
+:root[data-theme=night] .article-content{color:var(--ink)!important}
+/* Readable H4–H6 hierarchy in Reader, same hierarchy in live CodeMirror. */
+.article-content h4{color:var(--ink);font-family:var(--font-display);font-weight:650;margin:1.45em 0 .55em;line-height:1.5;letter-spacing:.01em}
+.article-content h5{color:var(--ink);font-family:var(--font-display);margin:1.45em 0 .55em;line-height:1.5}
+.article-content h6{font-family:var(--font-display);margin:1.45em 0 .55em;line-height:1.5}
+.article-content h4{font-size:1.19em;border-left:3px solid var(--appearance-accent);padding-left:12px}
+.article-content h5{font-size:1.045em;font-weight:700;letter-spacing:.025em}
+.article-content h6{font-size:.93em;text-transform:none;font-weight:700;letter-spacing:.05em;color:var(--ink-2)}
+.article-content :is(h1,h2,h3,h4,h5,h6):first-child{margin-top:0}
+/* Distinct ordinary block quotes, without huge empty margins. */
+.article-content .markdown-quote{border-left:3px solid color-mix(in srgb,var(--appearance-accent) 63%,var(--stroke));background:var(--surface-soft);border-radius:0 12px 12px 0;padding:12px 18px;margin:15px 0;color:var(--ink-2);font-style:normal;box-shadow:none}
+.article-content .markdown-quote > :first-child{margin-top:0}
+.article-content .markdown-quote > :last-child{margin-bottom:0}
+/* Obsidian-shaped, contained Callout layout; only muted color accents. */
+.vigil-callout{--callout-accent:var(--appearance-accent);display:block;margin:16px 0;border:1px solid var(--stroke);border-left:3px solid var(--callout-accent);border-radius:12px;padding:13px 16px 14px;color:var(--ink);background:color-mix(in srgb,var(--surface) 90%,var(--callout-accent) 10%);font:inherit;box-shadow:none}
+.vigil-callout.callout-info{--callout-accent:#6d8e9e}
+.vigil-callout.callout-note{--callout-accent:#6d8e9e}
+.vigil-callout.callout-abstract{--callout-accent:#6d8e9e}
+.vigil-callout.callout-tip{--callout-accent:#6d9382}
+.vigil-callout.callout-success{--callout-accent:#6d9382}
+.vigil-callout.callout-warning{--callout-accent:#b68a58}
+.vigil-callout.callout-question{--callout-accent:#b68a58}
+.vigil-callout.callout-failure{--callout-accent:#b66c64}
+.vigil-callout.callout-danger{--callout-accent:#b66c64}
+.vigil-callout.callout-bug{--callout-accent:#b66c64}
+.vigil-callout.callout-example{--callout-accent:#8d7b9d}
+.vigil-callout.callout-quote{--callout-accent:#8d7b9d}
+.vigil-callout .callout-header{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;line-height:1.5;color:var(--ink);margin:0;list-style:none}
+.vigil-callout>summary{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;line-height:1.5;color:var(--ink);margin:0;list-style:none}
+.vigil-callout>summary{cursor:pointer;padding:0}
+.vigil-callout>summary::-webkit-details-marker{display:none}
+.vigil-callout>summary::before{content:'◈';color:var(--callout-accent);font-size:13px}
+.vigil-callout .callout-header::before{content:'◈';color:var(--callout-accent);font-size:13px}
+.vigil-callout>summary::after{content:'⌄';margin-left:auto;color:var(--callout-accent);transition:transform .2s}
+.vigil-callout[open]>summary::after{transform:rotate(180deg)}
+.vigil-callout .callout-content{margin-top:9px;font-weight:400;line-height:1.75}
+.vigil-callout .callout-content :first-child{margin-top:0}
+.vigil-callout .callout-content :last-child{margin-bottom:0}
+.vigil-callout .vigil-callout{margin:11px 0 2px;background:var(--surface)}
+/* Safe CSS class aliases for manually chosen typefaces; local uploaded fonts are
+ * used only if the user has installed them via the existing restore helper. */
+.article-content .font-song{font-family:"VigilTitle","Songti SC","STSong",serif}
+.article-content .font-kai{font-family:"KaiTi","Kaiti SC","STKaiti",serif}
+.article-content .font-sans{font-family:"VigilText","PingFang SC",sans-serif}
+.article-content .font-typed{font-family:"Courier New",monospace}
+.article-content .font-serif{font-family:serif}
+.article-content .font-accent{color:var(--appearance-accent)}
+.article-content div[class^="font-"]{padding:4px 0}
+:root[data-theme=night] .vigil-callout{background:color-mix(in srgb,var(--surface) 94%,var(--callout-accent) 6%)}
+@media (prefers-reduced-motion:reduce){
+  .vigil-callout>summary::after{transition:none!important}
+}

@@ -1,0 +1,25 @@
+{
+  "description": "CSS modules by feature, in cascade order. build:css bundles them into assets/vigil.css.",
+  "styles": [
+    "/src/styles/tokens.css",
+    "/src/styles/base.css",
+    "/src/styles/controls.css",
+    "/src/styles/dialogs.css",
+    "/src/styles/glass.css",
+    "/src/styles/pages.css",
+    "/src/styles/home.css",
+    "/src/styles/entries.css",
+    "/vendor/codemirror/codemirror.css",
+    "/src/styles/editor.css",
+    "/src/styles/reader.css",
+    "/src/styles/insights.css",
+    "/src/styles/github.css",
+    "/src/styles/tabs.css",
+    "/src/styles/surfaces.css",
+    "/src/styles/shell.css",
+    "/src/styles/settings.css",
+    "/src/styles/chronicle.css",
+    "/src/styles/motion.css",
+    "/src/styles/focus.css"
+  ]
+}

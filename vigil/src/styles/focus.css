@@ -1,0 +1,17 @@
+/* Final interaction policy: hidden scrollbars and quiet focus. Loaded last on purpose. */
+@layer overrides{
+  /* Scrollbars are hidden everywhere (wheel, trackpad, touch and keyboard scrolling still work),
+     including CodeMirror's own scrollbar elements. */
+  *{scrollbar-width:none!important}
+  *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
+
+  /* Focus: no theme-coloured box. Text fields show only the caret; a mouse click never shows a ring.
+     Keyboard navigation (:focus-visible on non-text controls) keeps a faint rounded halo. */
+  :focus,:focus-visible{outline:none!important}
+  :is(input,textarea,select,[contenteditable],.CodeMirror textarea):focus{outline:none!important;box-shadow:none}
+  .vigil-select-trigger[aria-expanded=true]{outline:none!important}
+  :is(button,a,summary,[role=tab],[tabindex]:not([tabindex="-1"]),.vigil-select-trigger):focus-visible{
+    outline:2px solid color-mix(in srgb,var(--appearance-accent) 26%,transparent)!important;outline-offset:2px!important;
+  }
+  .vigil-tabs .vigil-tab:focus-visible{outline-offset:-4px!important;border-radius:12px!important}
+}
