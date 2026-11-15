@@ -4,19 +4,21 @@ import {renderMarkdown} from '../../core/markdown.js';
 import {pageHeading} from './page-heading.js';
 
 export function githubView(state) {
-  const gh=state.github, c=gh.config||{};
+  const gh=state.github, c=gh.config||{}, f=gh.formDraft||{};
   const actions=gh.connected?`<button class="btn" data-action="github-settings">${icon('edit')} ${gh.showSettings?'收起设置':'连接设置'}</button><button class="btn btn-quiet" data-action="github-disconnect">断开</button>`:'';
   return `${pageHeading({title:'GitHub 仓库',description:'读取现有 Markdown 笔记，也可以提交修改。',actions})}
     ${!gh.connected||gh.showSettings?`<section class="github-connect surface">
       <div class="panel-heading"><h2>连接你的仓库</h2><span>公开仓库无需令牌即可预览</span></div>
       <div class="github-fields">
-        <label class="field full">仓库地址<input id="ghRepo" placeholder="https://github.com/用户名/仓库名" value="${escapeHtml(c.owner&&c.repo?`https://github.com/${c.owner}/${c.repo}`:'')}" autocomplete="off"></label>
-        <label class="field">分支（可留空）<input id="ghBranch" placeholder="默认分支" value="${escapeHtml(c.branch||'')}"></label>
-        <label class="field">笔记文件夹（可留空）<input id="ghFolder" placeholder="例如 notes" value="${escapeHtml(c.folder||'')}"></label>
+        <label class="field full">仓库地址<input id="ghRepo" placeholder="https://github.com/用户名/仓库名" value="${escapeHtml(f.repoUrl??(c.owner&&c.repo?`https://github.com/${c.owner}/${c.repo}`:''))}" autocomplete="off"></label>
+        <label class="field">分支（可留空）<input id="ghBranch" placeholder="默认分支" value="${escapeHtml(f.branch??c.branch??'')}"></label>
+        <label class="field">笔记文件夹（可留空）<input id="ghFolder" placeholder="例如 notes" value="${escapeHtml(f.folder??c.folder??'')}"></label>
         <label class="field full">Fine-grained Token（仅本次页面会话）<input id="ghToken" type="password" autocomplete="off" spellcheck="false" placeholder="${gh.hasToken?'已在本次会话中提供，留空则继续使用':'私有仓库或提交修改时填写'}"></label>
       </div>
       <div class="connect-actions"><button class="btn btn-primary" data-action="github-connect" ${gh.loading?'disabled':''}>${icon('github')} ${gh.connected?'更新连接':'连接仓库'}</button>
+        <button type="button" class="btn btn-quiet" data-action="github-test-network" ${gh.loading?'disabled':''}>${icon('check')} 测试 GitHub 网络</button>
         <span>编辑需要仓库 Contents 读写权限；令牌不会写入本地存储。</span></div>
+      <p class="github-connection-tip">先点击「测试 GitHub 网络」排查连接通道，再连接你的仓库。本机通过 <code>npm run dev</code> 启动时使用受限同源转发；其他静态网站尝试浏览器直连。公开仓库只读无需 Token。</p>
     </section>`:''}
     ${gh.health?`<p class="github-health">${icon('check')} ${escapeHtml(gh.health)}</p>`:''}
     ${gh.error?`<div class="inline-error" role="alert">${icon('alert')} ${escapeHtml(gh.error)}</div>`:''}

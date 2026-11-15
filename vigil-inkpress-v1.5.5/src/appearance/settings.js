@@ -4,7 +4,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   accent:'#a83f2a',background:'paper',backgroundOpacity:24,
   surfaceOpacity:91,bodyFontSize:16,lineHeight:1.8,contentWidth:1460,
   texture:true,heroMode:'original',theme:'paper',fontFamily:'heritage',
-  sidebarTone:'accent',sidebarGlass:86,sidebarBlur:24,glassTint:72,motionMode:'standard',
+  sidebarTone:'accent',sidebarGlass:74,sidebarBlur:24,glassTint:72,motionMode:'standard',
   spectralDrape:false,drapeIntensity:48
 });
 export const COLOR_PRESETS=[

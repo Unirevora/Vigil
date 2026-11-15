@@ -13,13 +13,16 @@ function supportsSVG(){return typeof CSS!=='undefined'&&CSS.supports('filter','u
 function sceneName(){
   const css=getComputedStyle(document.documentElement).getPropertyValue('--glass-scene-url').trim();
   const match=css.match(/^url\(["']?(.*?)["']?\)$/);
-  return match?.[1]||'/assets/wallpaper-mist-3200.webp';
+  return css==='none'?null:(match?.[1]||null);
 }
 function prepareScene(){
   const candidate=sceneName();
   if(candidate===sceneURL)return;
   sceneURL=candidate;scene=null;
-  const picture=new Image();loading=candidate;
+  for(const item of active){item.host.classList.remove('glass-scene-ready');
+    const ctx=item.canvas.getContext('2d');ctx?.clearRect(0,0,item.canvas.width,item.canvas.height);}
+  if(!candidate)return;
+  const picture=new Image();picture.crossOrigin='anonymous';loading=candidate;
   picture.onload=()=>{if(loading!==candidate)return;scene=picture;schedule();};
   picture.onerror=()=>{if(loading!==candidate)return;scene=null;};
   picture.src=candidate;
@@ -35,10 +38,12 @@ function opticalPaint(item,rect){
   const vw=innerWidth,vh=innerHeight;
   const scale=Math.max(vw/scene.naturalWidth,vh/scene.naturalHeight);
   const imageWidth=scene.naturalWidth*scale,imageHeight=scene.naturalHeight*scale;
-  const offX=(imageWidth-vw)/2,offY=(imageHeight-vh)/2;
-  const sx=(rect.left+offX)/scale,sy=(rect.top+offY)/scale;
-  const sw=rect.width/scale,sh=rect.height/scale;
-  ctx.drawImage(scene,sx,sy,sw,sh,0,0,w,h);
+  // Same cover algorithm and 42% vertical position as body::before.
+  // Draw the entire scene at viewport coordinates then clip into the lens.
+  // Cropping a source rectangle could leave blank edges on ultrawide displays.
+  const dx=(vw-imageWidth)/2,dy=(vh-imageHeight)*.42;
+  ctx.drawImage(scene,(dx-rect.left)*density,(dy-rect.top)*density,
+    imageWidth*density,imageHeight*density);
   let before;
   try{before=ctx.getImageData(0,0,w,h);}catch{return;}
   const original=before.data,output=new Uint8ClampedArray(original.length);
@@ -74,7 +79,10 @@ function redraw(){
     row.layer.style.setProperty('--lens-top',(-rect.top)+'px');
     row.layer.style.setProperty('--lens-width',innerWidth+'px');
     row.layer.style.setProperty('--lens-height',innerHeight+'px');
-    if(!reduced())opticalPaint(row,rect);
+    if(!scene){const ctx=row.canvas.getContext('2d');
+      ctx?.clearRect(0,0,row.canvas.width,row.canvas.height);
+      row.host.classList.remove('glass-scene-ready');
+    }else if(!reduced())opticalPaint(row,rect);
   }
 }
 function schedule(){if(!frame)frame=requestAnimationFrame(redraw);}

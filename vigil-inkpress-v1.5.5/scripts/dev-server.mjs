@@ -1,3 +1,4 @@
+import {handleGithubProxy} from './github-proxy.mjs';
 import {createServer} from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
@@ -13,6 +14,7 @@ const contentTypes={
 };
 createServer(async(req,res)=>{
   try{
+    if(await handleGithubProxy(req,res))return;
     const pathname=decodeURIComponent(new URL(req.url||'/',`http://localhost:${port}`).pathname);
     const file=resolve(root,`.${pathname==='/'?'/index.html':pathname}`);
     if(file!==root && !file.startsWith(root+sep)){
@@ -30,5 +32,6 @@ createServer(async(req,res)=>{
   }
 }).listen(port,'127.0.0.1',()=>{
   console.log(`Vigil MVP: http://127.0.0.1:${port}/`);
+  console.log('GitHub: same-origin local API relay enabled at /api/github/health');
   console.log('Press Ctrl+C to stop.');
 });

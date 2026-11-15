@@ -1,0 +1,18 @@
+{
+  "name": "vigil-inkpress",
+  "version": "1.5.6",
+  "private": true,
+  "type": "module",
+  "description": "不眠手记 v1.5.6：夜间模式和顶栏修复、统一样式加载、轻量存储和受限 GitHub 转发",
+  "scripts": {
+    "dev": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
+    "start": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
+    "test": "node --test tests/*.test.js",
+    "fonts:restore": "python3 scripts/restore-fonts.py",
+    "pack:fonts": "python3 scripts/pack-with-local-fonts.py",
+    "build:css": "node scripts/build-css.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

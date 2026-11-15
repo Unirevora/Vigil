@@ -7,6 +7,7 @@
 - 新增可关的原创 Canvas「点阵帷幕」背景，支持光点强度、持久化与减少动态效果。
 - 保留既有 Markdown、KaTeX、日历、GitHub、备份及 git-crypt 功能，未更改正式数据 Schema。
 - 本视觉效果不是 React Bits Pro 的付费 Spectral Drape 组件，未包含其授权代码。
+- 增补 Chromium 验证：夜间石墨侧栏、Logo SVG 加载、帷幕开关/清空/减少动态效果、六档宽度无横向溢出；`npm test` 105 项通过。
 
 ## v1.5.5 · 同题同序（2026-11-15）
 

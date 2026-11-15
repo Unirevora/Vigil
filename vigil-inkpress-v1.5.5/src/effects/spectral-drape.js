@@ -39,8 +39,8 @@ export function createSpectralDrape(canvas){
     canvas.width=Math.round(width*dpr);
     canvas.height=Math.round(height*dpr);
     canvas.style.width='100%';canvas.style.height='100%';
-    cols=mobile?.matches?54:Math.round(clamp(width/17,62,108));
-    rows=mobile?.matches?19:Math.round(clamp(height/27,20,34));
+    cols=mobile?.matches?58:Math.round(clamp(width/15.5,72,116));
+    rows=mobile?.matches?22:Math.round(clamp(height/24,24,38));
     draw(0);
   }
   function draw(time){
@@ -48,8 +48,9 @@ export function createSpectralDrape(canvas){
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,width,height);
     if(!options.enabled)return;
-    const accent=parseHex(options.accent);
-    const secondary=blend(accent,options.night?[190,213,211]:[77,112,111],options.night?.52:.62);
+    const baseAccent=parseHex(options.accent);
+    const accent=options.night?blend(baseAccent,[239,222,214],.34):blend(baseAccent,[48,77,77],.10);
+    const secondary=blend(accent,options.night?[207,220,220]:[77,112,111],options.night?.48:.62);
     const intensity=clamp(options.intensity,.1,.8);
     const t=time*.00024;
     const cx=width*.53,cy=height*.47;
@@ -59,33 +60,33 @@ export function createSpectralDrape(canvas){
     const glowPoints=[];
     for(let row=0;row<rows;row++){
       const v=row/(rows-1);
-      const verticalFade=Math.pow(Math.sin(Math.PI*v),.58);
+      const verticalFade=Math.pow(Math.sin(Math.PI*v),.44);
       for(let col=0;col<cols;col++){
         const u=(col/(cols-1)-.5)*2.5;
-        const phase=u*2.18+v*3.35+t;
-        const foldA=Math.sin(phase)*.205;
-        const foldB=Math.cos(u*4.35-v*2.75-t*.72)*.092;
+        const phase=u*2.32+v*3.62+t;
+        const foldA=Math.sin(phase)*.285;
+        const foldB=Math.cos(u*4.15-v*2.9-t*.72)*.115;
         const fold=foldA+foldB;
-        const depth=Math.cos(phase*.76+v*.8)*.56+Math.sin(u*3.05-t*.55)*.17;
-        const perspective=1+depth*.105;
-        const x=cx+u*width*.39*perspective+fold*width*.105;
-        const y=cy+(v-.5)*height*.68+depth*height*.115+fold*height*.12;
+        const depth=Math.cos(phase*.72+v*.86)*.68+Math.sin(u*3.15-t*.55)*.20;
+        const perspective=1+depth*.125;
+        const x=cx+u*width*.39*perspective+fold*width*.12;
+        const y=cy+(v-.5)*height*.72+depth*height*.15+fold*height*.16;
         const ridge=clamp(.5+.5*Math.sin(phase*1.15+depth*2.4),0,1);
         const edgeFade=clamp(1-Math.abs(u)/1.42,0,1);
-        const alpha=(.075+ridge*.245)*verticalFade*edgeFade*intensity;
-        if(alpha<.009)continue;
-        const color=(col+row)%7===0?secondary:accent;
-        const radius=.42+ridge*.62+(depth+.8)*.12;
-        ctx.beginPath();ctx.fillStyle=rgba(color,alpha);ctx.arc(x,y,Math.max(.34,radius),0,Math.PI*2);ctx.fill();
-        if((col*3+row*5)%31===0&&alpha>.07)glowPoints.push({x,y,r:radius*2.8,a:alpha,color});
+        const alpha=(.16+ridge*.37)*verticalFade*edgeFade*intensity;
+        if(alpha<.012)continue;
+        const color=(col+row)%6===0?secondary:accent;
+        const radius=.82+ridge*1.02+(depth+.8)*.17;
+        ctx.beginPath();ctx.fillStyle=rgba(color,alpha);ctx.arc(x,y,Math.max(.5,radius),0,Math.PI*2);ctx.fill();
+        if((col*3+row*5)%13===0&&alpha>.085)glowPoints.push({x,y,r:radius*3.35,a:alpha,color});
       }
     }
     // A few restrained luminous beads create the spectral glint without neon haze.
     ctx.globalCompositeOperation=options.night?'screen':'multiply';
     for(const point of glowPoints){
       const gradient=ctx.createRadialGradient(point.x,point.y,0,point.x,point.y,point.r);
-      gradient.addColorStop(0,rgba(light,point.a*.46));
-      gradient.addColorStop(.24,rgba(point.color,point.a*.28));
+      gradient.addColorStop(0,rgba(light,point.a*.78));
+      gradient.addColorStop(.24,rgba(point.color,point.a*.48));
       gradient.addColorStop(1,rgba(point.color,0));
       ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(point.x,point.y,point.r,0,Math.PI*2);ctx.fill();
     }

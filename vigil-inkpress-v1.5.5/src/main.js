@@ -40,7 +40,7 @@ const backups=new BackupRepository(storage);
 const gitClient=new GithubClient();
 const gh={
   config:null,connected:false,loading:false,error:'',hasToken:false,showSettings:false,
-  defaultBranch:'',folder:'',files:[],note:null,editing:false,dirty:false,
+  defaultBranch:'',folder:'',files:[],note:null,editing:false,dirty:false,formDraft:null,
   draftContent:'',newFileMode:false,newPath:'',cryptoKey:null,attributes:''
 };
 try{const raw=storage.getItem(GITHUB_CONFIG_KEY);if(raw)gh.config=normalizeRepoConfig(JSON.parse(raw));}catch{}
@@ -57,6 +57,7 @@ let draftTimer=null;
 let previewFrame=null;
 let almanacController=null;
 let unifiedEditor=null;
+let glass=null; // scene sampler is refreshed after every theme / wallpaper change
 const visualAssets=createVisualAssets();
 const spectralDrape=createSpectralDrape(document.querySelector('#spectralDrape'));
 let requireEncryptedImport=false;
@@ -130,7 +131,10 @@ function applyAppearance(){
   r.setProperty('--green',primary);
   r.setProperty('--green-soft',mixHex(primary,state.theme==='night'?'#323238':'#ecf0eb',.84));
   r.setProperty('--appearance-contrast',contrastInk(primary));
-  r.setProperty('--wallpaper-alpha',String(a.backgroundOpacity/100));
+  r.setProperty('--wallpaper-alpha',String(a.background==='none'?0:a.backgroundOpacity/100));
+  r.setProperty('--wallpaper-alpha-night',String(a.background==='none'?0:Math.min(.76,a.backgroundOpacity/100*1.6)));
+  // Foreground lenses need a little more refracted detail than the wallpaper itself.
+  r.setProperty('--glass-scene-opacity',String(a.background==='none'?0:Math.min(.68,.34+a.backgroundOpacity/100*.8)));
   r.setProperty('--paper-opacity',a.surfaceOpacity+'%');
   r.setProperty('--reader-font-size',a.bodyFontSize+'px');
   r.setProperty('--reader-leading',String(a.lineHeight));
@@ -154,22 +158,27 @@ function applyAppearance(){
   if(a.background==='custom'&&urls.backgroundURL){
     r.setProperty('--wallpaper-image',`url("${urls.backgroundURL}")`);
     r.setProperty('--glass-scene-url',`url("${urls.backgroundURL}")`);
+    r.setProperty('--settings-preview-image',`url("${urls.backgroundURL}")`);
   }else{
     r.removeProperty('--wallpaper-image');
     const scenes={
-      paper:'/assets/wallpaper-paper.svg',
-      mountains:'/assets/wallpaper-mist-3200.webp',
-      sage:'/assets/wallpaper-sage.svg',
-      sea:'/assets/wallpaper-moon-3200.webp',
-      none:'/assets/wallpaper-paper.svg'
+      paper:'/assets/wallpaper-dawn-1672.png',
+      mountains:'/assets/wallpaper-cloud-mist-2560.webp',
+      sage:'/assets/wallpaper-garden-1672.webp',
+      sea:'/assets/wallpaper-moonrise-1672.png'
     };
-    const image=state.theme==='night'&&a.background==='paper'
-      ?'/assets/wallpaper-moon-3200.webp'
-      :(scenes[a.background]||scenes.paper);
-    r.setProperty('--glass-scene-url',`url("${image}")`);
+    const image=scenes[a.background]||null;
+    if(image){
+      r.setProperty('--glass-scene-url',`url("${image}")`);
+      r.setProperty('--settings-preview-image',`url("${image}")`);
+    }else{
+      r.setProperty('--glass-scene-url','none');
+      r.setProperty('--settings-preview-image','none');
+    }
   }
   const hero=$('.hero-scene img');
   if(hero){hero.src=a.heroMode==='custom'&&urls.heroURL?urls.heroURL:'/assets/typewriter-still-life.webp';}
+  glass?.refresh(); // A CSS variable update alone cannot redraw the refracted canvas.
 }
 function saveAppearance(patch){
   try{
@@ -186,7 +195,7 @@ async function loadVisualAssets(){
   catch(error){console.warn('Custom background unavailable:',error.message);}
 }
 applyTheme();loadVisualAssets();
-const glass=initLiquidGlass();
+glass=initLiquidGlass();
 
 function updateSidebar(){
   const shell=$('.shell'),toggle=$('#sidebarToggle');
@@ -677,6 +686,22 @@ async function removeAppearanceImage(key){
   }catch(err){showToast(err.message,{error:true});}
 }
 
+// An anonymous public-repository probe, intentionally independent of the user's
+// private token and repository. It distinguishes network reachability from auth.
+async function ghTestNetwork(){
+  const trial=new GithubClient();
+  trial.setConfig({owner:'octocat',repo:'Hello-World'});
+  gh.loading=true;gh.error='';gh.health='';render();
+  try{
+    const meta=await trial.getRepository();
+    gh.health=`GitHub 网络可访问（${trial.transportLabel}）· 测试仓库 ${meta.full_name||'octocat/Hello-World'}。如你的仓库仍连接失败，请检查地址、分支、Token 与组织权限。`;
+    showToast('GitHub 公共 API 可访问');
+  }catch(err){
+    gh.error=`网络诊断：${err.message}`;
+    showToast(gh.error,{error:true});
+  }finally{gh.loading=false;render();}
+}
+
 // GitHub browsing and editing. Repository config is stored; the token NEVER is.
 function ghError(err){
   gh.error=err?.message||'GitHub 请求失败';
@@ -690,6 +715,7 @@ async function ghConnect(){
   };
   let next;
   try{next=normalizeRepoConfig(values);}catch(err){ghError(err);render();return;}
+  gh.formDraft={...values}; // Retry never erases the submitted URL/branch/folder.
   const inputToken=$('#ghToken')?.value?.trim()||'';
   const priorConfig=gitClient.config,priorToken=gitClient.token;
   const changedRepo=gh.config&&(gh.config.owner!==next.owner||gh.config.repo!==next.repo);
@@ -698,17 +724,24 @@ async function ghConnect(){
   gh.loading=true;gh.error='';render();
   try{
     const meta=await gitClient.getRepository();
-    const files=await gitClient.listFolder(next.folder);
+    let files;
+    try{files=await gitClient.listFolder(next.folder);}catch(err){
+      if(next.folder)throw new Error(`仓库已找到，但笔记目录「${next.folder}」无法读取：${err.message}`);
+      throw err;
+    }
     const attributes=await gitClient.readAttributes();
     if(changedRepo)gh.cryptoKey=null;
     gh.config=next;gh.connected=true;gh.hasToken=gitClient.canWrite;
     gh.defaultBranch=meta.default_branch||'main';
     gh.folder=next.folder;gh.files=files;gh.attributes=attributes;gh.note=null;gh.editing=false;gh.dirty=false;
-    gh.showSettings=false;
+    gh.showSettings=false;gh.formDraft=null;
+    gh.health=`已通过${gitClient.transportLabel}连接 · ${meta.full_name||next.owner+'/'+next.repo}`;
     try{storage.setItem(GITHUB_CONFIG_KEY,JSON.stringify(next));}catch{}
     showToast('仓库已连接');
   }catch(err){
-    gitClient.config=priorConfig;gitClient.setToken(priorToken);
+    gitClient.config=priorConfig;
+    gitClient.setToken(priorConfig?priorToken:(inputToken||priorToken));
+    gh.hasToken=gitClient.canWrite;
     ghError(err);
   }finally{gh.loading=false;render();}
 }
@@ -832,7 +865,7 @@ async function ghCheck(){
       gitClient.getRepository(),gitClient.listFolder(gh.folder),gitClient.readAttributes()
     ]);
     gh.files=files;gh.attributes=attrs;
-    gh.health=`已验证可读取：${meta.full_name||gh.config.owner+'/'+gh.config.repo} · ${gh.config.branch||meta.default_branch||'默认分支'} · 当前目录 ${files.length} 项`;
+    gh.health=`已通过${gitClient.transportLabel}验证：${meta.full_name||gh.config.owner+'/'+gh.config.repo} · ${gh.config.branch||meta.default_branch||'默认分支'} · 当前目录 ${files.length} 项`;
     showToast(gh.health);
   }catch(err){gh.health='';ghError(err);}
   finally{gh.loading=false;render();}
@@ -840,7 +873,7 @@ async function ghCheck(){
 async function ghDisconnect(){
   if(!await canLeave())return;
   gitClient.forgetToken();gh.cryptoKey=null;gh.attributes='';gh.hasToken=false;gh.connected=false;
-  gh.note=null;gh.files=[];gh.error='';gh.editing=false;gh.dirty=false;gh.showSettings=false;
+  gh.note=null;gh.files=[];gh.error='';gh.health='';gh.formDraft=null;gh.editing=false;gh.dirty=false;gh.showSettings=false;
   render();
 }
 
@@ -1066,6 +1099,7 @@ document.body.addEventListener('click',async e=>{
     case 'delete-backup':await deleteBackup(id);break;
     case 'discard-draft':await discardDraft(id);break;
     case 'github-connect':await ghConnect();break;
+    case 'github-test-network':await ghTestNetwork();break;
     case 'github-key-import':$('#gitCryptKeyFile').click();break;
     case 'github-check':await ghCheck();break;
     case 'gitcrypt-local-encrypt':gitCryptLocalMode='encrypt';$('#gitCryptLocalFile').click();break;

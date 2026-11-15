@@ -1,5 +1,6 @@
 import {isGitCryptBlob,encryptGitCryptBytes,decryptGitCryptBytes,encodeGitCryptText,decodeGitCryptText,gitCryptRuleMatches,gitCryptRuleDetail} from '../security/git-crypt.js';
-// Direct GitHub REST Contents API client. No connector, proxy, or stored token.
+// GitHub REST Contents API client: localhost allows a narrowly scoped same-origin
+// relay; static web deployments use direct CORS fetch. No persisted token.
 // The fine-grained PAT is retained only in JS memory until the page closes.
 export const GITHUB_CONFIG_KEY='vigil-github-repository-v1';
 
@@ -42,8 +43,16 @@ export function encodeGithubBase64(content) {
 export class GithubClient {
   constructor(fetcher=globalThis.fetch){
     this.fetcher=fetcher;
+    this.useLocalRelay=fetcher===globalThis.fetch;
+    this.transport='direct';
     this.token='';
     this.config=null;
+  }
+  get transportLabel(){return this.transport==='local-relay'?'本地同源通道':'浏览器直连';}
+  get canUseLocalRelay(){
+    if(!this.useLocalRelay || typeof location==='undefined')return false;
+    return /^https?:$/.test(location.protocol) &&
+      /^(?:localhost|127\.0\.0\.1)$/i.test(location.hostname);
   }
   setToken(token){this.token=String(token||'').trim();}
   forgetToken(){this.token='';}
@@ -52,33 +61,65 @@ export class GithubClient {
   headers(){
     return {
       'Accept':'application/vnd.github+json',
-      'X-GitHub-Api-Version':'2026-03-10',
+      // Browser direct mode intentionally omits X-GitHub-Api-Version:
+      // GitHub currently defaults to supported 2022-11-28, and older CORS
+      // preflight allowlists reject this custom header. Local relay pins it upstream.
       ...(this.token?{'Authorization':`Bearer ${this.token}`}:{})
     };
   }
   async request(path,{method='GET',body=null,query=null}={}){
     if(!this.config)throw new Error('尚未配置 GitHub 仓库');
     const url=new URL(`https://api.github.com/repos/${encodeURIComponent(this.config.owner)}/${encodeURIComponent(this.config.repo)}${path?'/'+path:''}`);
-    if(query) for(const [key,value] of Object.entries(query)) if(value!==undefined&&value!==null&&value!=='')url.searchParams.set(key,String(value));
-    let response;
+    if(query)for(const [key,value] of Object.entries(query))if(value!==undefined&&value!==null&&value!=='')url.searchParams.set(key,String(value));
+    const options={
+      method,
+      headers:{...this.headers(),...(body?{'Content-Type':'application/json'}:{})},
+      ...(body?{body:JSON.stringify(body)}:{})
+    };
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),18000);
+    options.signal=controller.signal;
+    let response,transport='direct';
     try{
-      response=await this.fetcher(url.toString(),{
-        method,
-        headers:{...this.headers(),...(body?{'Content-Type':'application/json'}:{})},
-        ...(body?{body:JSON.stringify(body)}:{})
-      });
-    }catch{
-      throw new Error('无法连接 GitHub。请检查网络、跨域限制或代理设置。');
-    }
+      // The local Node server relays a narrow allowlisted set of REST calls
+      // through its own origin: no browser preflight / cross-origin token leak.
+      // A static web host without this route keeps the direct API fallback.
+      if(this.canUseLocalRelay){
+        const relay=`/api/github${url.pathname}${url.search}`;
+        response=await this.fetcher(relay,options);
+        if(response.headers?.get?.('X-Vigil-Github-Proxy')==='1'){
+          transport='local-relay';
+        }else{
+          response=await this.fetcher(url.toString(),options);
+        }
+      }else{
+        response=await this.fetcher(url.toString(),options);
+      }
+    }catch(error){
+      const detail=error?.name==='AbortError'?'请求超时':
+        String(error?.cause?.code||error?.name||'NETWORK').slice(0,40);
+      const tip=this.canUseLocalRelay
+        ?'本地同源转发与浏览器直连均不可用；请确认使用 npm run dev 启动并检查本机网络。'
+        :'浏览器无法访问 api.github.com。请检查当前网络、站点跨域策略或在 localhost 运行自带开发服务器。';
+      throw new Error(`GitHub 网络请求失败（${detail}）。${tip}`);
+    }finally{clearTimeout(timeout);}
+    this.transport=transport;
     let data;
     try{data=await response.json();}catch{data={};}
     if(!response.ok){
-      if(response.status===401)throw new Error('认证失败。请检查令牌是否有效。');
-      if(response.status===403)throw new Error('访问被拒绝或请求频率受限，请检查权限及 GitHub API 限额。');
-      if(response.status===404)throw new Error('仓库或文件不存在，也可能没有访问权限。');
+      if(response.status===401)throw new Error('GitHub 401：令牌无效或已过期，请重新生成具有 Contents 权限的 Token。');
+      if(response.status===403){
+        const rate=response.headers?.get?.('X-RateLimit-Remaining');
+        throw new Error(rate==='0'?'GitHub 403：API 请求额度已耗尽，请稍后重试。':'GitHub 403：访问被拒绝，请检查仓库权限、组织 SSO 或频率限制。');
+      }
+      if(response.status===404)throw new Error('GitHub 404：仓库或文件不存在，也可能是目录错误或私有仓库的读取权限不足。');
       if(response.status===409)throw new Error('文件版本冲突：远端内容已变化。你的修改仍在编辑框，请复制备份后刷新。');
-      if(response.status===422)throw new Error('提交内容无效，请检查路径、分支和权限。');
-      throw new Error(`GitHub 返回 ${response.status}：${String(data.message||'请求失败').slice(0,150)}`);
+      if(response.status===422)throw new Error('GitHub 422：请检查路径、分支名称、文件 SHA 或权限。');
+      if(response.status===502&&data.code==='GITHUB_UNREACHABLE')
+        throw new Error(`本地同源通道已工作，但服务器无法访问 GitHub（${data.detail||'NETWORK'}）。请检查 DNS、网络出口及代理设置。`);
+      if(response.status===502&&data.code==='GITHUB_TIMEOUT')
+        throw new Error('本地同源通道访问 GitHub 超时。请检查网络和代理设置后重试。');
+      throw new Error(`GitHub HTTP ${response.status}（${transport==='local-relay'?'本地同源通道':'浏览器直连'}）：${String(data.message||'请求失败').slice(0,130)}`);
     }
     return data;
   }

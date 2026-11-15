@@ -1,0 +1,197 @@
+/* VIGIL 1.5.6 · Stable material and contrast contract.
+   This file deliberately loads LAST: it resolves inherited 1.1–1.5.5 rules
+   without changing document structure or user data. */
+:root{
+  --v156-paper-alpha:91%;
+  --v156-wallpaper-opacity:.24;
+  --v156-sidebar-blur:24px;
+  --v156-focus:var(--appearance-accent,#a84b37);
+}
+
+/* Keep the right-side actions, remove the full-width legacy header curtain.
+   This applies equally to light and night; no duplicate titles are rendered. */
+html body .shell .topbar,
+:root[data-theme=night] body .shell .topbar{
+  height:64px!important;min-height:64px!important;
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  background:none!important;background-color:transparent!important;
+  background-image:none!important;border:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  isolation:initial!important;overflow:visible!important;
+  padding:7px clamp(18px,3.1vw,46px) 0!important;
+}
+html body .topbar::before,html body .topbar::after{
+  display:none!important;content:none!important;background:none!important;
+}
+html body .topbar .top-right{margin-left:auto!important;background:transparent!important}
+html body .main-inner{padding-top:10px!important}
+
+/* The selected image remains behind BOTH palettes. A neutral night scrim is
+   delivered via the image filter rather than a page-wide black header. */
+body:not([data-wallpaper=none])::before{
+  opacity:var(--wallpaper-alpha,.24)!important;
+  background-repeat:no-repeat!important;background-position:center 42%!important;
+  background-size:cover!important;
+}
+body[data-wallpaper=none]::before{
+  opacity:0!important;background-image:none!important;
+}
+:root[data-theme=night]{
+  color-scheme:dark;
+  --bg:#191b20;--side:#22262c;
+  --surface:#30333a;--surface-soft:#393d45;
+  --paper:#30333a;--paper-light:#343840;
+  --ink:#f2f1ed;--ink-2:#d3d7d4;--muted:#afb8b5;
+  --stroke:#4b505a;--stroke-2:#626873;
+  --green-soft:#3c4648;
+  --shadow:0 13px 33px rgba(4,8,14,.16);
+  --color-paper:#191b20;--color-ink:#f2f1ed;
+  --color-glass-scene:#222b31;--color-glass-mist:#363f44;
+}
+:root[data-theme=night] body{
+  color:var(--ink);background-color:var(--bg)!important;
+  background-image:radial-gradient(ellipse at 16% 0%,rgba(117,117,128,.14),transparent 55%),
+    radial-gradient(ellipse at 100% 100%,rgba(78,90,94,.14),transparent 56%)!important;
+}
+:root[data-theme=night] body:not([data-wallpaper=none])::before{
+  opacity:var(--wallpaper-alpha-night,.39)!important;
+  filter:brightness(.57) saturate(.72) contrast(1.07)!important;
+}
+:root[data-theme=night] body[data-wallpaper=none]::before{
+  filter:none!important;opacity:0!important;
+}
+:root[data-theme=night] .glass-lens-scene,
+:root[data-theme=night] .glass-lens-canvas{filter:brightness(.57) saturate(.72) contrast(1.07)!important}
+
+/* All night reading surfaces must own BOTH their ink and their background.
+   White-on-white metrics and mixed paper/night review cards were root causes. */
+:root[data-theme=night] body .main-inner :is(
+  .insight-metric,.insight-panel,.insight-panel.task-panel,.link-panel,.topic-panel,
+  .note-card,.filter-panel,.reading-paper,.editor-paper,.calendar-card,.archive-mini-card,
+  .github-connect,.github-files,.github-detail,.data-action-card,.data-summary > div,
+  .list-surface,.settings-hub-panel,.settings-group,.about-section,.season-current,
+  .hou-panel,.dial-panel,.season-verse,.vintage-panel,.surface
+){
+  background:color-mix(in srgb,var(--surface) var(--paper-opacity,91%),transparent)!important;
+  background-image:none!important;
+  border-color:var(--stroke)!important;
+  color:var(--ink)!important;
+  text-shadow:none!important;
+}
+:root[data-theme=night] body .main-inner .insight-metric{
+  background:rgba(47,51,58,.97)!important;
+  border-color:rgba(165,178,179,.19)!important;
+}
+:root[data-theme=night] body .main-inner .insight-metric strong,
+:root[data-theme=night] body .main-inner .insight-panel :is(h2,h3,strong),
+:root[data-theme=night] body .main-inner :is(.insights-head,.page-head) h1{
+  color:#f4f2ec!important;opacity:1!important;
+}
+:root[data-theme=night] body .main-inner .insight-metric span,
+:root[data-theme=night] body .main-inner .insight-panel :is(.insight-helper,.insight-empty,p,small),
+:root[data-theme=night] body .main-inner :is(.insights-head,.page-head) p{
+  color:#bfc8c5!important;opacity:1!important;
+}
+:root[data-theme=night] body .main-inner .reflection-panel,
+:root[data-theme=night] body .main-inner .reflection-panel.insight-panel{
+  background:linear-gradient(140deg,rgba(46,55,62,.98),rgba(39,52,54,.97))!important;
+  border-color:#596369!important;color:#f2f1ed!important;
+}
+:root[data-theme=night] body .main-inner .reflection-panel blockquote{
+  color:#d4e9df!important;opacity:1!important;
+}
+:root[data-theme=night] .reflection-mark{color:rgba(185,215,196,.12)!important}
+:root[data-theme=night] .insight-helper code,
+:root[data-theme=night] .insight-empty code{
+  background:#41474d!important;color:#f3ede4!important;
+}
+:root[data-theme=night] body .main-inner .insight-task-copy strong{
+  color:#f1eeea!important;
+}
+:root[data-theme=night] body .main-inner .insight-task-copy small{
+  color:#bac5c0!important;
+}
+:root[data-theme=night] .insight-task-check{
+  border-color:#a6c7c0!important;color:#a6c7c0!important;
+}
+:root[data-theme=night] .insight-tag-cloud button{
+  background:#3b4148!important;color:#f1f0eb!important;border-color:#636d72!important;
+}
+:root[data-theme=night] .insight-connection{
+  background:transparent!important;color:var(--ink)!important;
+  border-color:var(--stroke)!important;
+}
+:root[data-theme=night] .insight-connection span{color:var(--ink-2)!important}
+:root[data-theme=night] .insight-privacy{color:var(--muted)!important}
+:root[data-theme=night] .heritage-stat :is(strong,span,small){color:var(--ink)!important}
+:root[data-theme=night] .heritage-copy :is(h1,h2){color:#f3f0e8!important}
+:root[data-theme=night] .heritage-copy p{color:#d3d6cc!important}
+:root[data-theme=night] :is(.calendar-tip,.lunar-meta,.reading-content,.editor-paper,.settings-group){color:var(--ink-2)}
+:root[data-theme=night] input,
+:root[data-theme=night] textarea,
+:root[data-theme=night] select{
+  color:var(--ink);caret-color:var(--appearance-accent);
+}
+
+/* Independent floating controls retain glass; the full ribbon does not. */
+:root[data-theme=night] :is(.header-search,.header-settings,.theme-button){
+  background:rgba(52,58,65,.78)!important;color:#f5f5ef!important;
+  border-color:rgba(241,243,241,.20)!important;
+}
+:root[data-theme=night] .topbar :is(svg,kbd){color:#f2f4ee!important}
+:root[data-theme=night] .topbar .today{color:#e1e6e2!important}
+:root[data-theme=night] .sidebar,
+:root[data-theme=night] .sidebar .nav-item,
+:root[data-theme=night] .sidebar-bottom{
+  text-shadow:none!important;
+}
+html :is(button,a,input,textarea,select):focus-visible{
+  outline:2px solid var(--v156-focus)!important;outline-offset:3px;
+}
+
+/* Ensure a readable sheet on text-heavy pages even at high wallpaper opacity. */
+:root[data-theme=night] .article-content,
+:root[data-theme=night] .unified-reader{color:var(--ink)!important}
+
+@media(max-width:900px){
+  html body .shell .topbar,
+  :root[data-theme=night] body .shell .topbar{
+    height:57px!important;min-height:57px!important;padding:5px 17px 0!important;
+  }
+}
+@media(max-width:620px){
+  html body .shell .topbar,
+  :root[data-theme=night] body .shell .topbar{
+    height:52px!important;min-height:52px!important;padding:3px 12px 0!important;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  :root[data-theme=night] body .main-inner :is(.insight-metric,.insight-panel,.reading-paper,.editor-paper){
+    background:var(--surface)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body::before{transition:none!important}
+}
+.data-footprint{margin:2px 0 14px;color:var(--muted);font:12px/1.7 var(--font-body)}
+:root[data-theme=night] .data-footprint{color:var(--muted)}
+/* Paper-note metadata must remain legible against charcoal cards. */
+:root[data-theme=night] body .main-inner .note-card :is(h2,h3,.note-link h3){
+  color:#f1efe9!important;
+}
+:root[data-theme=night] body .main-inner .note-card :is(.note-link p,.note-excerpt,.note-content){
+  color:#c7d0cc!important;
+}
+:root[data-theme=night] body .main-inner :is(.note-date,.reading-date){
+  color:#efa58c!important;
+}
+:root[data-theme=night] body .main-inner .note-card .pill{
+  background:#3e454d!important;color:#dce5df!important;
+  border-color:#5a6568!important;
+}
+:root[data-theme=night] body .main-inner :is(.season-teaser,.home-quick-row .draft-banner){
+  color:#f2f0e8!important;background:#353a41!important;
+}
+:root[data-theme=night] body .main-inner :is(.season-teaser,.home-quick-row .draft-banner) small{
+  color:#bbc5c1!important;
+}

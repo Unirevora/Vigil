@@ -55,3 +55,15 @@ test('Logo 同时拥有主标识、浏览器图标和关于页呈现',()=>{
   assert.match(html,/id="spectralDrape"/);
   assert.match(aboutPanel({...base,aboutDiagnostics:null}),/vigil-mark.svg/);
 });
+test('点阵帷幕是本地 Canvas 实现，不依赖 React Bits Pro 注册表',()=>{
+  const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+  const deps={...pkg.dependencies,...pkg.devDependencies};
+  assert.equal(Object.keys(deps).some(name=>name.includes('reactbits-starter')),false);
+  const source=readFileSync(new URL('../src/effects/spectral-drape.js',import.meta.url),'utf8');
+  const css=readFileSync(new URL('../src/styles/vigil-155-hotfix.css',import.meta.url),'utf8');
+  assert.match(source,/getContext\('2d'/);
+  assert.match(source,/prefers-reduced-motion/);
+  assert.match(source,/visibilitychange/);
+  assert.match(source,/1000\/30/);
+  assert.match(css,/\.spectral-drape\.is-active/);
+});
