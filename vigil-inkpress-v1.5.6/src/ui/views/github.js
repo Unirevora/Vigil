@@ -5,6 +5,8 @@ import {pageHeading} from './page-heading.js';
 
 export function githubView(state) {
   const gh=state.github, c=gh.config||{}, f=gh.formDraft||{};
+  const proxy=gh.proxySettings||{mode:'env',host:'127.0.0.1',port:7890};
+  const proxyModeOptions=[['env','自动读取 Node 环境'],['direct','直接连接（不使用代理）'],['http','本机 HTTP 代理'],['socks5','本机 SOCKS5 代理']];
   const actions=gh.connected?`<button class="btn" data-action="github-settings">${icon('edit')} ${gh.showSettings?'收起设置':'连接设置'}</button><button class="btn btn-quiet" data-action="github-disconnect">断开</button>`:'';
   return `${pageHeading({title:'GitHub 仓库',description:'读取现有 Markdown 笔记，也可以提交修改。',actions})}
     ${!gh.connected||gh.showSettings?`<section class="github-connect surface">
@@ -15,12 +17,33 @@ export function githubView(state) {
         <label class="field">笔记文件夹（可留空）<input id="ghFolder" placeholder="例如 notes" value="${escapeHtml(f.folder??c.folder??'')}"></label>
         <label class="field full">Fine-grained Token（仅本次页面会话）<input id="ghToken" type="password" autocomplete="off" spellcheck="false" placeholder="${gh.hasToken?'已在本次会话中提供，留空则继续使用':'私有仓库或提交修改时填写'}"></label>
       </div>
+      <label class="github-anonymous-option"><input id="ghAnonymous" type="checkbox" ${gh.anonymous?'checked':''}>
+        <span><strong>匿名读取公开仓库</strong><small>不使用以前输入的 Token；适合排查公开仓库连接失败。</small></span></label>
       <div class="connect-actions"><button class="btn btn-primary" data-action="github-connect" ${gh.loading?'disabled':''}>${icon('github')} ${gh.connected?'更新连接':'连接仓库'}</button>
+        <button type="button" class="btn btn-quiet" data-action="github-connect-public" ${gh.loading?'disabled':''}>${icon('check')} 一键连接公开示例（匿名）</button>
         <button type="button" class="btn btn-quiet" data-action="github-test-network" ${gh.loading?'disabled':''}>${icon('check')} 测试 GitHub 网络</button>
         <span>编辑需要仓库 Contents 读写权限；令牌不会写入本地存储。</span></div>
-      <p class="github-connection-tip">先点击「测试 GitHub 网络」排查连接通道，再连接你的仓库。本机通过 <code>npm run dev</code> 启动时使用受限同源转发；其他静态网站尝试浏览器直连。公开仓库只读无需 Token。</p>
+      <details class="github-proxy-panel" ${gh.proxyExpanded?'open':''}>
+        <summary>${icon('settings')} <strong>本地网络与代理</strong> <span>${gh.proxyEffective?`${escapeHtml(gh.proxyEffective.mode==='direct'?'直连':gh.proxyEffective.mode.toUpperCase())} · ${escapeHtml(gh.proxyEffective.source||'')}`:'支持 HTTP / SOCKS5'}</span>${icon('chevron-down')}</summary>
+        <div class="github-proxy-body">
+          <p>全局代理不一定会被 Node.js 继承。请选择代理软件实际开放的 <strong>HTTP 或 SOCKS5 端口</strong>。配置仅在本次 Node 服务运行期间生效，不保存密钥或代理凭据。</p>
+          <div class="github-proxy-controls">
+            <label>连接方式<select id="ghProxyMode" aria-label="GitHub 网络代理方式">
+              ${proxyModeOptions.map(([value,label])=>`<option value="${value}" ${proxy.mode===value?'selected':''}>${label}</option>`).join('')}
+            </select></label>
+            <label>代理主机<input id="ghProxyHost" value="${escapeHtml(proxy.host||'127.0.0.1')}" autocomplete="off" placeholder="127.0.0.1" aria-label="本地代理主机"></label>
+            <label>代理端口<input id="ghProxyPort" type="number" min="1" max="65535" value="${escapeHtml(String(proxy.port||7890))}" aria-label="本地代理端口"></label>
+            <button class="btn btn-small" data-action="github-proxy-apply" ${gh.proxyBusy?'disabled':''}>${icon('check')} 应用并测试</button>
+            <button class="btn btn-small btn-quiet" data-action="github-proxy-clash" ${gh.proxyBusy?'disabled':''} title="一键使用 Clash / Mihomo 常见混合代理端口">${icon('settings')} Clash 7897</button>
+          </div>
+          <p class="github-proxy-note">Clash Verge 常见混合端口为 <code>127.0.0.1:7897</code>，同时支持 HTTP / SOCKS5；请以自己软件显示的实际端口为准。「DIRECT · HTTP 200」只表示网络探测通了，并不证明仓库请求使用了代理。</p>
+          ${gh.proxyEffective?`<p class="github-proxy-effective">当前出口：${escapeHtml(gh.proxyEffective.source||'')}${gh.proxyEffective.endpoint?' · '+escapeHtml(gh.proxyEffective.endpoint):''}</p>`:''}
+        </div>
+      </details>
+      <p class="github-connection-tip">「测试 GitHub 网络」会实际请求公开 GitHub API；本地服务就绪并不代表外网已连通。先确认网络，再连接自己的仓库。公开仓库只读无需 Token。</p>
     </section>`:''}
     ${gh.health?`<p class="github-health">${icon('check')} ${escapeHtml(gh.health)}</p>`:''}
+    ${gh.attributeWarning&&gh.connected?`<p class="github-attribute-warning">${icon('alert')} 已连接，但 .gitattributes 未能检查：${escapeHtml(gh.attributeWarning)}。阅读不受影响，写入时仍会强制检查加密规则。</p>`:''}
     ${gh.error?`<div class="inline-error" role="alert">${icon('alert')} ${escapeHtml(gh.error)}</div>`:''}
     ${gh.loading?`<div class="loading-note">正在读取 GitHub 仓库…</div>`:''}
     ${gh.connected?`<section class="github-workspace">

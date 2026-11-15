@@ -89,25 +89,30 @@ export class GithubClient {
         try{
           response=await this.fetcher(relay,options);
         }catch(localError){
-          // GET is safe to retry against the fixed official API endpoint.
-          // PUT is not: the first request may have reached GitHub already.
-          if(method!=='GET'){
-            throw new Error('本地同源通道提交连接中断。为避免重复提交，请先检查仓库文件是否已更新。');
-          }
-          response=null;
+          // Never silently retry a failed localhost relay against the browser
+          // API: the second request can fail CORS and obscure the real failure
+          // with an unhelpful TypeError (especially when using a PAT).
+          // PUT is particularly unsafe to retry after an unknown outcome.
+          const detail=localError?.name==='AbortError'?'TIMEOUT':
+            String(localError?.cause?.code||localError?.code||localError?.name||'NETWORK').slice(0,40);
+          throw new Error(method==='PUT'
+            ?'本地同源通道提交连接中断。为避免重复提交，请先检查仓库文件是否已更新。'
+            :`本地 GitHub 同源转发请求失败（${detail}），不会改用浏览器直连以掩盖错误。请确认通过 npm run dev 启动，并在「本地网络与代理」选择本机代理后重试。`);
         }
         if(response?.headers?.get?.('X-Vigil-Github-Proxy')==='1'){
           transport='local-relay';
-        }else if(method==='GET'){
+        }else if(method==='GET'&&!this.token){
+          // A plain static server running on localhost may have no relay route;
+          // preserve anonymous public browsing only in this verified case.
           response=await this.fetcher(url.toString(),options);
         }else{
-          throw new Error('本地同源转发未启用，无法安全确认提交状态；请以 npm run dev 启动项目。');
+          throw new Error('本地同源转发未启用，不能安全使用访问令牌或确认提交状态。请以 npm run dev 启动项目。');
         }
       }else{
         response=await this.fetcher(url.toString(),options);
       }
     }catch(error){
-      if(error?.message?.startsWith('本地同源'))throw error;
+      if(error?.message?.startsWith('本地同源')||error?.message?.startsWith('本地 GitHub 同源转发'))throw error;
       const detail=error?.name==='AbortError'?'TIMEOUT':
         String(error?.cause?.code||error?.code||error?.name||'NETWORK').slice(0,40);
       const tip=this.canUseLocalRelay
@@ -119,7 +124,7 @@ export class GithubClient {
     let data;
     try{data=await response.json();}catch{data={};}
     if(!response.ok){
-      if(response.status===401)throw new Error('GitHub 401：令牌无效或已过期，请重新生成具有 Contents 权限的 Token。');
+      if(response.status===401)throw new Error('GitHub 401：Token 无效或已过期。若连接公开仓库，请勾选「匿名读取公开仓库」以忽略本次会话中的旧令牌。');
       if(response.status===403){
         const rate=response.headers?.get?.('X-RateLimit-Remaining');
         throw new Error(rate==='0'?'GitHub 403：API 请求额度已耗尽，请稍后重试。':'GitHub 403：访问被拒绝，请检查仓库权限、组织 SSO 或频率限制。');
@@ -127,10 +132,8 @@ export class GithubClient {
       if(response.status===404)throw new Error('GitHub 404：仓库或文件不存在，也可能是目录错误或私有仓库的读取权限不足。');
       if(response.status===409)throw new Error('文件版本冲突：远端内容已变化。你的修改仍在编辑框，请复制备份后刷新。');
       if(response.status===422)throw new Error('GitHub 422：请检查路径、分支名称、文件 SHA 或权限。');
-      if(response.status===502&&data.code==='GITHUB_UNREACHABLE')
-        throw new Error(`本地 API 已启动，但外网到 GitHub 失败（${data.detail||'NETWORK'}，${data.transport||'DIRECT'}）。${String(data.detail).includes('PROXY_')?'请检查 HTTPS_PROXY 地址和代理权限。':'请检查 DNS、网络出口，必要时为 Node 设置 HTTPS_PROXY。'}`);
-      if(response.status===502&&data.code==='GITHUB_TIMEOUT')
-        throw new Error('本地同源通道访问 GitHub 超时。请检查网络和代理设置后重试。');
+      if(response.status===502&&['GITHUB_UNREACHABLE','GITHUB_TIMEOUT'].includes(data.code))
+        throw new Error(`${String(data.message||'GitHub 连接失败').slice(0,180)}（${data.detail||data.code}；${data.transport||'DIRECT'}）。请在 GitHub 页面 →「本地网络与代理」配置本机 HTTP/SOCKS5 端口并重新测试。`);
       throw new Error(`GitHub HTTP ${response.status}（${transport==='local-relay'?'本地同源通道':'浏览器直连'}）：${String(data.message||'请求失败').slice(0,130)}`);
     }
     return data;

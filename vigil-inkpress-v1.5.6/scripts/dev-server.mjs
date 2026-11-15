@@ -32,6 +32,7 @@ createServer(async(req,res)=>{
   }
 }).listen(port,'127.0.0.1',()=>{
   console.log(`Vigil MVP: http://127.0.0.1:${port}/`);
-  console.log('GitHub: same-origin local API relay enabled at /api/github/health');
+  console.log('GitHub local relay: /api/github/health (local only), /api/github/diagnose (real upstream)');
+  console.log('Proxy can be configured in GitHub -> 本地网络与代理 (HTTP/SOCKS5).');
   console.log('Press Ctrl+C to stop.');
 });

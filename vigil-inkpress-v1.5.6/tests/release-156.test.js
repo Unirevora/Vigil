@@ -68,7 +68,7 @@ test('1.5.6：GitHub API 代理明确支持环境代理并尊重 NO_PROXY',()=>{
  assert.equal(cfg.url.hostname,'proxy.example.com');
  assert.equal(githubProxyEnvironment({HTTPS_PROXY:'http://proxy.example:8080',NO_PROXY:'api.github.com'}).enabled,false);
  assert.equal(githubProxyEnvironment({HTTPS_PROXY:'http://proxy.example:8080',NO_PROXY:'.github.com'}).enabled,false);
- assert.equal(githubProxyEnvironment({HTTPS_PROXY:'socks5://proxy.example'}).enabled,false);
+ assert.equal(githubProxyEnvironment({HTTPS_PROXY:'socks5://proxy.example'}).enabled,true);
 });
 test('1.5.6：代理只允许固定 GitHub HTTPS 主机',async()=>{
  await assert.rejects(githubTransportFetch('https://example.com/user'),/only https/);

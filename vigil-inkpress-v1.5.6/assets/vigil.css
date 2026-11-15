@@ -4478,3 +4478,64 @@ html :is(button,a,input,textarea,select):focus-visible{
 :root[data-theme=night] body .main-inner :is(.season-teaser,.home-quick-row .draft-banner) small{
   color:#bbc5c1!important;
 }
+
+/* GitHub local transport doctor — compact extension of the original ink/paper UI. */
+.github-proxy-panel{
+  margin:15px 0 8px;border:1px solid var(--stroke);border-radius:17px;
+  background:var(--surface-soft);overflow:visible;color:var(--ink);
+}
+.github-proxy-panel>summary{
+  min-height:48px;display:flex;align-items:center;gap:9px;list-style:none;
+  cursor:pointer;padding:11px 15px;border-radius:16px;
+}
+.github-proxy-panel>summary::-webkit-details-marker{display:none}
+.github-proxy-panel>summary svg{width:16px;height:16px;color:var(--accent);flex:none}
+.github-proxy-panel>summary strong{font-size:13px;white-space:nowrap}
+.github-proxy-panel>summary span{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.github-proxy-panel>summary svg:last-child{color:var(--muted)}
+.github-proxy-panel[open]>summary{border-radius:16px 16px 0 0;border-bottom:1px solid var(--stroke)}
+.github-proxy-body{padding:14px 15px 16px}
+.github-proxy-body>p{font-size:12px;line-height:1.75;color:var(--ink-2);margin:0 0 13px}
+.github-proxy-controls{display:grid;grid-template-columns:minmax(185px,1.6fr) minmax(130px,1fr) 110px auto;gap:9px;align-items:end}
+.github-proxy-controls label{display:grid;gap:5px;color:var(--muted);font-size:11px;min-width:0}
+.github-proxy-controls :is(select,input){
+  display:block;width:100%;min-width:0;min-height:40px;border:1px solid var(--stroke-2);
+  border-radius:10px;background:var(--surface);color:var(--ink);font:13px var(--font-body);
+  padding:8px 10px;
+}
+.github-proxy-controls :is(select,input):focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+.github-proxy-controls .btn{min-height:40px;white-space:nowrap}
+.github-proxy-panel .github-proxy-note{font-size:11px;color:var(--muted);margin:12px 0 4px}
+.github-proxy-panel .github-proxy-effective{font-size:11px;color:var(--accent);margin:4px 0 0}
+.github-proxy-panel code{color:var(--ink);font-size:11px}
+:root[data-theme=night] .github-proxy-panel{background:var(--surface-soft);border-color:var(--stroke)}
+:root[data-theme=night] .github-proxy-controls :is(select,input){background:var(--surface);color:var(--ink);border-color:var(--stroke)}
+@media(max-width:890px){.github-proxy-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){
+  .github-proxy-panel>summary span{display:none}
+  .github-proxy-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .github-proxy-controls label:first-child{grid-column:1/-1}
+  .github-proxy-controls .btn{grid-column:1/-1}
+}
+
+/* GitHub Clash mixed-port quick setup: avoid a fifth implicit grid track. */
+.github-proxy-controls{
+  grid-template-columns:minmax(168px,1.4fr) minmax(118px,1fr) 100px max-content max-content;
+}
+@media(max-width:1280px){
+  .github-proxy-controls{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:560px){
+  .github-proxy-controls .btn{grid-column:1/-1;}
+}
+
+/* GitHub connection troubleshooting: opt-in anonymous browsing, no stale PAT. */
+.github-anonymous-option{display:flex;align-items:flex-start;gap:12px;padding:10px 13px;border:1px solid var(--stroke);border-radius:12px;background:var(--surface-soft);margin:12px 0 9px;cursor:pointer;max-width:760px}
+.github-anonymous-option input{width:17px;height:17px;margin-top:4px;accent-color:var(--accent);flex:none}
+.github-anonymous-option span{display:flex;flex-direction:column;gap:2px}
+.github-anonymous-option strong{font-size:13px;color:var(--ink);font-weight:600}
+.github-anonymous-option small{font-size:11px;color:var(--muted);line-height:1.5}
+.github-attribute-warning{display:flex;gap:7px;align-items:flex-start;border:1px solid var(--stroke);border-radius:12px;padding:12px 14px;margin:12px 0;color:var(--ink-2);background:var(--surface-soft);font-size:12px;line-height:1.6}
+.github-attribute-warning svg{color:var(--accent);width:16px;height:16px;flex:none;margin-top:2px}

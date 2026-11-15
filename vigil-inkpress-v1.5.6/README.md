@@ -2,6 +2,22 @@
 
 > 墨夜归整：复古文房与液态玻璃写作工作台。此版本重点修复夜间模式、顶栏视觉、GitHub 本地网络链路，并降低发布体积。
 
+## Clash 全局代理端口 7897 · 二次热修复
+
+如果 GitHub 页面显示「DIRECT · HTTP 200」，但「连接仓库」仍提示 `TypeError`，请在「GitHub → 本地网络与代理」点击 **Clash 7897** 快捷按钮。它会显式指定 `HTTP 127.0.0.1:7897` 并测试连接，不要求 Node 自动继承系统代理。测试成功后显示的出口应包含 `MANUAL`。需要时可切换 SOCKS5 使用同一个混合端口。
+
+另外修复了本地同源 GET 请求失败后静默改走浏览器跨域直连，导致错误被二次 TypeError 掩盖的问题。详见 [`docs/GITHUB-CLASH-7897.md`](docs/GITHUB-CLASH-7897.md) 与 [`docs/QA-1.5.6-CLASH-7897.md`](docs/QA-1.5.6-CLASH-7897.md)。版本号仍为 **1.5.6**。
+
+## GitHub 全局代理仍连接失败？（v1.5.6 连接补丁）
+
+本地 `npm run dev` 运行时，浏览器全局代理**不保证** Node.js 也经过代理。进入 **GitHub 仓库 → 本地网络与代理**，选择本机 **HTTP** 或 **SOCKS5**，填写代理软件实际开放的端口，再点击「应用并测试」。当前服务内存会记住这次设置，直到 Node 重启。
+
+- 网络测试会实际请求 GitHub 公共 API，不再将本地 `/api/github/health` 的 HTTP 200 误认为 GitHub 已连通。
+- SOCKS5 使用远程 DNS，能够绕过本机 `api.github.com` DNS 解析问题；仍要求代理节点本身能访问 GitHub。
+- 支持 `HTTPS_PROXY`、`HTTP_PROXY`、`ALL_PROXY` 的 HTTP(S)/SOCKS5 环境变量。
+- **不要**把 Token 或代理密码填进网络错误反馈。详细步骤与错误码见 [`docs/GITHUB-PROXY-HOTFIX.md`](docs/GITHUB-PROXY-HOTFIX.md)。
+
+
 ## 本版修复
 
 - **夜间可读性**：统一石墨色卡片与亮色墨字，修复统计数字、周回顾、待办、笔记日期、标签等文字在深色背景上的低对比度。
