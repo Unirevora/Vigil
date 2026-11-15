@@ -41,6 +41,18 @@ function appearancePanel(state){
         ${rangeControl('背景强度','backgroundOpacity',a.backgroundOpacity,0,85,1,'%')}
         ${rangeControl('纸面透光','surfaceOpacity',a.surfaceOpacity,50,100,1,'%')}
       </div>
+      <div class="settings-drape-option">
+        <label class="settings-toggle-row" for="spectralDrapeToggle">
+          <span><strong>Spectral Drape <small class="settings-effect-tag">点阵帷幕</small></strong>
+            <small>三维折叠的微光点阵随曲面流动；本地渲染，可随时关闭</small></span>
+          <input id="spectralDrapeToggle" type="checkbox" data-setting="spectralDrape" ${a.spectralDrape?'checked':''} aria-label="启用点阵帷幕背景" />
+          <span class="settings-toggle-visual" aria-hidden="true"></span>
+        </label>
+        <div class="settings-drape-controls ${a.spectralDrape?'is-enabled':'is-disabled'}" id="spectralDrapeControls">
+          ${rangeControl('光点强度','drapeIntensity',a.drapeIntensity,15,85,1,'%')}
+          <span class="settings-hint">开启系统的「减少动态效果」后，光点自动停在静态画面。</span>
+        </div>
+      </div>
     </section>
     <section class="settings-group">
       ${sectionHead('首页静物','保留复古打字机，也可以换成你自己的照片。')}

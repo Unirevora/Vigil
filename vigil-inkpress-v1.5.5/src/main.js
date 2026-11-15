@@ -24,6 +24,7 @@ import {mountUnifiedEditor,readEditorMode,persistEditorMode} from './editor/unif
 import {DEFAULT_APPEARANCE,readAppearance,writeAppearance,mixHex,contrastInk,hexToRgb,sidebarPalette} from './appearance/settings.js';
 import {preparePhoto,createVisualAssets} from './appearance/background.js';
 import {initLiquidGlass} from './glass/liquid-glass.js';
+import {createSpectralDrape} from './effects/spectral-drape.js';
 import {mountThemedSelects,closeThemedSelect} from './ui/themed-select.js';
 import {tasksFromEntries,toggleTask} from './insights/insights.js';
 
@@ -57,6 +58,7 @@ let previewFrame=null;
 let almanacController=null;
 let unifiedEditor=null;
 const visualAssets=createVisualAssets();
+const spectralDrape=createSpectralDrape(document.querySelector('#spectralDrape'));
 let requireEncryptedImport=false;
 let gitCryptLocalMode='';
 const SIDEBAR_STORAGE_KEY='vigil-sidebar-collapsed-v1';
@@ -112,20 +114,21 @@ function applyAppearance(){
   r.setProperty('--sidebar-edge',palette.edge);
   r.setProperty('--sidebar-glass-blur',a.sidebarBlur+'px');
   r.setProperty('--sidebar-dim',`${Math.round(17+(1-sidebarAlpha)*18)}%`);
-  const glassHex=mixHex(a.accent,state.theme==='night'?'#27383a':'#eaf2ec',state.theme==='night'?.84:.90);
+  const glassHex=mixHex(a.accent,state.theme==='night'?'#27282d':'#eaf2ec',state.theme==='night'?.90:.90);
   const glassBase=hexToRgb(glassHex);
   r.setProperty('--glass-material',`rgba(${glassBase.join(',')},${(a.glassTint/100).toFixed(2)})`);
   r.setProperty('--glass-foreground',state.theme==='night'?'#f5f5ec':'#243b3b');
   document.documentElement.dataset.motion=a.motionMode;
   const themeMeta=document.querySelector('meta[name="theme-color"]');
   if(themeMeta)themeMeta.content=palette.top;
-  r.setProperty('--appearance-accent',a.accent);
-  r.setProperty('--accent',a.accent);
-  r.setProperty('--appearance-accent-soft',mixHex(a.accent,state.theme==='night'?'#363d34':'#f7eedf',.80));
-  r.setProperty('--accent-soft',mixHex(a.accent,state.theme==='night'?'#353c35':'#f7ecda',.79));
+  const readableAccent=state.theme==='night'?mixHex(a.accent,'#f7e8dd',.36):a.accent;
+  r.setProperty('--appearance-accent',readableAccent);
+  r.setProperty('--accent',readableAccent);
+  r.setProperty('--appearance-accent-soft',mixHex(a.accent,state.theme==='night'?'#303137':'#f7eedf',.80));
+  r.setProperty('--accent-soft',mixHex(a.accent,state.theme==='night'?'#303137':'#f7ecda',.79));
   r.setProperty('--user-primary-bg',primary);
   r.setProperty('--green',primary);
-  r.setProperty('--green-soft',mixHex(primary,state.theme==='night'?'#343f3f':'#ecf0eb',.84));
+  r.setProperty('--green-soft',mixHex(primary,state.theme==='night'?'#323238':'#ecf0eb',.84));
   r.setProperty('--appearance-contrast',contrastInk(primary));
   r.setProperty('--wallpaper-alpha',String(a.backgroundOpacity/100));
   r.setProperty('--paper-opacity',a.surfaceOpacity+'%');
@@ -145,6 +148,8 @@ function applyAppearance(){
   }
   document.body.dataset.wallpaper=a.background;
   document.body.dataset.paperTexture=a.texture?'on':'off';
+  spectralDrape.setOptions({enabled:a.spectralDrape,intensity:a.drapeIntensity/100,
+    accent:a.accent,night:state.theme==='night'});
   const urls=visualAssets.urls();
   if(a.background==='custom'&&urls.backgroundURL){
     r.setProperty('--wallpaper-image',`url("${urls.backgroundURL}")`);
@@ -1089,8 +1094,13 @@ document.body.addEventListener('input',event=>{
   if(!key)return;
   const value=field.type==='checkbox'?field.checked:field.type==='range'?Number(field.value):field.value;
   if(saveAppearance({[key]:value})){
+    if(key==='spectralDrape'){
+      const controls=$('#spectralDrapeControls');
+      controls?.classList.toggle('is-enabled',value);
+      controls?.classList.toggle('is-disabled',!value);
+    }
     const output=$(`#${key}Value`);
-    if(output)output.textContent=String(value)+(key==='backgroundOpacity'||key==='surfaceOpacity'||key==='sidebarGlass'||key==='glassTint'?'%':key==='bodyFontSize'||key==='contentWidth'||key==='sidebarBlur'?'px':'');
+    if(output)output.textContent=String(value)+(key==='backgroundOpacity'||key==='surfaceOpacity'||key==='sidebarGlass'||key==='glassTint'||key==='drapeIntensity'?'%':key==='bodyFontSize'||key==='contentWidth'||key==='sidebarBlur'?'px':'');
   }
 });
 document.body.addEventListener('change',async event=>{

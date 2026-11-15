@@ -8,7 +8,7 @@ export function aboutPanel(state){
   const d=state.aboutDiagnostics;
   return `<div class="about-page">
     <div class="about-hero">
-      <div class="about-mark" aria-hidden="true">眠</div>
+      <div class="about-mark" aria-hidden="true"><img src="/assets/vigil-mark.svg" alt="" width="64" height="70"></div>
       <div><div class="about-overline">VIGIL / LOCAL-FIRST JOURNAL</div><h2>不眠手记</h2>
         <p>把日子写成文字，也让旧时光成为新的线索。</p>
         <span class="about-version">版本 ${APP_VERSION} · 同题同序</span></div>

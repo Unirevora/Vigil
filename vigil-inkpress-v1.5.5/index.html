@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#34332e">
   <meta name="description" content="不眠手记 · 近代中式复古文房，逐日书写，观四时风物。">
   <title>不眠手记 · VIGIL</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/vigil-favicon.svg">
   <link rel="stylesheet" href="/src/styles/foundation.css">
   <link rel="stylesheet" href="/src/styles/layout.css">
   <link rel="stylesheet" href="/src/styles/controls.css">
@@ -27,8 +28,10 @@
   <link rel="stylesheet" href="/src/styles/vigil-153.css">
   <link rel="stylesheet" href="/src/styles/vigil-154.css">
   <link rel="stylesheet" href="/src/styles/vigil-155.css">
+  <link rel="stylesheet" href="/src/styles/vigil-155-hotfix.css">
 </head>
 <body>
+  <canvas id="spectralDrape" class="spectral-drape" aria-hidden="true"></canvas>
   <svg class="liquid-svg-defs" aria-hidden="true" focusable="false" width="0" height="0" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="vigil-glass-bend" x="-4%" y="-18%" width="108%" height="136%" color-interpolation-filters="sRGB">
@@ -42,7 +45,7 @@
       <div class="sidebar-inner">
         <div class="sidebar-edition">PRIVATE JOURNAL · 001</div>
         <div class="brand">
-          <div class="brand-seal" aria-hidden="true">眠</div>
+          <div class="brand-seal" aria-hidden="true"><img src="/assets/vigil-mark.svg" alt="" width="59" height="66"></div>
           <div><div class="brand-name">不眠手记</div><div class="brand-sub">VIGIL / 铅字旧梦</div></div>
         </div>
         <button type="button" class="btn btn-primary side-create" data-action="new" title="写一篇手记" aria-label="写一篇手记"><span data-icon="plus"></span><span class="create-label">写一篇手记</span></button>

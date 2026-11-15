@@ -4,7 +4,8 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   accent:'#a83f2a',background:'paper',backgroundOpacity:24,
   surfaceOpacity:91,bodyFontSize:16,lineHeight:1.8,contentWidth:1460,
   texture:true,heroMode:'original',theme:'paper',fontFamily:'heritage',
-  sidebarTone:'accent',sidebarGlass:86,sidebarBlur:24,glassTint:72,motionMode:'standard'
+  sidebarTone:'accent',sidebarGlass:86,sidebarBlur:24,glassTint:72,motionMode:'standard',
+  spectralDrape:false,drapeIntensity:48
 });
 export const COLOR_PRESETS=[
   {name:'朱砂',color:'#a83f2a'}, {name:'松绿',color:'#375d4f'},
@@ -33,10 +34,11 @@ export function normalizeAppearance(input){
   if(['standard','subtle','off'].includes(input.motionMode))a.motionMode=input.motionMode;
   for(const [key,min,max] of [['backgroundOpacity',0,85],['surfaceOpacity',50,100],
     ['bodyFontSize',13,22],['lineHeight',1.45,2.5],['contentWidth',860,1740],
-    ['sidebarGlass',55,96],['sidebarBlur',0,36],['glassTint',28,92]]){
+    ['sidebarGlass',55,96],['sidebarBlur',0,36],['glassTint',28,92],['drapeIntensity',15,85]]){
     if(typeof input[key]==='number'&&Number.isFinite(input[key]))a[key]=Math.min(max,Math.max(min,input[key]));
   }
   if(typeof input.texture==='boolean')a.texture=input.texture;
+  if(typeof input.spectralDrape==='boolean')a.spectralDrape=input.spectralDrape;
   return a;
 }
 export function readAppearance(storage){
@@ -67,12 +69,16 @@ export function contrastInk(hex){
  * The traditional ink tone is offered explicitly as an optional preference. */
 export function sidebarPalette(accent,mode='accent',night=false){
   if(!isValidHex(accent))accent=DEFAULT_APPEARANCE.accent;
+  if(night){
+    // Neutral charcoal is independent of the day palette; the active mark may
+    // still inherit the user's vermilion, indigo, or custom accent.
+    return {top:'#26272c',bottom:'#191a1f',
+      active:mixHex(accent,'#ede9e3',.90),edge:'#87858b'};
+  }
   const source=mode==='ink'?'#34544d':accent;
-  const dark=night?'#111e24':'#192827';
+  const dark='#192827';
   return {
-    top:mixHex(source,dark,night?.64:.50),
-    bottom:mixHex(source,dark,night?.79:.70),
-    active:mixHex(source,'#f8faf6',.87),
-    edge:mixHex(source,'#c4d0ca',.68)
+    top:mixHex(source,dark,.50),bottom:mixHex(source,dark,.70),
+    active:mixHex(source,'#f8faf6',.87),edge:mixHex(source,'#c4d0ca',.68)
   };
 }
