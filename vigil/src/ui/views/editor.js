@@ -1,6 +1,5 @@
 import {icon} from '../icons.js';
 import {todayISO,escapeHtml,charCount} from '../../core/format.js';
-import {renderMarkdown} from '../../core/markdown.js';
 
 const moods=['','平静','喜悦','疲惫','思考','灵感'];
 const modes=[['live','实时','spark'],['reading','阅读','eye'],['source','源码','code']];
@@ -122,7 +121,7 @@ export function editorView(state){
         <div class="editor-manuscript-main">
           <div id="unifiedEditorHost" class="unified-edit-host" aria-label="Markdown 写作区域"></div>
           <div id="unifiedReader" class="unified-reader article-content" ${selected==='reading'?'':'hidden'}
-            aria-label="阅读模式正文">${selected==='reading'?renderMarkdown(d.content):''}</div>
+            aria-label="阅读模式正文"></div>
         </div>
       </div>
       <footer class="editor-foot"><span id="editorWordCount">${charCount(d.content)} 字</span>

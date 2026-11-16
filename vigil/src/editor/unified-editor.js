@@ -234,13 +234,15 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
       const begin=markdownSafeStart(lines,Math.max(0,viewport.from-PAINT_PAD));
       let end=Math.min(lines.length,viewport.to+PAINT_PAD);
       while(end<lines.length&&end-viewport.to<PAINT_PAD+300&&lines[end].trim())end++;
-      // Keep the visible content pinned: rebuilding collapsed blank runs and
-      // block widgets changes line heights above the viewport.
+      // Window coordinates keep the anchor tied to the visible line even when
+      // CodeMirror's virtual viewport has a non-zero viewOffset.
       const scroll=cm.getScrollInfo();
       let anchor=null;
       if(scroll.top>0){
-        const line=cm.lineAtHeight(scroll.top,'local');
-        anchor={line,offset:scroll.top-cm.heightAtLine(line,'local')};
+        const viewportTop=cm.getScrollerElement().getBoundingClientRect().top;
+        const position=cm.coordsChar({left:0,top:viewportTop},'window');
+        const line=Math.max(0,Math.min(total-1,position.line));
+        anchor={line,offset:viewportTop-cm.charCoords({line,ch:0},'window').top};
       }
       cm.operation(()=>{
         clearDecorations();
@@ -287,7 +289,9 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
         }
       });
       if(anchor){
-        const top=cm.heightAtLine(anchor.line,'local')+anchor.offset;
+        const viewportTop=cm.getScrollerElement().getBoundingClientRect().top;
+        const offset=viewportTop-cm.charCoords({line:anchor.line,ch:0},'window').top;
+        const top=cm.getScrollInfo().top+anchor.offset-offset;
         if(Math.abs(top-cm.getScrollInfo().top)>.5)cm.scrollTo(null,top);
       }
       activeFingerprint=fingerprint;

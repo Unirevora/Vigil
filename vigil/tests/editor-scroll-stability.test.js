@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {markdownSafeStart} from '../src/editor/live-markdown.js';
+import {editorView} from '../src/ui/views/editor.js';
+
+test('reading mode leaves initial Markdown rendering to the unified editor',()=>{
+  const html=editorView({draft:{title:'长文',date:'2026-01-01',content:'# 章节\n\n正文',tags:[],mood:''},
+    editorMode:'reading',github:{}});
+  const reader=html.match(/<div id="unifiedReader"[\s\S]*?<\/div>/)?.[0]||'';
+  assert.ok(reader,'reader host exists');
+  assert.doesNotMatch(reader,/章节|<h1>|<p>/,'view does not render the whole document before mount');
+});
 
 test('safe repaint start never lands inside a fence, math block or paragraph',()=>{
   const lines=['intro','','```js','a','','b','```','','para one','para two','','tail'];
@@ -15,10 +24,11 @@ test('safe repaint start never lands inside a fence, math block or paragraph',()
   assert.equal(markdownSafeStart(Array(900).fill('x'),800),800);
 });
 
-function fakeEnvironment(text){
+function fakeEnvironment(text,{viewOffset=0}={}){
   const calls={marks:0,clears:0,scrolls:[],refresh:0};
   const el=()=>({classList:{add(){}},style:{},setAttribute(){},addEventListener(){},appendChild(){},
-    removeEventListener(){},remove(){},closest(){return null},dataset:{},hidden:false});
+    removeEventListener(){},remove(){},closest(){return null},dataset:{},hidden:false,
+    getBoundingClientRect(){return {top:0}}});
   globalThis.document={createElement:el,fonts:{addEventListener(){},removeEventListener(){},ready:Promise.resolve()}};
   // Deferred rAF, flushed explicitly, like a real browser frame.
   const queue=[];
@@ -28,11 +38,15 @@ function fakeEnvironment(text){
   let viewport={from:0,to:40},top=0,gen=1;
   const handlers={};
   const cm={
-    getWrapperElement:()=>el(),getInputField:()=>el(),getValue:()=>text,
+    viewOffset,
+    getWrapperElement:()=>el(),getInputField:()=>el(),getValue:()=>text,getScrollerElement:()=>el(),
     getViewport:()=>viewport,lineCount:()=>text.split('\n').length,changeGeneration:()=>gen,
     listSelections:()=>[{anchor:{line:0,ch:0},head:{line:0,ch:0}}],
     getScrollInfo:()=>({top}),scrollTo:(x,y)=>{calls.scrolls.push(y);top=y},
-    lineAtHeight:h=>Math.floor(h/20),heightAtLine:l=>l*20+(cm.shift||0),
+    lineAtHeight:h=>Math.floor((h+cm.viewOffset)/20),
+    heightAtLine:l=>l*20+(l>=cm.shiftFrom?cm.shift||0:0),
+    coordsChar:({top:y})=>({line:Math.floor((top+y)/20),ch:0}),
+    charCoords:({line})=>({top:line*20+(line>=cm.shiftFrom?cm.shift||0:0)-top}),
     operation:fn=>{fn();if(cm.pending!=null){cm.shift=cm.pending;cm.pending=null;}},getLine:n=>text.split('\n')[n]||'',
     markText:()=>{calls.marks++;return {clear(){calls.clears++}}},
     setBookmark:()=>({clear(){calls.clears++}}),addLineClass(){},removeLineClass(){},
@@ -42,7 +56,7 @@ function fakeEnvironment(text){
   globalThis.CodeMirror=function(){return cm};
   return {calls,cm,flush,
     scrollTo(from,to,newTop){viewport={from,to};top=newTop;handlers.viewportChange?.();flush();},
-    typeSomething(){gen++;handlers.changes?.();flush();},setHeightShift(v){cm.pending=v}};
+    typeSomething(){gen++;handlers.changes?.();flush();},setHeightShift(v,from=0){cm.shiftFrom=from;cm.pending=v}};
 }
 function mount(mountUnifiedEditor,text){
   return mountUnifiedEditor({host:{dataset:{},closest(){return null}},
@@ -78,6 +92,20 @@ test('repaint keeps the visible line pinned when heights above it change',async(
   env.setHeightShift(37);
   env.typeSomething();
   assert.deepEqual(env.calls.scrolls,[2047],'scroll restored so the same line keeps its screen offset');
+  editor.destroy();
+});
+
+test('virtualized repaint ignores height changes below the actual visible anchor',async()=>{
+  const text=Array.from({length:600},(_,i)=>`line ${i}`).join('\n');
+  const env=fakeEnvironment(text,{viewOffset:2000});
+  const {mountUnifiedEditor}=await import('../src/editor/unified-editor.js');
+  const editor=mount(mountUnifiedEditor,text);
+  env.flush();
+  env.scrollTo(100,140,2010);
+  env.calls.scrolls.length=0;
+  env.setHeightShift(37,150);
+  env.typeSomething();
+  assert.deepEqual(env.calls.scrolls,[],'a line below the viewport must not move the visible content');
   editor.destroy();
 });
 
