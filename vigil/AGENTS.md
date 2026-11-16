@@ -21,7 +21,7 @@
 - **复古文房风格、本地优先的 Markdown 手记工作台**，并把 GitHub 仓库作为与本地并列的第二文库。
 - 原生 ES Modules 单页应用：`index.html` + `src/main.js`。**没有打包器、没有 npm 运行依赖**，只需 Node.js 18+。第三方库全在 `vendor/`（CodeMirror 5、KaTeX 0.16 ESM），**不引 CDN**。
 - 设计原则：本地优先、用户拥有 Markdown 源文；数据稳定性优先于新功能；不把未实现/未验证的能力写成已完成；不为视觉效果牺牲数据安全、可访问性或减少动效偏好。
-- 非目标：账号体系、云同步服务、完整 Obsidian 插件/CSS snippets 引擎、执行任意用户 CSS/脚本、兼容原项目 v2.8.2 未验证的格式。
+- 非目标：账号体系、云同步服务、完整 Obsidian 插件/CSS snippets 引擎、执行任意用户 CSS/脚本，以及原项目 v2.8.2 的数据迁移、存储 Schema 与加密格式兼容。
 
 ## 2. 命令速查
 
@@ -40,7 +40,7 @@ deploy.cmd | npm run deploy               # 一键部署（见第 12 节）
 
 ```text
 index.html               外壳：侧栏导航、顶栏、主区域、SVG 滤镜定义；<script type=module src=src/main.js>
-src/main.js              全局状态、路由、事件委托（data-action 的 switch）、生命周期；唯一的 DOM 协调者
+src/main.js              启动装配、共享 state/gh、路由、本地 actions、草稿机、render、CodeMirror 单实例、键盘与生命周期；唯一的 DOM 协调者
 src/core/                纯函数：entries(排序/检索/筛选/统计) format(日期/escapeHtml/字数) calendar almanac(节气)
                          markdown(阅读渲染) math(KaTeX 受限渲染) safe-html(白名单) diagnostics(APP_VERSION/RELEASE_NAME)
 src/storage/             schema repository drafts backups transfer encrypted-transfer footprint
@@ -49,9 +49,10 @@ src/github/              api(GithubClient) connection(三阶段) browser-diagnos
 src/security/git-crypt.js
 src/insights/insights.js 任务/双向引用/回顾指标   src/appearance/{settings,background}.js
 src/glass/liquid-glass.js   src/effects/spectral-drape.js   src/data/demo.js(示例手记)
-src/ui/                  command-palette passphrase feedback motion themed-select tab-indicator almanac-controller icons
+src/ui/                  action-dispatcher(合并注册表分发) github-controller(GitHub 域操作) data-controller(数据运维)
+                         command-palette passphrase feedback motion themed-select tab-indicator almanac-controller icons
 src/ui/views/            home entries entry-cards editor reader chronicle(calendar+almanac) insights github settings data about page-heading hero-paper index
-src/styles/              tokens base controls dialogs glass pages home entries editor reader insights github tabs surfaces shell settings chronicle motion focus
+src/styles/              tokens base controls dialogs glass pages home entries editor reader insights github tabs surfaces shell settings chronicle motion floating focus
 scripts/                 build-css dev-server github-proxy github-transport diagnose-github deploy version style-order.json qa-browser.py restore-fonts.py pack-with-local-fonts.py
 tests/                   *.test.js 与 tests/support/styles.js
 assets/                  vigil.css（生成物，勿手改）、壁纸/纹样/印记等素材      fonts/  用户自备字体（不提交二进制）
@@ -60,7 +61,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 
 要点：
 - `core/` 只放纯函数，可在 Node 测试；**DOM 与全局状态只在 `main.js` 与 `ui/`**。
-- 视图函数 `xxxView(state)` 返回 HTML 字符串，由 `main.js` 的 `render()` 写入并挂载控制器（编辑器在 `render()` 里 `mountUnifiedEditor`）。事件不在视图里绑，统一走 `data-action` 委托；新增交互按此模式加 `case`。
+- 视图函数 `xxxView(state)` 返回 HTML 字符串，由 `main.js` 的 `render()` 写入并挂载控制器（编辑器在 `render()` 里 `mountUnifiedEditor`）。事件不在视图里绑，统一走 `data-action` 委托；新增交互按所属域在 `main.js` 本地 `actions` 或对应控制器的 `actions` 注册 handler，由 `createActionDispatcher` 合并分发。
 - 所有资源、脚本、`api/...` 地址用**相对路径**（支持 `/vigil/` 子路径部署）。
 
 ## 4. 数据与存储（红线）
@@ -83,7 +84,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 1. 所有正式手记读写只经 `LocalEntryRepository`。读到损坏/异常结构 → 进入只读并报错，**绝不以空数组覆盖**。
 2. 删除、恢复快照、导入、任务回写**之前先建快照**；当前手记非空而快照失败 → 取消覆盖。
 3. 导入只支持「确认后替换」，失败时现有数据不变；备份/导出只含正式手记（不含草稿、背景图、GitHub 内容、令牌）。
-4. 键名不得改；不做静默迁移；Schema v1 与原项目「schema v2」是两套东西，不声称兼容 v2.8.2。
+4. 键名不得改；不做静默迁移；Schema v1 与原项目「schema v2」是两套东西。原 v2.8.2 的数据迁移、存储 Schema 与加密格式兼容均为非目标，不要重新列为发布门槛。
 5. 任务回写前须确认原文该行未变，否则拒绝。
 
 ## 5. 安全与 GitHub 约定
@@ -138,6 +139,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 - **字体**：`VigilTitle`(`fonts/titlefont.ttf`，回退宋体)、`VigilText`(`fonts/textfont.ttf`，回退苹方/雅黑)；用户自备，不提交二进制，缺失只提示并回退。
 - **动效**：`--vigil-ease`、`--vigil-spring`；设置可选轻盈回弹/更克制/关闭；**所有动画必须服从 `prefers-reduced-motion`**，并且「要平滑，不要生硬」（位置、尺寸、透明度同曲线过渡）。
 - **全局浮动**：统一维护 `src/ui/floating.js` 与 `src/styles/floating.css`，只给最外层界面面板加轻微 3D 角度，嵌套元素随父面板移动，排除侧栏与顶栏；不分散写逐组件鼠标监听或倾斜规则。设置 `floating` 与幅度 `floatingIntensity`（0–100%，默认 50%）放在既有外观键中，在「外观」中与 Spectral Drape 相邻，支持热切换；减少动效、触屏、关闭动效与后台时停用。
+- 浮动透视和实际倾角必须经 `floatingGeometry()` 按未变换尺寸约束，尺寸变化由共享 ResizeObserver 更新；禁止恢复所有页面共用固定 1800px 透视的旧做法。长列表与数百节长文需验证无极端投影放大，不能只测短稿纸。
 - **滚动条全站隐藏**（不影响滚轮/触控/键盘）；鼠标点击不出现焦点方框，只有键盘 Tab 时显示淡淡圆角光晕（`focus.css`）。
 - 布局宽度验证：320 / 390 / 768–810 / 1024 / 1440 / 1672 px，**不允许横向溢出**；≤900px 侧栏收为顶部并带底部快捷导航。
 - 内置背景四个（晴岚、薄雾、素岸、月汐）各用不同文件，另有「我的背景」（IndexedDB）与纯色；玻璃场景图与当前壁纸一一对应采样。
@@ -160,7 +162,6 @@ H1–H6、有序/无序/任务列表、表格、围栏代码（`~~~` 也可）�
 - 版本唯一来源 `package.json`；`scripts/version.mjs` 同步：`package.json`（version+description）、`index.html` 侧栏、`src/core/diagnostics.js`（`APP_VERSION`、`RELEASE_NAME`）、`README.md` 标题、`CHANGELOG.md` 新段落；`--check` 必须通过（`tests/release-173.test.js` 也会校验）。发布名两个汉字（清简、流光、定框…），显示在「关于」页。
 - `CHANGELOG.md` 段落格式：`## vX.Y.Z · 名称` + **加粗一句话概述** + 分节（编辑器 / 修复 / 交互 / 文档与测试资料 / 清理…）+ 要点列表；写清用户可感知的变化与删除了什么。
 - 行为改变要同步：`docs/USER-GUIDE.md`、`docs/ARCHITECTURE.md`（尤其样式/布局描述）、`src/ui/views/about.js` 的「当前版本」三条亮点、必要时 `docs/QA.md`、`docs/PRODUCT.md` 状态表。
-- 已知文档漂移（遇到顺手修）：`fonts/README.md` 提到 `src/styles/foundation.css`（实为 `tokens.css`）；`docs/ARCHITECTURE.md` §5 的模块顺序清单缺 `focus.css`，开头写「版本 1.7.1」。
 
 ## 11. 测试约定
 - 分层：单元/集成（`npm test`）· 离线浏览器回归（`qa-browser.py`，注意它默认找 `/usr/bin/chromium`，Windows 上需 `channel='msedge'`）· 网络诊断 · 部署健康检查。
@@ -173,7 +174,7 @@ H1–H6、有序/无序/任务列表、表格、围栏代码（`~~~` 也可）�
 
 ## 13. 常见任务清单
 - **新增页面**：`ui/views/xxx.js` 返回 HTML → 在 `views/index.js` 注册 → `main.js` 路由与 `data-action`；标题用 `pageHeading`；补 CSS 模块规则与测试。
-- **新增 data-action**：在 `main.js` 事件委托的 switch 加 `case`；按钮带 `aria-label`/`title`。
+- **新增 data-action**：按所属域在 `main.js` 本地 `actions` 或 `githubController.actions` / `dataController.actions` 注册 handler；不要在视图里绑定事件，按钮带 `aria-label`/`title`，并补 action 覆盖测试。
 - **新增存储键**：先评估必要性；用独立常量；读失败不得覆盖；补负面用例；更新本文第 4 节与 `ARCHITECTURE.md`。
 - **改样式**：改模块 → `npm run build:css` → 浏览器实测多宽度/夜间/减少动效 → 清死规则 → 更新契约测试。
 - **加素材**：放 `assets/`，在 CSS 源里写根相对路径；删素材前 grep 引用（含 `tests/ui-reference.test.js` 的素材清单）。
@@ -184,4 +185,4 @@ H1–H6、有序/无序/任务列表、表格、围栏代码（`~~~` 也可）�
 - 浏览器验证：Playwright（Python）+ `chromium.launch(channel='msedge', headless=True)`；复用 `scripts/qa-browser.py` 的页面装配逻辑（把真实模块内联为 blob，离线加载），点击 `[data-action=new]` 进入编辑器。
 
 ## 15. 未实现 / 边界（别当成已完成）
-OAuth、本地↔GitHub 自动双向同步、远端重命名、合并差异、原项目 v2.8.2 数据迁移（缺样本）、自绘取色器/日期选择器、纸张 3D/翻页动画、竖排与画卷首页、多语言热切换（仅简体中文）、语义搜索、语音/附件。真实私有仓库、组织权限与原生 git-crypt CLI 文件互操作只能在用户自己的环境验证。
+OAuth、本地↔GitHub 自动双向同步、远端重命名、合并差异、自绘取色器/日期选择器、纸张 3D/翻页动画、竖排与画卷首页、多语言热切换（仅简体中文）、语义搜索、语音/附件。原 v2.8.2 的数据迁移、存储 Schema 与加密格式兼容是明确非目标，不属于待实现或待验证清单。真实私有仓库、组织权限与原生 git-crypt CLI 文件互操作只能在用户自己的环境验证。

@@ -39,7 +39,9 @@ test('v1.7.3: 服务器锁定代理时不再显示代理表单与 Clash 按钮',
   assert.doesNotMatch(locked,/github-proxy-clash|ghProxyHost/);
   const local=githubView({github:{...gh,proxyLocked:false},drafts:[],entries:[]});
   assert.match(local,/github-proxy-clash/);
-  assert.match(read('src/main.js'),/gh\.proxyLocked=data\.locked===true/);
+  const controller=read('src/ui/github-controller.js');
+  assert.match(controller,/gh\.proxyLocked=data\.locked===true/);
+  assert.doesNotMatch(controller,/(?:from\s*|import\s*\(\s*)['"][^'"]*main\.js['"]/);
   assert.match(read('scripts/github-proxy.mjs'),/const USER_AGENT=`Vigil\/\$\{VERSION\}`/);
   assert.doesNotMatch(read('scripts/github-proxy.mjs'),/1\.5\.6/);
 });

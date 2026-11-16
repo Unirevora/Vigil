@@ -2,19 +2,17 @@ import {LocalEntryRepository} from './storage/repository.js';
 import {DraftRepository,NEW_DRAFT_ID} from './storage/drafts.js';
 import {BackupRepository} from './storage/backups.js';
 import {storageFootprint} from './storage/footprint.js';
-import {parseImportText,downloadJson} from './storage/transfer.js';
-import {encryptEntries,decryptEntries,isEncryptedArchive,downloadEncryptedText,MAX_ENCRYPTED_FILE_BYTES} from './storage/encrypted-transfer.js';
 import {buildEntry,filterEntries,sortEntries} from './core/entries.js';
 import {todayISO,charCount} from './core/format.js';
 import {shiftMonth} from './core/calendar.js';
 import {addChinaDays} from './core/almanac.js';
 import {renderMarkdown} from './core/markdown.js';
 import {mountAlmanac} from './ui/almanac-controller.js';
-import {GithubClient,GITHUB_CONFIG_KEY,normalizeRepoConfig,isMarkdownPath,normalizePath} from './github/api.js';
-import {inspectGithubRepository} from './github/connection.js';
-import {githubDraftKey,githubDraftSnapshot,githubNoteTitle} from './github/notebook.js';
-import {checkGithubBrowserPaths} from './github/browser-diagnostics.js';
-import {importGitCryptKeyFile,encryptGitCryptBytes,decryptGitCryptBytes,isGitCryptBlob,encodeGitCryptText,decodeGitCryptText} from './security/git-crypt.js';
+import {createActionDispatcher} from './ui/action-dispatcher.js';
+import {createGithubController} from './ui/github-controller.js';
+import {createDataController} from './ui/data-controller.js';
+import {GithubClient,GITHUB_CONFIG_KEY,normalizeRepoConfig} from './github/api.js';
+import {githubDraftKey,githubDraftSnapshot} from './github/notebook.js';
 import {icon} from './ui/icons.js';
 import {entriesCards} from './ui/views/entry-cards.js';
 import {VIEWS,VIEW_TITLES} from './ui/views/index.js';
@@ -22,7 +20,6 @@ import {SETTINGS_TABS} from './ui/views/settings.js';
 import {KATEX_VERSION} from './core/math.js';
 import {collectDiagnostics,formatDiagnostics} from './core/diagnostics.js';
 import {showToast,confirmDialog} from './ui/feedback.js';
-import {requestPassphrase} from './ui/passphrase.js';
 import {mountCommandPalette} from './ui/command-palette.js';
 import {playEntranceMotion,animateEditorFrame} from './ui/motion.js';
 import {createFloatingSurfaces} from './ui/floating.js';
@@ -32,7 +29,7 @@ import {preparePhoto,createVisualAssets} from './appearance/background.js';
 import {initLiquidGlass} from './glass/liquid-glass.js';
 import {createSpectralDrape} from './effects/spectral-drape.js';
 import {mountThemedSelects,closeThemedSelect} from './ui/themed-select.js';
-import {tasksFromEntries,toggleTask} from './insights/insights.js';
+import {tasksFromEntries} from './insights/insights.js';
 import {syncTabIndicators,watchTabIndicatorLayout} from './ui/tab-indicator.js';
 watchTabIndicatorLayout();
 
@@ -73,8 +70,6 @@ let glass=null; // scene sampler is refreshed after every theme / wallpaper chan
 const visualAssets=createVisualAssets();
 const spectralDrape=createSpectralDrape(document.querySelector('#spectralDrape'));
 const floatingSurfaces=createFloatingSurfaces();
-let requireEncryptedImport=false;
-let gitCryptLocalMode='';
 const SIDEBAR_STORAGE_KEY='vigil-sidebar-collapsed-v1';
 const MOBILE_NAV_KEY='vigil-mobile-nav-open-v1';
 const mobileMedia=window.matchMedia('(max-width: 900px)');
@@ -374,46 +369,6 @@ async function startGithubEditor(){
   state.view='editor';render();window.scrollTo(0,0);
   unifiedEditor?.focus();
 }
-async function saveGithubEntry(){
-  if(state.editorOrigin!=='github'||!state.draft||!gh.note||!gh.connected){
-    showToast('远端文件会话已失效，请先保存草稿后重新连接',{error:true});return;
-  }
-  trackDraftFromInputs();
-  const savedContent=state.draft.content;
-  const note=gh.note;
-  if(!gitClient.canWrite){
-    saveDraftLocal();showToast('这是只读仓库。请到 GitHub 仓库页提供 Contents 读写 Token。',{error:true});return;
-  }
-  const btn=document.querySelector('[data-action="save"]');
-  if(btn?.disabled)return;
-  if(btn)btn.disabled=true;
-  updateDraftStatus('正在检查 SHA 与加密规则…');
-  try{
-    const rule=await gitClient.getEncryptionRule(note.path);
-    const mustEncrypt=Boolean(note.encrypted||rule.encrypted);
-    if(mustEncrypt&&!gh.cryptoKey)throw new Error('文件受 git-crypt 保护，必须先导入仓库密钥，禁止明文提交。');
-    // Read-after-write is deliberately not coupled to commit success. A list
-    // refresh failure must never make the user retry a successful PUT.
-    const result=await gitClient.saveNote({path:note.path,content:savedContent,sha:note.sha,
-      encrypted:mustEncrypt,key:gh.cryptoKey});
-    gh.note={...note,content:savedContent,sha:result.sha||note.sha,
-      encrypted:mustEncrypt,locked:false,htmlUrl:result.htmlUrl||note.htmlUrl};
-    try{drafts.remove(draftKey());refreshDrafts();}
-    catch(error){state.draftError=error.message;}
-    try{gh.files=await gitClient.listFolder(gh.folder);}
-    catch{showToast('提交已成功，但文件列表刷新失败；请稍后手动刷新。');}
-    state.readerSource='github';state.entriesSource='github';
-    navigate('reader');showToast('GitHub 手记已提交（SHA 已更新）');
-  }catch(error){
-    saveDraftLocal();updateDraftStatus('提交失败 · 草稿保留在此设备');
-    ghError(error);
-  }finally{
-    if(state.view==='editor'&&state.editorOrigin==='github'){
-      const current=document.querySelector('[data-action="save"]');
-      if(current)current.disabled=false;
-    }
-  }
-}
 async function resumeDraft(key){
   if(key.startsWith('github:')){
     if(gh.connected&&gh.note&&githubDraftKey(gh.config,gh.note.path)===key)await startGithubEditor();
@@ -428,19 +383,9 @@ async function readEntry(id){
   if(!state.entries.some(e=>e.id===id)){showToast('手记不存在',{error:true});return;}
   state.selectedId=id;state.readerSource='local';state.entriesSource='local';navigate('reader');
 }
-function writeEntries(next){
-  if(repo.readOnly){showToast('存储已保护，无法覆盖',{error:true});return false;}
-  try{state.entries=repo.save(next);state.storageError='';return true;}
-  catch(err){state.storageError=err.message;showToast(`写入失败：${err.message}`,{error:true});return false;}
-}
-function makeBackup(entries,reason,label){
-  if(state.backupUnsafe){showToast('备份结构异常，已阻止覆盖',{error:true});return false;}
-  try{backups.create(entries,reason,label);refreshBackups();return true;}
-  catch(err){state.backupError=err.message;showToast(`备份失败：${err.message}`,{error:true});return false;}
-}
 async function saveEntry(){
   if(!state.draft)return;
-  if(state.editorOrigin==='github'){await saveGithubEntry();return;}
+  if(state.editorOrigin==='github'){await githubController.saveGithubEntry();return;}
   // Catch active UI before saving when not in preview mode.
   if(unifiedEditor||$('#entryContent'))trackDraftFromInputs();
   let entry,next,old;
@@ -449,98 +394,11 @@ async function saveEntry(){
     entry=buildEntry(state.draft,old);
     next=old?state.entries.map(e=>e.id===old.id?entry:e):[...state.entries,entry];
   }catch(err){showToast(err.message,{error:true});return;}
-  if(!writeEntries(next)){scheduleDraftSave();return;}
-  const ok=makeBackup(state.entries,'autosave','保存手记');
+  if(!dataController.writeEntries(next)){scheduleDraftSave();return;}
+  const ok=dataController.makeBackup(state.entries,'autosave','保存手记');
   try{drafts.remove(draftKey());refreshDrafts();}catch(err){state.draftError=err.message;}
   state.selectedId=entry.id;navigate('reader');
   showToast(ok?'手记已保存':'已保存手记，备份未成功，请导出 JSON',{error:!ok});
-}
-async function favoriteEntry(id){
-  const current=state.entries.find(e=>e.id===id);if(!current)return;
-  const next=state.entries.map(e=>e.id===id?{...e,favorite:!e.favorite,updatedAt:new Date().toISOString()}:e);
-  if(writeEntries(next)){render();showToast(current.favorite?'已取消收藏':'已加入收藏');}
-}
-async function deleteEntry(id){
-  const entry=state.entries.find(e=>e.id===id);if(!entry)return;
-  if(!await confirmDialog({title:'删除这篇手记？',description:`「${entry.title}」将从文库删除，删除前会创建备份。`,confirmText:'删除',danger:true}))return;
-  if(!makeBackup(state.entries,'before-delete',`删除「${entry.title}」前`))return;
-  if(writeEntries(state.entries.filter(e=>e.id!==id))){state.selectedId=null;navigate('entries');showToast('已删除，可从备份恢复');}
-}
-function exportAll(){
-  if(repo.readOnly)return showToast('存储异常，禁止导出不完整数据',{error:true});
-  try{downloadJson(state.entries,'vigil-notes');showToast('已开始下载 JSON 备份');}
-  catch(err){showToast(err.message,{error:true});}
-}
-function exportFiltered(){
-  if(repo.readOnly)return showToast('存储异常，禁止导出不完整数据',{error:true});
-  const list=filterEntries(state.entries,state.query,state.order,state.filters);
-  if(!list.length)return showToast('当前没有可导出的手记',{error:true});
-  try{downloadJson(list,'vigil-selection');showToast(`已导出当前结果：${list.length} 篇手记`);}
-  catch(err){showToast(err.message,{error:true});}
-}
-async function exportEncrypted(){
-  if(repo.readOnly)return showToast('存储异常，不能导出不完整数据',{error:true});
-  let password=await requestPassphrase({mode:'export'});
-  if(password===null)return;
-  try{
-    const text=await encryptEntries(state.entries,password);
-    downloadEncryptedText(text,'vigil-encrypted-notes');
-    showToast('口令加密备份已生成。请妥善保管口令。');
-  }catch(err){showToast(`加密导出失败：${err.message}`,{error:true});}
-  finally{password='';}
-}
-async function importFile(file,requireEncrypted=false){
-  if(!file||repo.readOnly)return;
-  let incoming;
-  try{
-    if(file.size>MAX_ENCRYPTED_FILE_BYTES)throw new Error('文件不能超过 12 MB。');
-    const text=await file.text();
-    let decoded;
-    try{decoded=JSON.parse(text);}catch{throw new Error('JSON 文件格式无效。');}
-    if(isEncryptedArchive(decoded)){
-      let password=await requestPassphrase({mode:'import'});
-      if(password===null)return;
-      try{incoming=await decryptEntries(decoded,password);}
-      finally{password='';}
-    }else{
-      if(requireEncrypted)throw new Error('所选文件不是新版 Vigil 加密备份。');
-      incoming=parseImportText(text);
-    }
-  }catch(err){showToast(`导入失败：${err.message}`,{error:true});return;}
-  if(!await confirmDialog({
-    title:'导入并替换当前手记？',
-    description:`文件含 ${incoming.length} 篇，将替换目前的 ${state.entries.length} 篇。备份失败会取消导入。`,
-    confirmText:'备份并导入',danger:true
-  }))return;
-  if(state.entries.length&&!makeBackup(state.entries,'before-import','导入前备份'))return;
-  if(writeEntries(incoming)){
-    state.query='';state.filters={};navigate('entries');showToast('手记导入成功');
-  }
-}
-async function clearDemo(){
-  const count=state.entries.filter(e=>e.demo).length;if(!count)return;
-  if(!await confirmDialog({title:'清除示例手记？',description:`仅清除 ${count} 篇示例内容。`,confirmText:'清除',danger:true}))return;
-  if(!makeBackup(state.entries,'before-delete','清除示例前'))return;
-  if(writeEntries(state.entries.filter(e=>!e.demo))){render();showToast('已清除示例');}
-}
-function createBackup(){
-  if(repo.readOnly)return;
-  if(makeBackup(state.entries,'manual','手动备份')){render();showToast('备份已创建');}
-}
-async function restoreBackup(id){
-  const item=state.backups.find(b=>b.id===id);if(!item)return;
-  if(!await confirmDialog({title:'恢复这份备份？',description:`将当前文库替换为 ${item.entries.length} 篇手记，恢复前也会先创建安全备份。`,confirmText:'恢复',danger:true}))return;
-  const target=item.entries.map(e=>({...e}));
-  if(!makeBackup(state.entries,'before-restore','恢复前备份'))return;
-  if(writeEntries(target)){state.filters={};navigate('entries');showToast('已恢复备份');}
-}
-async function deleteBackup(id){
-  if(!await confirmDialog({title:'删除这份备份？',description:'当前手记不受影响，但此副本无法再恢复。',confirmText:'删除',danger:true}))return;
-  try{backups.remove(id);refreshBackups();render();}catch(err){showToast(err.message,{error:true});}
-}
-async function discardDraft(id){
-  if(!await confirmDialog({title:'舍弃这份草稿？',description:'未正式保存的修改将丢失。',confirmText:'舍弃',danger:true}))return;
-  try{drafts.remove(id);refreshDrafts();render();}catch(err){showToast(err.message,{error:true});}
 }
 function scheduleMarkdownPreview(){
   if(previewFrame!==null)cancelAnimationFrame(previewFrame);
@@ -796,307 +654,6 @@ async function removeAppearanceImage(key){
   }catch(err){showToast(err.message,{error:true});}
 }
 
-// Only the local server can use the configured proxy, never an arbitrary URL.
-// The status endpoint is strictly local; /diagnose performs an actual upstream test.
-function supportsLocalGithubProxy(){
-  return gitClient.canUseLocalRelay;
-}
-function ensureGithubProxyStatus(){
-  if(gh.proxyLoaded||!supportsLocalGithubProxy())return;
-  gh.proxyLoaded=true;
-  fetch('api/github/proxy',{cache:'no-store'}).then(response=>{
-    if(!response.ok||response.headers.get('X-Vigil-Github-Proxy')!=='1')throw Error('LOCAL_RELAY_MISSING');
-    return response.json();
-  }).then(data=>{
-    gh.proxySettings={...gh.proxySettings,...data.settings};
-    gh.proxyEffective=data.effective||null;
-    gh.proxyLocked=data.locked===true; // server deployment: proxy fixed to direct
-    if(state.view==='github'&&!gh.loading&&!gh.proxyBusy)render();
-  }).catch(()=>{gh.proxyEffective=null;});
-}
-async function ghApplyProxy(){
-  if(!supportsLocalGithubProxy()){
-    gh.error='仅项目自带的 Node 本地服务支持代理设置，请运行 npm run dev 后访问 http://127.0.0.1:5173/。';
-    render();return;
-  }
-  const mode=$('#ghProxyMode')?.value||'env';
-  const host=$('#ghProxyHost')?.value?.trim()||'127.0.0.1';
-  const port=Number($('#ghProxyPort')?.value||7890);
-  gh.proxySettings={mode,host,port};gh.proxyExpanded=true;
-  gh.proxyBusy=true;gh.loading=true;gh.error='';gh.health='';render();
-  try{
-    const response=await fetch('api/github/proxy',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({mode,host,port}),cache:'no-store'
-    });
-    const info=await response.json();
-    if(!response.ok||!info.ok)throw new Error(info.message||'代理配置失败');
-    gh.proxySettings={...gh.proxySettings,...info.settings};
-    gh.proxyEffective=info.effective||null;
-    gh.proxyLoaded=true;
-    gh.loading=false;gh.proxyBusy=false;
-    await ghTestNetwork();
-  }catch(error){
-    gh.error='代理设置失败：'+String(error.message||error);
-    showToast(gh.error,{error:true});
-  }finally{gh.loading=false;gh.proxyBusy=false;render();}
-}
-async function ghTestNetwork(){
-  gh.loading=true;gh.error='';gh.health='';render();
-  try{
-    if(supportsLocalGithubProxy()){
-      const response=await fetch('api/github/diagnose',{cache:'no-store'});
-      if(response.headers.get('X-Vigil-Github-Proxy')==='1'){
-        const info=await response.json();
-        gh.proxyEffective=info.proxy||gh.proxyEffective;
-        if(!info.ok)throw new Error(`${info.message||'无法访问 GitHub'}（${info.detail||info.code||'NETWORK'}；${info.proxy?.source||'DIRECT'}）。`);
-        gh.health=`GitHub 示例仓库 JSON 已完整读取 · ${info.proxy?.source||'DIRECT'}${info.proxy?.endpoint?' · '+info.proxy.endpoint:''} · HTTP ${info.upstreamStatus}。若连接仍失败，请使用匿名公开示例验证具体请求阶段。`;
-        showToast('GitHub 公共 API 网络测试成功');return;
-      }
-    }
-    // Static deployments or a non-Vigil local server: public no-token probe.
-    const trial=new GithubClient();trial.setConfig({owner:'octocat',repo:'Hello-World'});
-    const meta=await trial.getRepository();
-    gh.health=`GitHub 网络可访问（${trial.transportLabel}）· ${meta.full_name||'octocat/Hello-World'}`;
-    showToast('GitHub 公共 API 可访问');
-  }catch(err){
-    gh.error=`网络诊断：${err.message}`;
-    showToast(gh.error,{error:true});
-  }finally{gh.loading=false;render();}
-}
-
-// Check the actual BROWSER fetch path, not only the Node CLI. This never
-// attaches credentials or reuses a private repository URL / prior PAT.
-async function ghBrowserCheck(){
-  if(gh.browserBusy)return;
-  gh.formDraft={
-    repoUrl:$('#ghRepo')?.value||gh.formDraft?.repoUrl||'',
-    branch:$('#ghBranch')?.value||gh.formDraft?.branch||'',
-    folder:$('#ghFolder')?.value||gh.formDraft?.folder||''
-  };
-  gh.browserBusy=true;
-  gh.browserCheck='正在从当前浏览器分别检查四个公开 GitHub 请求…';
-  render();
-  try{
-    gh.browserCheck=(await checkGithubBrowserPaths()).text;
-  }catch(error){
-    gh.browserCheck=`浏览器检查无法完成：${String(error?.name||'NETWORK')}`;
-  }finally{
-    gh.browserBusy=false;
-    if(state.view==='github')render();
-  }
-}
-
-// GitHub browsing and editing. Repository config is stored; the token NEVER is.
-function ghError(err){
-  gh.error=err?.message||'GitHub 请求失败';
-  showToast(gh.error,{error:true});
-}
-async function ghConnect({publicDemo=false}={}){
-  if(gh.connected && gh.editing && gh.dirty &&
-     !await confirmDialog({title:'放弃尚未提交的修改？',description:'切换仓库连接会丢失当前编辑框内的改动。',confirmText:'继续连接',danger:true}))return;
-  // Explicit public-demo mode is isolated from ALL existing repo inputs and PATs.
-  const values=publicDemo?{
-    repoUrl:'https://github.com/octocat/Hello-World',branch:'',folder:''
-  }:{
-    repoUrl:$('#ghRepo')?.value,branch:$('#ghBranch')?.value,folder:$('#ghFolder')?.value
-  };
-  let next;
-  try{next=normalizeRepoConfig(values);}catch(err){ghError(err);render();return;}
-  const anonymous=publicDemo||Boolean($('#ghAnonymous')?.checked);
-  gh.anonymous=anonymous;
-  gh.formDraft={...values};
-  const inputToken=anonymous?'':($('#ghToken')?.value?.trim()||'');
-  const priorConfig=gitClient.config,priorToken=gitClient.token;
-  const priorReadMode=gitClient.anonymousConnectionMode,priorRelayWarning=gitClient.relayWarning;
-  const changedRepo=gh.config&&(gh.config.owner!==next.owner||gh.config.repo!==next.repo);
-  gitClient.setConfig(next);
-  // A previous PAT is intentionally retained for editing, but an explicit
-  // anonymous connection drops it rather than silently using stale auth.
-  if(anonymous){
-    gitClient.forgetToken();
-    // User explicitly selected anonymous browsing. If the local relay fails,
-    // a read-only browser GET may be attempted without exposing a PAT.
-    gitClient.setAnonymousConnectionMode('auto');
-  }else{
-    gitClient.setAnonymousConnectionMode('relay');
-    if(inputToken)gitClient.setToken(inputToken);
-  }
-  gh.loading=true;gh.error='';gh.health='';gh.connectionStage='metadata';
-  gh.connectTrace='';gh.attributeWarning='';
-  render();
-  try{
-    const {meta,files,attributes,attributesWarning}=await inspectGithubRepository(gitClient,{
-      folder:next.folder,onStage:step=>{gh.connectionStage=step;}
-    });
-    if(changedRepo)gh.cryptoKey=null;
-    gh.config=next;gh.connected=true;gh.hasToken=gitClient.canWrite;
-    gh.defaultBranch=meta.default_branch||'main';
-    gh.folder=next.folder;gh.files=files;gh.attributes=attributes;
-    gh.attributeWarning=attributesWarning;
-    gh.connectTrace='';gh.note=null;gh.editing=false;gh.dirty=false;
-    gh.showSettings=false;gh.formDraft=null;
-    gh.health=`已通过${gitClient.transportLabel}连接 · ${meta.full_name||next.owner+'/'+next.repo}${anonymous?' · 匿名访问':''}${gitClient.relayWarning?' · '+gitClient.relayWarning:''}`;
-    try{storage.setItem(GITHUB_CONFIG_KEY,JSON.stringify(next));}catch{}
-    state.entriesSource='github';state.readerSource='github';state.view='entries';
-    showToast('仓库已连接，已添加到全部手记');
-  }catch(err){
-    gitClient.config=priorConfig;
-    gitClient.setToken(priorToken);
-    gitClient.anonymousConnectionMode=priorReadMode;
-    gitClient.relayWarning=priorRelayWarning;
-    gh.hasToken=gitClient.canWrite;
-    gh.connectionStage=err.stage||gh.connectionStage;
-    // Safe client-side trace: transport name, HTTP status / error code only.
-    // Never includes repository URL, Authorization, file content or keys.
-    // No URLs, tokens, or response bodies. This disambiguates a rejected
-    // browser fetch from a successful response whose JSON stream failed.
-    const traceStages={fetch:'发送请求', 'response-headers':'检查响应头',
-      'response-body':'读取 JSON','response-check':'校验状态','response-verified':'完成验证'};
-    gh.connectTrace=[`连接阶段：${gh.connectionStage||'未知'}`,
-      ...gitClient.requestTrace.map(item=>`${item.route} · ${item.status?`HTTP ${item.status}`:
-        `${traceStages[item.phase]||'未知环节'} · ${item.error||'NETWORK'}${item.hint?` · ${item.hint}`:''}`}`)]
-      .join('\n');
-    ghError(err);
-  }finally{gh.loading=false;render();}
-}
-
-async function ghList(folder){
-  if(gh.editing&&gh.dirty&&!await confirmDialog({title:'放弃仓库修改？',description:'当前修改尚未提交到 GitHub。',confirmText:'放弃修改',danger:true}))return;
-  gh.loading=true;gh.error='';render();
-  try{gh.files=await gitClient.listFolder(folder);gh.folder=folder;gh.note=null;gh.editing=false;gh.dirty=false;}
-  catch(err){ghError(err);}
-  finally{gh.loading=false;render();}
-}
-async function ghOpen(path){
-  if(gh.editing&&gh.dirty&&!await confirmDialog({title:'放弃仓库修改？',description:'当前修改尚未提交。',confirmText:'放弃修改',danger:true}))return;
-  gh.loading=true;gh.error='';render();
-  try{
-    gh.note=await gitClient.readNote(path,{key:gh.cryptoKey});
-    gh.editing=false;gh.draftContent=gh.note.content;gh.dirty=false;
-    state.readerSource='github';state.entriesSource='github';state.view='reader';
-  }catch(err){ghError(err);}
-  finally{gh.loading=false;render();}
-}
-async function ghParent(){
-  const root=gh.config?.folder||'';
-  if(!gh.folder||gh.folder===root)return;
-  const parent=gh.folder.split('/').slice(0,-1).join('/');
-  if(root&&!(parent===root||parent.startsWith(root+'/')))return;
-  await ghList(parent);
-}
-async function ghSave(){
-  if(!gh.note||!gh.editing)return;
-  gh.loading=true;gh.error='';render(); // draftContent lives in state.
-  try{
-    const rule=await gitClient.getEncryptionRule(gh.note.path);
-    const mustEncrypt=Boolean(gh.note.encrypted||rule.encrypted);
-    if(mustEncrypt&&!gh.cryptoKey)throw new Error('当前路径需要 git-crypt 密钥，不能明文提交。');
-    const result=await gitClient.saveNote({
-      path:gh.note.path,content:gh.draftContent,sha:gh.note.sha||null,
-      encrypted:mustEncrypt,key:gh.cryptoKey
-    });
-    gh.note={...gh.note,content:gh.draftContent,encrypted:mustEncrypt,locked:false,sha:result.sha,htmlUrl:result.htmlUrl||gh.note.htmlUrl};
-    gh.editing=false;gh.dirty=false;
-    gh.files=await gitClient.listFolder(gh.folder);
-    showToast('已提交到 GitHub 仓库');
-  }catch(err){ghError(err);}
-  finally{gh.loading=false;render();}
-}
-async function ghNewConfirm(){
-  const raw=$('#ghNewPath')?.value||'';
-  let path;
-  try{
-    path=normalizePath(raw);
-    if(!isMarkdownPath(path))throw new Error('请使用 .md 或 .markdown 文件名');
-    const scope=gh.config?.folder||'';
-    if(scope&&!(path.startsWith(scope+'/')))throw new Error('新笔记路径需位于设定的笔记文件夹内');
-  }catch(err){ghError(err);render();return;}
-  let encrypted;
-  try{encrypted=(await gitClient.getEncryptionRule(path)).encrypted;}
-  catch(err){ghError(err);return;}
-  if(encrypted&&!gh.cryptoKey){ghError(new Error('该路径匹配 git-crypt 规则，请先导入密钥，避免提交明文。'));return;}
-  const startContent=`# ${githubNoteTitle(path)}\n\n`;
-  gh.note={path,sha:null,content:startContent,encrypted,locked:false,htmlUrl:''};
-  gh.draftContent=startContent;gh.editing=false;gh.dirty=false;gh.newFileMode=false;
-  await startGithubEditor();
-}
-async function ghImportKeyFile(file){
-  if(!file)return;
-  if(file.size>1024*1024){ghError(new Error('密钥文件不能超过 1MB。'));return;}
-  let raw;
-  try{
-    raw=new Uint8Array(await file.arrayBuffer());
-    const key=await importGitCryptKeyFile(raw);
-    gh.cryptoKey=key;
-    const previous=gh.note?.path||null;
-    gh.error='';
-    showToast(`git-crypt 密钥已在本次会话中解锁 · ${key.name}`);
-    if(previous&&!gh.editing)await ghOpen(previous);
-    else render();
-  }catch(err){ghError(err);render();}
-  finally{raw?.fill(0);}
-}
-async function ghLockKey(){
-  if(gh.editing&&gh.dirty&&!await confirmDialog({title:'先放弃修改？',description:'锁定后将退出加密笔记编辑。',confirmText:'锁定',danger:true}))return;
-  gh.cryptoKey=null;
-  gh.editing=false;gh.dirty=false;
-  if(gh.note?.encrypted){gh.note={...gh.note,content:'',locked:true};gh.draftContent='';}
-  showToast('git-crypt 密钥已从本次页面会话中释放');render();
-}
-function downloadGitCryptBytes(buffer,filename){
-  const blob=new Blob([buffer],{type:'application/octet-stream'});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement('a');link.href=url;
-  link.download=filename.replace(/[^-_.\w\u3400-\u9fff]/g,'_').slice(0,140);
-  document.body.appendChild(link);link.click();link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1200);
-}
-async function localGitCrypt(file,mode){
-  if(!file||!mode)return;
-  if(!gh.cryptoKey){showToast('请先导入 git-crypt export-key 密钥文件。',{error:true});return;}
-  if(file.size>900000){showToast('git-crypt 文件不能超过 900KB。',{error:true});return;}
-  let raw=null;
-  try{
-    raw=new Uint8Array(await file.arrayBuffer());
-    const base=file.name.replace(/\.gitcrypt\.md$/i,'.md').replace(/\.decrypted\.md$/i,'.md');
-    if(mode==='decrypt'){
-      if(!isGitCryptBlob(raw))throw new Error('不是带有 git-crypt 文件头的加密文件。');
-      const clear=await decryptGitCryptBytes(raw,gh.cryptoKey);
-      // Reject non-UTF8 output: tool is for Markdown notes, not binary files.
-      decodeGitCryptText(clear);
-      downloadGitCryptBytes(clear,base.replace(/\.(md|markdown)$/i,'')+'.decrypted.md');
-      showToast('已通过 HMAC 校验并解密为本地 Markdown 文件。');
-      clear.fill(0);
-    }else{
-      if(isGitCryptBlob(raw))throw new Error('文件已经是 git-crypt 密文，无法重复加密。');
-      decodeGitCryptText(raw);
-      const cipher=await encryptGitCryptBytes(raw,gh.cryptoKey);
-      downloadGitCryptBytes(cipher,base.replace(/\.(md|markdown)$/i,'')+'.gitcrypt.md');
-      showToast('已生成 git-crypt 兼容密文。上传仓库前请确认 .gitattributes 规则。');
-    }
-  }catch(err){showToast(err.message,{error:true});}
-  finally{raw?.fill(0);}
-}
-async function ghCheck(){
-  gh.loading=true;gh.error='';render();
-  try{
-    const [meta,files,attrs]=await Promise.all([
-      gitClient.getRepository(),gitClient.listFolder(gh.folder),gitClient.readAttributes()
-    ]);
-    gh.files=files;gh.attributes=attrs;
-    gh.health=`已通过${gitClient.transportLabel}验证：${meta.full_name||gh.config.owner+'/'+gh.config.repo} · ${gh.config.branch||meta.default_branch||'默认分支'} · 当前目录 ${files.length} 项`;
-    showToast(gh.health);
-  }catch(err){gh.health='';ghError(err);}
-  finally{gh.loading=false;render();}
-}
-async function ghDisconnect(){
-  if(!await canLeave())return;
-  gitClient.forgetToken();gh.cryptoKey=null;gh.attributes='';gh.hasToken=false;gh.connected=false;
-  gh.note=null;gh.files=[];gh.error='';gh.health='';gh.formDraft=null;gh.editing=false;gh.dirty=false;gh.showSettings=false;
-  render();
-}
-
 /** Fit the editor frame to the viewport so only its body scrolls, never the page. */
 function fitEditorFrame(){
   zenFrameAnimation?.cancel();zenFrameAnimation=null;
@@ -1151,7 +708,7 @@ function render(){
     if($('#appSidebar'))settingsFrameObserver.observe($('#appSidebar'));
   }
   document.title=`${VIEW_TITLES[state.view]} · 不眠手记`;
-  if(state.view==='github')ensureGithubProxyStatus();
+  if(state.view==='github')githubController.ensureGithubProxyStatus();
   playEntranceMotion($('#mainContent'));
   if(state.view==='entries'){
     $('#searchInput')?.addEventListener('input',e=>{state.query=e.target.value;refreshList();});
@@ -1243,6 +800,119 @@ const palette=mountCommandPalette({
     }catch(err){showToast(err.message||'命令执行失败',{error:true});}
   }
 });
+function resetListFilters(){state.query='';state.filters={};render();}
+const actions={
+  'nav':async button=>{
+    if(button.dataset.tab)state.settingsTab=button.dataset.tab;
+    await leaveTo(button.dataset.to);
+  },
+  'insight-tag':button=>{state.filters={tag:button.dataset.tag||''};navigate('entries');},
+  'toggle-sidebar':button=>{toggleSidebar();},
+  'command-palette':button=>{palette.open();},
+  'theme':button=>{changeTheme();},
+  'settings-tab':button=>{setSettingsTab(button.dataset.tab);},
+  'season-tab':button=>{setSeasonTab(button.dataset.tab);},
+  'chronicle-today':button=>{chronicleToday();},
+  'about-diagnose':button=>{aboutDiagnostics();},
+  'about-copy-diagnostics':async button=>{await copyAboutDiagnostics();},
+  'editor-mode':button=>{setEditorMode(button.dataset.mode);},
+  'toggle-zen':button=>{toggleZenMode();},
+  'toggle-outline-sidebar':button=>{toggleOutlineSidebar();},
+  'close-outline-sidebar':button=>{toggleOutlineSidebar(false);},
+  'find-prev':button=>{runFind('prev');},
+  'find-next':button=>{runFind('next');},
+  'find-replace':button=>{runFind('replace');},
+  'find-replace-all':button=>{runFind('replace-all');},
+  'find-close':button=>{toggleFindBar(false);},
+  'setting-upload':button=>{
+    if(['backgroundFile','heroFile'].includes(button.dataset.input))$('#'+button.dataset.input)?.click();
+  },
+  'setting-accent':button=>{selectAppearanceOption('accent',button.dataset.color);},
+  'setting-background':button=>{
+    if(button.dataset.background==='custom')$('#backgroundFile')?.click();
+    else selectAppearanceOption('background',button.dataset.background);
+  },
+  'setting-hero':button=>{
+    if(button.dataset.hero==='custom')$('#heroFile')?.click();
+    else selectAppearanceOption('heroMode',button.dataset.hero);
+  },
+  'reset-appearance':async button=>{
+    if(await confirmDialog({title:'恢复默认设置？',description:'将外观、材质、动效与正文排版恢复为默认值，不影响手记和已上传的图片文件。',confirmText:'恢复默认'})){
+      if(saveAppearance({...DEFAULT_APPEARANCE})){render();showToast('外观与排版已恢复默认');}
+    }
+  },
+  'remove-custom-background':async button=>{await removeAppearanceImage('background');},
+  'remove-custom-hero':async button=>{await removeAppearanceImage('hero');},
+  'new':async button=>{await startEditor();},
+  'read':async button=>{await readEntry(button.dataset.id);},
+  'wiki-open':async button=>{
+    const title=button.dataset.title||'';
+    const found=state.entries.find(entry=>entry.title===title);
+    if(found)await readEntry(found.id);
+    else if(await confirmDialog({title:'创建关联手记？',description:`尚未找到「${title}」，要创建一页同名手记吗？`,confirmText:'新建手记'})){
+      await startEditor(null,{seed:{title:title.slice(0,200),date:todayISO(),content:'',tags:[],mood:''}});
+    }
+  },
+  'edit':async button=>{await startEditor(button.dataset.id);},
+  'github-edit-full':async button=>{await startGithubEditor();},
+  'entries-source':async button=>{
+    if(!await canLeave())return;
+    state.entriesSource=button.dataset.source==='github'?'github':'local';
+    state.view='entries';render();
+  },
+  'resume-draft':async button=>{await resumeDraft(button.dataset.id);},
+  'save':async button=>{await saveEntry();},
+  'leave-editor':async button=>{await leaveTo('entries');},
+  'toggle-editor-focus':button=>{toggleEditorFocus();},
+  'format':button=>{applyFormat(button.dataset.format);},
+  'editor-undo':button=>{unifiedEditor?.undo();unifiedEditor?.focus();},
+  'editor-redo':button=>{unifiedEditor?.redo();unifiedEditor?.focus();},
+  'editor-outline-jump':button=>{
+    unifiedEditor?.goToLine(Number(button.dataset.line));
+    if(window.innerWidth<1100)toggleOutlineSidebar(false);
+  },
+  'clear-search':resetListFilters,
+  'reset-list-filters':resetListFilters,
+  'filter-all':resetListFilters,
+  'filter-favorite':button=>{filterTo({favorite:!state.filters.favorite});},
+  'filter-recent':button=>{filterTo({recent:!state.filters.recent});},
+  'filter-pending':button=>{filterTo({pending:!state.filters.pending});},
+  'filter-tag':button=>{filterTo({tag:button.dataset.tag||''});},
+  'clear-filter':button=>{state.filters={};render();},
+  'toggle-order':button=>{state.order=state.order==='desc'?'asc':'desc';render();},
+  'calendar-shift':button=>{
+    const nextMonth=shiftMonth(state.calendarMonth,Number(button.dataset.offset));
+    const year=Number(nextMonth.slice(0,4));
+    if(year<1901||year>2099){showToast('风物日历支持 1901–2099 年',{error:true});return;}
+    state.calendarMonth=nextMonth;
+    state.calendarSelected=nextMonth+'-01';render();
+  },
+  'calendar-today':button=>{
+    state.calendarMonth=todayISO().slice(0,7);state.calendarSelected=todayISO();render();
+  },
+  'calendar-day':button=>{state.calendarSelected=button.dataset.date;render();},
+  'calendar-month':button=>{state.filters={month:button.dataset.month};navigate('entries');},
+  'calendar-date-list':button=>{state.filters={day:button.dataset.date};navigate('entries');},
+  'calendar-open-term':button=>{
+    state.almanacDate=button.dataset.date;state.seasonTab='almanac';navigate('chronicle');
+  },
+  'almanac-reset':button=>{almanacController?.reset();},
+  'almanac-day':button=>{
+    if(almanacController)almanacController.preview(addChinaDays(state.almanacDate,Number(button.dataset.days)));
+  }
+};
+const githubController=createGithubController({
+  state,gh,gitClient,storage,$,render,navigate,canLeave,startGithubEditor,
+  drafts,refreshDrafts,draftKey,trackDraftFromInputs,saveDraftLocal,updateDraftStatus
+});
+const dataController=createDataController({
+  state,repo,drafts,backups,$,render,navigate,refreshDrafts,refreshBackups
+});
+const dispatchAction=createActionDispatcher({
+  ...actions,
+  ...githubController.actions,
+  ...dataController.actions
+});
 document.addEventListener('keydown',event=>{
   if(event.key!=='/'||event.ctrlKey||event.metaKey||event.altKey||state.view!=='entries')return;
   const target=event.target;
@@ -1260,157 +930,7 @@ document.body.addEventListener('click',async e=>{
   const opened=e.target.closest('.editor-dropdown-menu > summary');
   if(opened)closeEditorMenus(opened.parentElement);
   const btn=e.target.closest('[data-action]');if(!btn)return;
-  const a=btn.dataset.action,id=btn.dataset.id;
-  switch(a){
-    case 'nav':
-      if(btn.dataset.tab)state.settingsTab=btn.dataset.tab;
-      await leaveTo(btn.dataset.to);break;
-    case 'insight-tag':state.filters={tag:btn.dataset.tag||''};navigate('entries');break;
-    case 'task-toggle':{
-      const id=btn.dataset.id,source=btn.dataset.source,line=Number(btn.dataset.line);
-      try{
-        const changed=toggleTask(state.entries,id,line,source);
-        if(!makeBackup(state.entries,'before-task','修改任务前快照'))break;
-        if(writeEntries(changed)){render();showToast('已同步更新原手记中的任务状态');}
-      }catch(err){showToast(err.message,{error:true});}break;
-    }
-    case 'toggle-sidebar':toggleSidebar();break;
-    case 'command-palette':palette.open();break;
-    case 'theme':changeTheme();break;
-    case 'settings-tab':setSettingsTab(btn.dataset.tab);break;
-    case 'season-tab':setSeasonTab(btn.dataset.tab);break;
-    case 'chronicle-today':chronicleToday();break;
-    case 'about-diagnose':aboutDiagnostics();break;
-    case 'about-copy-diagnostics':await copyAboutDiagnostics();break;
-    case 'editor-mode':setEditorMode(btn.dataset.mode);break;
-    case 'toggle-zen':toggleZenMode();break;
-    case 'toggle-outline-sidebar':toggleOutlineSidebar();break;
-    case 'close-outline-sidebar':toggleOutlineSidebar(false);break;
-    case 'find-prev':runFind('prev');break;
-    case 'find-next':runFind('next');break;
-    case 'find-replace':runFind('replace');break;
-    case 'find-replace-all':runFind('replace-all');break;
-    case 'find-close':toggleFindBar(false);break;
-    case 'setting-upload':
-      if(['backgroundFile','heroFile'].includes(btn.dataset.input))$('#'+btn.dataset.input)?.click();
-      break;
-    case 'setting-accent':selectAppearanceOption('accent',btn.dataset.color);break;
-    case 'setting-background':
-      if(btn.dataset.background==='custom')$('#backgroundFile')?.click();
-      else selectAppearanceOption('background',btn.dataset.background);break;
-    case 'setting-hero':
-      if(btn.dataset.hero==='custom')$('#heroFile')?.click();
-      else selectAppearanceOption('heroMode',btn.dataset.hero);break;
-    case 'reset-appearance':
-      if(await confirmDialog({title:'恢复默认设置？',description:'将外观、材质、动效与正文排版恢复为默认值，不影响手记和已上传的图片文件。',confirmText:'恢复默认'})){
-        if(saveAppearance({...DEFAULT_APPEARANCE})){render();showToast('外观与排版已恢复默认');}
-      }break;
-    case 'remove-custom-background':await removeAppearanceImage('background');break;
-    case 'remove-custom-hero':await removeAppearanceImage('hero');break;
-    case 'new':await startEditor();break;
-    case 'read':await readEntry(id);break;
-    case 'wiki-open':{
-      const title=btn.dataset.title||'';
-      const found=state.entries.find(entry=>entry.title===title);
-      if(found)await readEntry(found.id);
-      else if(await confirmDialog({title:'创建关联手记？',description:`尚未找到「${title}」，要创建一页同名手记吗？`,confirmText:'新建手记'})){
-        await startEditor(null,{seed:{title: title.slice(0,200),date:todayISO(),content:'',tags:[],mood:''}});
-      }
-      break;
-    }
-    case 'edit':await startEditor(id);break;
-    case 'github-edit-full':await startGithubEditor();break;
-    case 'entries-source':{
-      if(!await canLeave())break;
-      state.entriesSource=btn.dataset.source==='github'?'github':'local';
-      state.view='entries';render();break;
-    }
-    case 'favorite':await favoriteEntry(id);break;
-    case 'resume-draft':await resumeDraft(id);break;
-    case 'save':await saveEntry();break;
-    case 'leave-editor':await leaveTo('entries');break;
-    case 'toggle-editor-focus':toggleEditorFocus();break;
-    case 'format':applyFormat(btn.dataset.format);break;
-    case 'editor-undo':unifiedEditor?.undo();unifiedEditor?.focus();break;
-    case 'editor-redo':unifiedEditor?.redo();unifiedEditor?.focus();break;
-    case 'editor-outline-jump':
-      unifiedEditor?.goToLine(Number(btn.dataset.line));
-      if(window.innerWidth<1100)toggleOutlineSidebar(false);break;
-    case 'clear-search':
-    case 'reset-list-filters':state.query='';state.filters={};render();break;
-    case 'filter-all':state.query='';state.filters={};render();break;
-    case 'filter-favorite':filterTo({favorite:!state.filters.favorite});break;
-    case 'filter-recent':filterTo({recent:!state.filters.recent});break;
-    case 'filter-pending':filterTo({pending:!state.filters.pending});break;
-    case 'filter-tag':filterTo({tag:btn.dataset.tag||''});break;
-    case 'clear-filter':state.filters={};render();break;
-    case 'toggle-order':state.order=state.order==='desc'?'asc':'desc';render();break;
-    case 'export-filtered':exportFiltered();break;
-    case 'calendar-shift':{
-      const nextMonth=shiftMonth(state.calendarMonth,Number(btn.dataset.offset));
-      const year=Number(nextMonth.slice(0,4));
-      if(year<1901||year>2099){showToast('风物日历支持 1901–2099 年',{error:true});break;}
-      state.calendarMonth=nextMonth;
-      state.calendarSelected=nextMonth+'-01';render();break;
-    }
-    case 'calendar-today':
-      state.calendarMonth=todayISO().slice(0,7);state.calendarSelected=todayISO();render();break;
-    case 'calendar-day':state.calendarSelected=btn.dataset.date;render();break;
-    case 'calendar-month':state.filters={month:btn.dataset.month};navigate('entries');break;
-    case 'calendar-date-list':state.filters={day:btn.dataset.date};navigate('entries');break;
-    case 'calendar-open-term':
-      state.almanacDate=btn.dataset.date;state.seasonTab='almanac';navigate('chronicle');break;
-    case 'almanac-reset':almanacController?.reset();break;
-    case 'almanac-day':
-      if(almanacController)almanacController.preview(addChinaDays(state.almanacDate,Number(btn.dataset.days)));break;
-    case 'delete':await deleteEntry(id);break;
-    case 'export':exportAll();break;
-    case 'export-encrypted':await exportEncrypted();break;
-    case 'import':requireEncryptedImport=false;$('#importFile').click();break;
-    case 'import-encrypted':requireEncryptedImport=true;$('#importFile').click();break;
-    case 'clear-demo':await clearDemo();break;
-    case 'create-backup':createBackup();break;
-    case 'restore-backup':await restoreBackup(id);break;
-    case 'delete-backup':await deleteBackup(id);break;
-    case 'discard-draft':await discardDraft(id);break;
-    case 'github-connect':await ghConnect();break;
-    case 'github-go-library':
-      if(!await canLeave())break;
-      state.entriesSource='github';navigate('entries');break;
-    case 'github-refresh-note':
-      if(gh.note?.path)await ghOpen(gh.note.path);break;
-    case 'github-connect-public':await ghConnect({publicDemo:true});break;
-    case 'github-test-network':await ghTestNetwork();break;
-    case 'github-browser-check':await ghBrowserCheck();break;
-    case 'github-proxy-apply':await ghApplyProxy();break;
-    case 'github-proxy-clash':{
-      const mode=$('#ghProxyMode'),host=$('#ghProxyHost'),port=$('#ghProxyPort');
-      if(mode)mode.value='http';
-      if(host)host.value='127.0.0.1';
-      if(port)port.value='7897';
-      await ghApplyProxy();
-      break;
-    }
-    case 'github-key-import':$('#gitCryptKeyFile').click();break;
-    case 'github-check':await ghCheck();break;
-    case 'gitcrypt-local-encrypt':gitCryptLocalMode='encrypt';$('#gitCryptLocalFile').click();break;
-    case 'gitcrypt-local-decrypt':gitCryptLocalMode='decrypt';$('#gitCryptLocalFile').click();break;
-    case 'github-key-lock':await ghLockKey();break;
-    case 'github-disconnect':await ghDisconnect();break;
-    case 'github-settings':gh.showSettings=!gh.showSettings;render();break;
-    case 'github-refresh':await ghList(gh.folder);break;
-    case 'github-folder':await ghList(btn.dataset.path);break;
-    case 'github-note':await ghOpen(btn.dataset.path);break;
-    case 'github-parent':await ghParent();break;
-    case 'github-edit':await startGithubEditor();break;
-    case 'github-cancel-edit':
-      if(gh.dirty&&!await confirmDialog({title:'放弃修改？',description:'还没有提交到仓库。',confirmText:'放弃',danger:true}))break;
-      gh.editing=false;gh.dirty=false;render();break;
-    case 'github-save':await saveGithubEntry();break;
-    case 'github-new':gh.newFileMode=true;gh.newPath=gh.folder?gh.folder+'/':'';render();$('#ghNewPath')?.focus();break;
-    case 'github-new-cancel':gh.newFileMode=false;render();break;
-    case 'github-new-confirm':await ghNewConfirm();break;
-  }
+  await dispatchAction(btn);
 });
 document.body.addEventListener('input',event=>{
   const field=event.target;
@@ -1440,15 +960,15 @@ document.body.addEventListener('change',async event=>{
 });
 $('#gitCryptLocalFile').addEventListener('change',async e=>{
   const file=e.target.files?.[0];e.target.value='';
-  const mode=gitCryptLocalMode;gitCryptLocalMode='';await localGitCrypt(file,mode);
+  await githubController.processLocalFile(file);
 });
 $('#gitCryptKeyFile').addEventListener('change',async e=>{
-  const file=e.target.files?.[0];e.target.value='';await ghImportKeyFile(file);
+  const file=e.target.files?.[0];e.target.value='';
+  await githubController.importKeyFile(file);
 });
 $('#importFile').addEventListener('change',async e=>{
   const file=e.target.files?.[0];e.target.value='';
-  const encryptedOnly=requireEncryptedImport;requireEncryptedImport=false;
-  await importFile(file,encryptedOnly);
+  await dataController.processImportFile(file);
 });
 document.addEventListener('keydown',e=>{
   if(e.target.matches?.('.chronicle-tab[role="tab"]')&&
@@ -1521,7 +1041,7 @@ document.addEventListener('keydown',e=>{
   }
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){
     if(state.view==='editor'){e.preventDefault();saveEntry();}
-    else if(state.view==='github'&&gh.editing){e.preventDefault();ghSave();}
+    else if(state.view==='github'&&gh.editing){e.preventDefault();githubController.saveFromGithubView();}
   }
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveDraftLocal();});

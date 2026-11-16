@@ -79,17 +79,42 @@ test('v1.7.0: remote source is separate from local entries, editor uses shared l
  const entries=read('src/ui/views/entries.js');
  const reader=read('src/ui/views/reader.js');
  const editor=read('src/ui/views/editor.js');
- const main=read('src/main.js');
+ const controller=read('src/ui/github-controller.js');
  assert.match(entries,/role="tablist"/);
  assert.match(entries,/github-note-card/);
  assert.match(reader,/state.readerSource==='github'/);
  assert.match(editor,/state.editorOrigin==='github'/);
- assert.match(main,/async function saveGithubEntry\(\)/);
- assert.match(main,/gitClient\.saveNote\(\{path:note.path,content:savedContent,sha:note.sha/);
- assert.match(main,/state.entriesSource='github';state.readerSource='github';state.view='entries'/);
+ assert.match(controller,/export function createGithubController\(context\)/);
+ assert.match(controller,/async function saveGithubEntry\(\)/);
+ assert.match(controller,/gitClient\.saveNote\(\{path:note.path,content:savedContent,sha:note.sha/);
+ assert.match(controller,/state.entriesSource='github';state.readerSource='github';state.view='entries'/);
+ assert.doesNotMatch(controller,/(?:from\s*|import\s*\(\s*)['"][^'"]*main\.js['"]/);
  assert.doesNotMatch(read('index.html'),/PRIVATE JOURNAL · 001/);
  const {version}=JSON.parse(read('package.json'));
  assert.match(read('index.html'),new RegExp(`sidebar-version">v${version.replace(/\./g,'\\.')}<`));
+});
+test('v1.7.0: GitHub UI controller exposes every action and only its public API',async()=>{
+ const {createGithubController}=await import('../src/ui/github-controller.js');
+ const noop=()=>{};
+ const controller=createGithubController({
+  state:{},gh:{},gitClient:{},storage:{},$:noop,render:noop,navigate:noop,
+  canLeave:noop,startGithubEditor:noop,drafts:{},refreshDrafts:noop,draftKey:noop,
+  trackDraftFromInputs:noop,saveDraftLocal:noop,updateDraftStatus:noop
+ });
+ const expectedActions=[
+  'github-connect','github-go-library','github-refresh-note','github-connect-public',
+  'github-test-network','github-browser-check','github-proxy-apply','github-proxy-clash',
+  'github-key-import','github-check','github-key-lock','github-disconnect','github-settings',
+  'github-refresh','github-folder','github-note','github-parent','github-edit',
+  'github-cancel-edit','github-save','github-new','github-new-cancel','github-new-confirm',
+  'gitcrypt-local-encrypt','gitcrypt-local-decrypt'
+ ];
+ assert.deepEqual(Object.keys(controller.actions).sort(),expectedActions.sort());
+ for(const action of expectedActions)assert.equal(typeof controller.actions[action],'function',action);
+ assert.deepEqual(Object.keys(controller).sort(),[
+  'actions','ensureGithubProxyStatus','importKeyFile','processLocalFile',
+  'saveFromGithubView','saveGithubEntry'
+ ].sort());
 });
 test('v1.7.0: GitHub SHA preserved, no anonymous remote write, git-crypt blocks plaintext',async()=>{
  let saved;

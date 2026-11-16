@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {floatingPose} from '../src/ui/floating.js';
+import {floatingPose,floatingGeometry} from '../src/ui/floating.js';
 import {drapeResolution,createSpectralDrape} from '../src/effects/spectral-drape.js';
 import {DEFAULT_APPEARANCE,normalizeAppearance,writeAppearance,readAppearance} from '../src/appearance/settings.js';
 import {readStyle} from './support/styles.js';
@@ -44,6 +44,23 @@ test('统一浮动角度有边界、中心归零，更克制模式降低幅度',
   assert.ok(floatingPose(500,-500).angle<=.85);
   assert.ok(floatingPose(1,0,true).angle<floatingPose(1,0).angle);
   for(const n of Object.values(floatingPose(NaN,Infinity)))assert.ok(Number.isFinite(n));
+});
+
+test('浮动透视与面板尺寸匹配，超长手记的深度变化有界',()=>{
+  assert.deepEqual(floatingGeometry(400,300),{perspective:1800,factor:1});
+  const long=floatingGeometry(960,112000);
+  assert.ok(long.perspective>=224000);
+  assert.ok(long.factor<.02);
+  for(const height of [300,1200,10000,112000,1000000]){
+    const {perspective,factor}=floatingGeometry(960,height);
+    const angle=floatingPose(1,0,false,100).angle*factor*Math.PI/180;
+    const depth=Math.max(960,height)*Math.sin(angle)/2+6;
+    assert.ok(depth<25,'任何长度的稿纸都不会接近透视消失面');
+    assert.ok(perspective/(perspective-depth)<1.02,'投影放大不超过 2%');
+  }
+  const css=readStyle('floating');
+  assert.doesNotMatch(css,/perspective:1800px/);
+  assert.match(css,/--float-size-factor/);
 });
 
 test('点阵帷幕限制离屏像素预算，高分屏不再放大绘制成本',()=>{

@@ -21,31 +21,52 @@ export function floatingPose(x,y,subtle=false,intensity=50){
     angle:Math.min(1,distance)*(subtle?.35:.85)*clamp(intensity/100)*2};
 }
 
+/** Bound the projected depth, even for a manuscript hundreds of screens tall. */
+export function floatingGeometry(width,height){
+  const span=Math.max(1,Number(width)||1,Number(height)||1);
+  return {perspective:Math.max(1800,span*2),factor:Math.min(1,1200/span)};
+}
+
 export function createFloatingSurfaces(root=document.documentElement){
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pointer=window.matchMedia('(hover: hover) and (pointer: fine)');
   let enabled=true,motion='standard',intensity=50,active=false,frame=0,scan=0,x=.5,y=.5,destroyed=false;
   let surfaces=[],scenes=[];
+  function measure(node){
+    const {perspective,factor}=floatingGeometry(node.offsetWidth,node.offsetHeight);
+    if(node.hasAttribute('data-floating-scene'))node.style.setProperty('--float-perspective',perspective+'px');
+    if(node.hasAttribute('data-floating-surface'))node.style.setProperty('--float-size-factor',String(factor));
+  }
+  // Measure untransformed boxes only on layout changes, never on pointer events.
+  const sizes=new ResizeObserver(entries=>{for(const {target} of entries)if(active)measure(target);});
+  function unmarkSurface(node){
+    node.removeAttribute('data-floating-surface');
+    node.style.removeProperty('--float-existing-transition');node.style.removeProperty('--float-size-factor');
+  }
+  function unmarkScene(node){node.removeAttribute('data-floating-scene');node.style.removeProperty('--float-perspective');}
   function clear(){
-    for(const node of surfaces){node.removeAttribute('data-floating-surface');node.style.removeProperty('--float-existing-transition');}
-    for(const node of scenes)node.removeAttribute('data-floating-scene');
+    sizes.disconnect();
+    for(const node of surfaces)unmarkSurface(node);
+    for(const node of scenes)unmarkScene(node);
     surfaces=[];scenes=[];
   }
   function refresh(){
     scan=0;if(!active||destroyed)return;
     const next=[...document.querySelectorAll(SURFACES)].filter(node=>
       !node.closest(EXCLUDED)&&!node.parentElement?.closest(SURFACES));
-    for(const node of surfaces)if(!next.includes(node)){node.removeAttribute('data-floating-surface');node.style.removeProperty('--float-existing-transition');}
+    sizes.disconnect();
+    for(const node of surfaces)if(!next.includes(node))unmarkSurface(node);
     for(const node of next)if(!node.hasAttribute('data-floating-surface')){
       const transition=getComputedStyle(node).transition;
       node.style.setProperty('--float-existing-transition',transition.startsWith('none')?'transform 0s':transition);
     }
     surfaces=next;
     const parents=[...new Set(next.map(node=>node.parentElement).filter(node=>node&&node!==document.body))];
-    for(const node of scenes)if(!parents.includes(node))node.removeAttribute('data-floating-scene');
+    for(const node of scenes)if(!parents.includes(node))unmarkScene(node);
     scenes=parents;
     for(const node of scenes)node.setAttribute('data-floating-scene','');
     for(const node of surfaces)node.setAttribute('data-floating-surface','');
+    for(const node of new Set([...scenes,...surfaces])){measure(node);sizes.observe(node);}
   }
   function paint(){
     frame=0;if(!active)return;

@@ -68,6 +68,8 @@ test('侧栏真毛玻璃、视觉回退与用户可调参数',()=>{
 
 test('连接诊断按钮与单一入口已接入 GitHub 页面与事件',()=>{
   assert.match(read('src/ui/views/github.js'),/data-action="github-test-network"/);
-  assert.match(read('src/main.js'),/case 'github-test-network'/);
+  const controller=read('src/ui/github-controller.js');
+  assert.match(controller,/['"]github-test-network['"]\s*:/);
+  assert.doesNotMatch(controller,/(?:from\s*|import\s*\(\s*)['"][^'"]*main\.js['"]/);
   assert.match(read('src/main.js'),/new GithubClient\(\)/);
 });

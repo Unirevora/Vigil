@@ -12,7 +12,7 @@
 
 ```text
 index.html                 外壳：侧栏导航、顶栏操作、主区域、SVG 滤镜定义
-└── src/main.js            全局状态、路由、事件委托、生命周期（唯一的 DOM 协调者）
+└── src/main.js            启动装配、共享 state/gh、路由、本地 actions、草稿机、render、键盘与生命周期（唯一的 DOM 协调者）
     ├── core/              纯函数：条目、日期、日历、节气、Markdown、公式、安全 HTML、诊断
     ├── data/              首次运行的示例手记
     ├── storage/           localStorage 仓库、草稿、快照、JSON 与加密导入导出、占用统计
@@ -26,6 +26,8 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
     ├── ui/                通用 UI 组件与 views/ 页面渲染
     └── styles/            CSS 功能模块（构建为 assets/vigil.css）
 ```
+
+`main.js` 保留启动装配、共享 `state` / `gh`、路由、草稿机、`render()`、CodeMirror 单实例、键盘与页面生命周期。本地 `actions` 与 GitHub、数据两个控制器的 `actions` 合并后由 `ui/action-dispatcher.js` 统一分发；控制器只经显式 `context` 回调协作，不反向导入 `main.js`。
 
 ## 2. 源码模块
 
@@ -74,6 +76,9 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 - `appearance/settings.js`：外观默认值、白名单规范化（旧背景值 `plum`/`bamboo`/`waves` 自动映射）、主题色派生侧栏色板；`appearance/background.js`：自定义图片以 Blob 存入 IndexedDB，并做 Canvas 压缩。
 - `glass/liquid-glass.js`：悬浮控件的光学层。支持时挂 SVG `feDisplacementMap`（`#vigil-glass-bend`），同时绘制与当前壁纸对齐、仅边缘位移的 Canvas 作为稳定背衬；文字与焦点环不受影响。
 - `effects/spectral-drape.js`：原创 Canvas 2D 点阵帷幕，默认关闭；缓存光点贴图、预计算网格、最多约 160 万像素 / DPR≤1、≤30fps 按需唤醒；相同参数不重启、后台暂停、关闭动效或减少动效时只画静态帧。
+- `ui/action-dispatcher.js`：按 `dataset.action` 查合并注册表并等待 handler，原样传递 button；未知动作与非函数项静默忽略。
+- `ui/github-controller.js`：GitHub 连接、目录与文件、代理诊断、提交、git-crypt 文件和密钥操作；公开统一编辑器提交、旧 GitHub 视图保存、代理状态及文件处理入口。
+- `ui/data-controller.js`：正式手记写入与快照、收藏/删除、导入导出、示例清理、备份和草稿运维、任务回写；持有导入模式标记，不向存储写口令。
 - `ui/`：`command-palette.js`（Ctrl/⌘+K 本地检索与跳转）、`passphrase.js`（临时口令弹窗，关闭即清空）、`feedback.js`（toast 与确认框）、`motion.js`（WAAPI 进场动画与专注切换的书写台位置、宽高过渡；不缩放文字，服从动效偏好）、`themed-select.js`（自绘浮层下拉，原生 `<select>` 仍是状态源与无障碍基础）、`tab-indicator.js`（所有 `.vigil-tabs` 共用的滑动下划线，重渲染后用 WAAPI 从旧位置动画到新位置）、`almanac-controller.js`（节气盘拖拽/滚轮/键盘，空闲 3 秒回到今天）、`icons.js`。
 - `ui/views/`：`home`、`entries`（本地手记 / GitHub 仓库两个同级页签）、`entry-cards`、`editor`、`reader`、`chronicle`（日历与风物合页，内嵌 `calendar` 与 `almanac`）、`insights`、`github`、`settings`（外观 / 排版 / 数据 / 关于四个页签，`SETTINGS_TABS` 共用于视图、路由与键盘导航）、`data`、`about`、`page-heading`（每页唯一主标题组件）、`hero-paper`。`index.js` 导出视图表，旧视图名仍可作为别名渲染。
 
@@ -84,7 +89,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 | 位置 | 键 | 内容 |
 | --- | --- | --- |
 | localStorage | `vigil-mvp-data-v1` | 正式手记，`{schemaVersion:1, entries:[…]}` |
-| localStorage | `vigil-mvp-drafts-v1` | 草稿（本地键或 `github:<hash>`），输入 650 ms 防抖保存 |
+| localStorage | `vigil-mvp-drafts-v1` | 草稿（≤40；本地键或 `github:<128 位哈希>`），输入 650 ms 防抖保存；达到上限后拒绝新增，不自动删除旧草稿 |
 | localStorage | `vigil-mvp-backups-v1` | 最多 5 份快照，`{schemaVersion:1, backups:[{id,createdAt,reason,label,entries}]}` |
 | localStorage | `vigil-github-repository-v1` | 仓库 owner、repo、分支、目录，**不含令牌** |
 | localStorage | `vigil-appearance-v142` | 外观偏好（主题、主题色、背景、透明度、字体、排版、侧栏、动效、点阵帷幕等） |
@@ -105,11 +110,11 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 - 删除、恢复快照、导入、任务回写之前先建快照；当前手记非空而快照失败时，取消覆盖。
 - 导入只支持「确认后替换」，失败时现有数据不变。
 - 备份与导出只包含正式手记，不含草稿、背景图片、GitHub 内容或令牌。
-- 本项目的 Schema v1 **不是**原项目 v2.8.2 的存储格式；不做任何静默迁移。
+- 本项目的 Schema v1 **不是**原项目 v2.8.2 的存储格式。原 v2.8.2 的数据迁移与格式探测均为非目标；仅保留早期网页原型键的一次性复制，不做其他静默迁移。
 
 ## 4. 口令加密备份协议
 
-新设计的独立格式，**不能解密原项目 v2.8.2 的加密文件**（其格式从未获得源码或样本）。实现：`src/storage/encrypted-transfer.js`；测试：`tests/encrypted-transfer.test.js`。
+新设计的独立格式，**明确不兼容原项目 v2.8.2 的加密文件**，不要尝试自动识别或转换。实现：`src/storage/encrypted-transfer.js`；测试：`tests/encrypted-transfer.test.js`。
 
 - 需要安全上下文（HTTPS 或 localhost）的 Web Crypto；否则直接报错。
 - 明文：`exportJson(entries)`，即 Schema v1 JSON，上限 8 MB。
@@ -140,7 +145,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 
 ### 模块与构建
 
-`src/styles/` 正从按版本命名的补丁层（`vigil-153.css` 等）重组为**按功能命名的模块**。`scripts/style-order.json` 是唯一的层叠顺序清单：
+`src/styles/` 已按功能命名模块，不再使用按版本命名的补丁层（`vigil-153.css` 等）。`scripts/style-order.json` 是唯一的层叠顺序清单：
 
 ```text
 tokens → base → controls → dialogs → glass → pages → home → entries
@@ -165,6 +170,8 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 编辑器工具栏的玻璃绘制在 `::before` 底层，工具栏本身不设 `backdrop-filter`，避免成为菜单的背景采样边界。菜单独立使用 `--glass-panel-blur` 与半透明的 `--glass-menu-bg`（日间 72%、夜间 78%），减少透明度或缺少背景模糊支持时回退为实色；对话框仍使用较厚的 `--glass-dialog-bg`。
 
 全局 3D 浮动只由 `ui/floating.js` 与 `styles/floating.css` 管理：一处指针监听把角度写入根变量，独立的 `rotate` / `translate` 与原有 `transform` 动画组合。控制器只标记最外层面板，排除侧栏与顶栏，缓存既有过渡并保留它们；新增页面与弹层统一发现，正文的 CodeMirror 装饰变化不触发全站扫描。偏好 `floating` 默认开启、`floatingIntensity` 为 0–100%（默认 50%，对应原幅度），共同存入既有外观键；在外观页与 Spectral Drape 相邻，可热切换与调节幅度，关闭时禁用幅度控件；关闭动效、减少动效、触屏与页面隐藏时移除浮动。没有逐面板监听或常驻帧循环。
+
+浮动几何由 `floatingGeometry()` 约束：场景透视距离至少为最长边的两倍且不小于 1800px，面板倾角乘以 `min(1,1200/最长边)`，防止超长稿纸接近透视消失面或把宽度放大数倍。共用一个 ResizeObserver 读取未变换的 `offsetWidth/offsetHeight`；只在面板加入和尺寸变化时更新，指针移动不测量布局，停用时清除尺寸变量并断开观察。
 
 延续「铅字旧梦」的复古文房：墨色 / 主题色侧栏、朱砂「眠」印记（`assets/vigil-mark.svg`，favicon 为 `vigil-favicon.svg`）、宣纸与山水、打字机静物（`assets/typewriter-still-life.webp`，纯装饰、不拦截指针）。不另建第二套视觉系统。
 

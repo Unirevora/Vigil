@@ -1,9 +1,9 @@
 /* All pointer-driven depth lives here. Individual rotate/translate compose with
    existing entrance, hover and focus animations without replacing transform. */
 :root{--float-axis-x:0;--float-axis-y:1;--float-angle:0deg;--float-depth:3px}
-:root[data-floating=true] [data-floating-scene]{perspective:1800px}
+:root[data-floating=true] [data-floating-scene]{perspective:var(--float-perspective,1800px)}
 :root[data-floating=true] [data-floating-surface]{
-  rotate:var(--float-axis-x) var(--float-axis-y) 0 var(--float-angle);
+  rotate:var(--float-axis-x) var(--float-axis-y) 0 calc(var(--float-angle) * var(--float-size-factor,1));
   translate:0 0 var(--float-depth);
   transition:var(--float-existing-transition,transform 0s),rotate .65s var(--vigil-ease),translate .65s var(--vigil-ease);
 }

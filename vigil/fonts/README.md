@@ -5,7 +5,7 @@
 - `titlefont.ttf` → `VigilTitle`，用于页面标题、节气名、诗笺、按钮中的装饰标题。
 - `textfont.ttf` → `VigilText`，用于普通界面与正文。
 
-项目 CSS：`src/styles/foundation.css` 中的 `@font-face`。若字体尚未复制，界面自动回退到系统中文字体，不影响功能。
+项目 CSS：`src/styles/tokens.css` 中的 `@font-face`。若字体尚未复制，界面自动回退到系统中文字体，不影响功能。
 
 ## 在你自己的电脑上一键恢复
 
