@@ -1,4 +1,4 @@
-# 不眠手记 · VIGIL Inkpress 1.7.4
+# 不眠手记 · VIGIL Inkpress 1.7.5
 
 **复古文房、单页 Markdown 工作台，以及现在与本地手记并列的 GitHub 文库。** 这是模块化 HTML/CSS/JavaScript 项目，不是单 HTML 文件。延续 1.5.x 的朱砂、墨色、宣纸与玻璃控件，保留原有本地存储结构。
 

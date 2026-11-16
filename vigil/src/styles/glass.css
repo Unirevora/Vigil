@@ -42,7 +42,7 @@
 :root[data-theme=night] .spectral-drape{mix-blend-mode:screen;opacity:.80}
 :root[data-theme=night] .liquid-glass:not(.sidebar){background:rgba(53,53,62,.78)!important;color:var(--ink)!important}
 /* The effect is opt-in: no canvas veil or idle animation when disabled. */
-.spectral-drape{opacity:0;transition:opacity .55s ease;will-change:opacity}
+.spectral-drape{opacity:0;transition:opacity .55s ease}
 .spectral-drape.is-active{opacity:.94}
 :root[data-theme=night] .spectral-drape.is-active{opacity:.82}
 @media (prefers-reduced-motion:reduce){

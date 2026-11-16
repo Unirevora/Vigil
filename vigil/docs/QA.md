@@ -24,6 +24,8 @@
 
 CSS 契约测试应通过 `tests/support/styles.js` 读取样式：`readStyles()` 按 `scripts/style-order.json` 顺序拼接全部模块，`readStyle('tabs')` 读取单个功能模块。
 
+`motion-175.test.js` 检查全局浮动的偏好持久化与保存失败保护、角度边界，以及点阵帷幕的像素预算、相同设置不重启、后台/关闭/销毁后的调度清理。浏览器验收需同时开启浮动与帷幕，检查侧栏和顶栏不倾斜、嵌套面板只倾斜一次、开关与动效偏好即时生效；采样工具栏过渡的中间位置，并核对菜单半透明底色、实际模糊和减少透明度的回退。性能数字应区分 Canvas 回调耗时与整页合成耗时，不推断为所有设备帧率。
+
 > **当前状态（样式重组进行中）**：`src/styles/` 正从版本命名的补丁层改为功能模块。仍按旧文件名（如 `inkpress-reference.css`、`vigil-156.css`）断言的界面契约测试会失败，需要改为通过 `tests/support/styles.js` 读取并按规则内容断言；数据、加密、GitHub 等测试不受影响。
 
 ### 1.2 浏览器回归（`scripts/qa-browser.py`）

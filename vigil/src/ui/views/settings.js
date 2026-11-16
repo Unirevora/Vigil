@@ -103,6 +103,7 @@ function interactionPanel(state){
     </section>
     <section class="settings-group">
       ${sectionHead('动效','在操作反馈与静谧书写之间选择合适的节奏。')}
+      <label class="settings-toggle-row" for="floatingToggle"><span><strong>全局 3D 浮动</strong><small>纸面、卡片和浮层随鼠标轻微转动；侧栏与顶栏保持静止，即开即用</small></span><input id="floatingToggle" type="checkbox" data-setting="floating" ${a.floating?'checked':''} aria-label="全局 3D 浮动"/><span class="settings-toggle-visual" aria-hidden="true"></span></label>
       <div class="settings-inline-field"><label for="motionModeSelect">动效强度</label><select id="motionModeSelect" data-setting="motionMode" aria-label="动效强度">
         ${selectOption('standard',a.motionMode,'轻盈回弹')}${selectOption('subtle',a.motionMode,'更克制')}${selectOption('off',a.motionMode,'关闭动效')}
       </select></div>

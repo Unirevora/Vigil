@@ -216,7 +216,7 @@
 .shell.zen-mode{display:block!important;grid-template-columns:1fr!important}
 .shell.zen-mode .sidebar{display:none!important}
 .shell.zen-mode .topbar{display:none!important}
-.shell.zen-mode .main-inner{max-width:min(1180px,100%);margin:0 auto;padding:23px clamp(14px,4vw,56px)}
+.shell.zen-mode .main-inner{max-width:var(--workspace-max-width);margin:0 auto;padding:10px clamp(8px,1.5vw,24px) max(10px,env(safe-area-inset-bottom,0px))}
 /* Backdrop fallback always present; scene replica activates only with SVG filter. */
 /* (glass) kept in this module: it must cascade after the rule it refines above. */
 .liquid-glass{position:relative!important;isolation:isolate;overflow:hidden;background:rgba(232,245,238,.69)!important;border:1px solid rgba(255,255,255,.78)!important;box-shadow:0 9px 23px rgba(19,37,41,.11),inset 0 1px 0 rgba(255,255,255,.72)!important;-webkit-backdrop-filter:blur(13px) saturate(1.08);backdrop-filter:blur(13px) saturate(1.08);color:#243c3d!important;transition:transform .42s var(--vigil-spring),box-shadow .24s ease,border-color .24s ease}

@@ -65,3 +65,5 @@
    wash out the text, so they use a denser glass than cards and panels. */
 :root{--glass-dialog-bg:color-mix(in srgb,var(--surface) 92%,transparent)}
 :root[data-theme=night]{--glass-dialog-bg:color-mix(in srgb,var(--surface) 90%,transparent)}
+:root{--glass-menu-bg:color-mix(in srgb,var(--surface) 72%,transparent)}
+:root[data-theme=night]{--glass-menu-bg:color-mix(in srgb,var(--surface) 78%,transparent)}

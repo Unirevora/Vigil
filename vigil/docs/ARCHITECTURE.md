@@ -1,6 +1,6 @@
 # 架构说明 · 不眠手记 VIGIL Inkpress
 
-> 本文描述**当前代码**（`package.json` 版本 1.7.1）。它合并并取代了按版本命名的旧文档：原 `ARCHITECTURE.md`、`STRUCTURE-1.5.6.md`、`DESIGN-SYSTEM.md`、`IMPLEMENTATION.md`、`ENCRYPTED-BACKUP.md`、`REFERENCE-UI.md`、`SOURCE-ALIGNMENT.md`。产品范围与实现状态见 `PRODUCT.md`，测试方式见 `QA.md`，服务器部署见 `DEPLOY.md`。
+> 本文描述**当前代码**（`package.json` 版本 1.7.5）。它合并并取代了按版本命名的旧文档：原 `ARCHITECTURE.md`、`STRUCTURE-1.5.6.md`、`DESIGN-SYSTEM.md`、`IMPLEMENTATION.md`、`ENCRYPTED-BACKUP.md`、`REFERENCE-UI.md`、`SOURCE-ALIGNMENT.md`。产品范围与实现状态见 `PRODUCT.md`，测试方式见 `QA.md`，服务器部署见 `DEPLOY.md`。
 
 ## 1. 总体形态
 
@@ -58,7 +58,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 
 - `unified-editor.js`：一个 CodeMirror 实例承载「实时 / 阅读 / 源码」三态；切换模式不替换文本、不丢撤销历史。实时模式用装饰 mark 隐藏非活动行的语法标记、渲染公式小部件、可勾选任务；包含查找替换（Ctrl/⌘+F、Ctrl/⌘+H）。
 - `live-markdown.js`：行内分段、标题、列表、表格、公式块、围栏、引用块的识别。
-- `formatting.js`：工具栏与格式下拉菜单的块级/行内格式化与插入模板。
+- `formatting.js`：工具栏与格式下拉菜单的纯函数。块级格式按样式判断统一应用或取消；行内格式依据源码范围识别选区内外的标记，并返回替换范围与新选区；代码块与公式块可解除选中包装，表格与分隔线保持插入语义。
 
 ### github/ 与 security/
 
@@ -73,8 +73,8 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 - `insights/insights.js`：从 `- [ ]` 收集任务（识别 `📅`、`due:`、`截止:`、`期限:` 后的 `YYYY-MM-DD`）、勾选时校验原文行未变再回写并先建快照；`[[标题]]` 双向引用与未解析链接；近七日、连续记录、标签等回顾指标与每日回顾提问。全部本地计算。
 - `appearance/settings.js`：外观默认值、白名单规范化（旧背景值 `plum`/`bamboo`/`waves` 自动映射）、主题色派生侧栏色板；`appearance/background.js`：自定义图片以 Blob 存入 IndexedDB，并做 Canvas 压缩。
 - `glass/liquid-glass.js`：悬浮控件的光学层。支持时挂 SVG `feDisplacementMap`（`#vigil-glass-bend`），同时绘制与当前壁纸对齐、仅边缘位移的 Canvas 作为稳定背衬；文字与焦点环不受影响。
-- `effects/spectral-drape.js`：原创 Canvas 2D 点阵帷幕，默认关闭；DPR 受限、≤30fps、页面隐藏时暂停、减少动态效果时只画静态帧。
-- `ui/`：`command-palette.js`（Ctrl/⌘+K 本地检索与跳转）、`passphrase.js`（临时口令弹窗，关闭即清空）、`feedback.js`（toast 与确认框）、`motion.js`（WAAPI 进场动画）、`themed-select.js`（自绘浮层下拉，原生 `<select>` 仍是状态源与无障碍基础）、`tab-indicator.js`（所有 `.vigil-tabs` 共用的滑动下划线，重渲染后用 WAAPI 从旧位置动画到新位置）、`almanac-controller.js`（节气盘拖拽/滚轮/键盘，空闲 3 秒回到今天）、`icons.js`。
+- `effects/spectral-drape.js`：原创 Canvas 2D 点阵帷幕，默认关闭；缓存光点贴图、预计算网格、最多约 160 万像素 / DPR≤1、≤30fps 按需唤醒；相同参数不重启、后台暂停、关闭动效或减少动效时只画静态帧。
+- `ui/`：`command-palette.js`（Ctrl/⌘+K 本地检索与跳转）、`passphrase.js`（临时口令弹窗，关闭即清空）、`feedback.js`（toast 与确认框）、`motion.js`（WAAPI 进场动画与专注切换的书写台位置、宽高过渡；不缩放文字，服从动效偏好）、`themed-select.js`（自绘浮层下拉，原生 `<select>` 仍是状态源与无障碍基础）、`tab-indicator.js`（所有 `.vigil-tabs` 共用的滑动下划线，重渲染后用 WAAPI 从旧位置动画到新位置）、`almanac-controller.js`（节气盘拖拽/滚轮/键盘，空闲 3 秒回到今天）、`icons.js`。
 - `ui/views/`：`home`、`entries`（本地手记 / GitHub 仓库两个同级页签）、`entry-cards`、`editor`、`reader`、`chronicle`（日历与风物合页，内嵌 `calendar` 与 `almanac`）、`insights`、`github`、`settings`（外观 / 排版 / 交互 / 数据 / 关于五个页签）、`data`、`about`、`page-heading`（每页唯一主标题组件）、`hero-paper`。`index.js` 导出视图表，旧视图名仍可作为别名渲染。
 
 ## 3. 数据与存储
@@ -145,7 +145,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 ```text
 tokens → base → controls → dialogs → glass → pages → home → entries
 → vendor/codemirror/codemirror.css → editor → reader → insights → github
-→ tabs → surfaces → shell → settings → chronicle → motion
+→ tabs → surfaces → shell → settings → chronicle → motion → floating → focus
 ```
 
 - `scripts/build-css.mjs`（纯 Node，无依赖、不做基于正则的压缩）按清单顺序合并为 `assets/vigil.css`，每段前加 `/* ---- 源路径 ---- */` 注释。只接受 `src/styles/` 与 `vendor/codemirror/` 下的 `.css`。
@@ -156,6 +156,10 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 
 ### 视觉语言
 
+编辑器工具栏的玻璃绘制在 `::before` 底层，工具栏本身不设 `backdrop-filter`，避免成为菜单的背景采样边界。菜单独立使用 `--glass-panel-blur` 与半透明的 `--glass-menu-bg`（日间 72%、夜间 78%），减少透明度或缺少背景模糊支持时回退为实色；对话框仍使用较厚的 `--glass-dialog-bg`。
+
+全局 3D 浮动只由 `ui/floating.js` 与 `styles/floating.css` 管理：一处指针监听把角度写入根变量，独立的 `rotate` / `translate` 与原有 `transform` 动画组合。控制器只标记最外层面板，排除侧栏与顶栏，缓存既有过渡并保留它们；新增页面与弹层统一发现，正文的 CodeMirror 装饰变化不触发全站扫描。偏好 `floating` 默认开启、存入既有外观键；关闭动效、减少动效、触屏与页面隐藏时移除浮动。没有逐面板监听或常驻帧循环。
+
 延续「铅字旧梦」的复古文房：墨色 / 主题色侧栏、朱砂「眠」印记（`assets/vigil-mark.svg`，favicon 为 `vigil-favicon.svg`）、宣纸与山水、打字机静物（`assets/typewriter-still-life.webp`，纯装饰、不拦截指针）。不另建第二套视觉系统。
 
 - **纸面与玻璃分工**：毛玻璃用于导航、顶栏操作控件、搜索、弹层，以及卡片、筛选栏、首页统计、日历/节气面板、线索卡、GitHub 面板、设置面板、编辑工具栏、大纲与对话框；**长文阅读与写作稿纸保持不透明**。浏览器不支持 `backdrop-filter` 或系统开启「减少透明度」时回退为实色。
@@ -165,7 +169,7 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 - **标题**：每页一个 `h1.page-title`，`--page-title-size` 桌面 `clamp(36px,3.35vw,52px)`、≤900px `clamp(34px,5.3vw,43px)`、≤640px `clamp(31px,8.2vw,38px)`，行高 1.14，字重 600。顶栏不重复页面名。
 - **字体**：`--font-display`（`VigilTitle` = `fonts/titlefont.ttf`，回退宋体）、`--font-body`（`VigilText` = `fonts/textfont.ttf`，回退苹方/雅黑）、`--font-typed`（等宽）。字体文件由用户自备，不随源码分发（见 `fonts/README.md`、`scripts/restore-fonts.py`）。
 - **动效**：`--vigil-ease`、`--vigil-spring: cubic-bezier(.2,1.22,.31,1)`；设置中可选轻盈回弹 / 更克制 / 关闭；始终服从 `prefers-reduced-motion`。
-- **布局**：侧栏 `--sidebar-width: clamp(226px,15.9vw,270px)`，折叠 `--sidebar-closed: 79px`；≤900px 侧栏收为顶部并可折叠，底部有快捷导航；工作区最大宽度 `--workspace-max-width`（用户可调）；编辑器大纲是叠在稿纸右缘的浮层：收起时为露出边缘的小标签，展开时向左过渡为与稿纸等宽的窗口，不挤占正文。验证宽度 320 / 390 / 768–810 / 1024 / 1440 / 1672 px，不允许横向溢出。
+- **布局**：侧栏 `--sidebar-width: clamp(226px,15.9vw,270px)`，折叠 `--sidebar-closed: 79px`；≤900px 侧栏收为顶部并可折叠，底部有快捷导航；工作区最大宽度 `--workspace-max-width`（用户可调）。编辑器大纲收起时为稿纸右缘的小标签，展开后与稿纸等高；桌面端占第二列并让稿纸收窄，≤900px 浮在稿纸右侧。专注模式隐藏侧栏与顶栏，沿用工作区宽度、解除稿纸额外上限；左右留白 `clamp(8px,1.5vw,24px)`，上下各 10px（底部至少为设备安全区）。`fitEditorFrame()` 按实际位置与底部内边距计算高度，标题与工具栏固定，只有正文滚动。验证宽度 320 / 390 / 768–810 / 1024 / 1440 / 1672 px，不允许横向溢出。
 
 ### 主要 token（以 `assets/vigil.css` 为准）
 

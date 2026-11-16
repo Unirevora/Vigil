@@ -67,6 +67,8 @@
    wash out the text, so they use a denser glass than cards and panels. */
 :root{--glass-dialog-bg:color-mix(in srgb,var(--surface) 92%,transparent)}
 :root[data-theme=night]{--glass-dialog-bg:color-mix(in srgb,var(--surface) 90%,transparent)}
+:root{--glass-menu-bg:color-mix(in srgb,var(--surface) 72%,transparent)}
+:root[data-theme=night]{--glass-menu-bg:color-mix(in srgb,var(--surface) 78%,transparent)}
 
 /* ---- /src/styles/base.css ---- */
 /* Element defaults, wallpaper layer and page background. */
@@ -437,7 +439,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 :root[data-theme=night] .spectral-drape{mix-blend-mode:screen;opacity:.80}
 :root[data-theme=night] .liquid-glass:not(.sidebar){background:rgba(53,53,62,.78)!important;color:var(--ink)!important}
 /* The effect is opt-in: no canvas veil or idle animation when disabled. */
-.spectral-drape{opacity:0;transition:opacity .55s ease;will-change:opacity}
+.spectral-drape{opacity:0;transition:opacity .55s ease}
 .spectral-drape.is-active{opacity:.94}
 :root[data-theme=night] .spectral-drape.is-active{opacity:.82}
 @media (prefers-reduced-motion:reduce){
@@ -1506,14 +1508,14 @@ span.CodeMirror-selectedtext { background: none; }
 .editor-paper{background-blend-mode:soft-light}
 .editor-title{font-size:37px}
 :root[data-theme=night] .editor-paper{background-color:var(--surface)}
-.tool-button{transition:transform .46s var(--vigil-spring),
+.tool-button{transition:transform .24s var(--vigil-ease),
     background-color .22s ease,border-color .24s ease,color .2s ease,
     box-shadow .35s var(--vigil-ease)}
 .tag-option{transition:transform .46s var(--vigil-spring),
     background-color .22s ease,border-color .24s ease,color .2s ease,
     box-shadow .35s var(--vigil-ease)}
-.tool-button:hover:not(:disabled){transform:translateY(-2px) scale(1.075)}
-.tool-button:active:not(:disabled){transform:scale(.91)}
+.tool-button:hover:not(:disabled){transform:translateY(-1px)}
+.tool-button:active:not(:disabled){transform:translateY(0) scale(.96)}
 @media (prefers-reduced-motion:reduce){
   .tool-button{animation:none!important;transition:none!important;transform:none!important}
 }
@@ -1529,7 +1531,7 @@ span.CodeMirror-selectedtext { background: none; }
 .unified-toolbar .format-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
 .unified-toolbar .tool-button{flex:0 0 auto;width:32px;height:33px;padding:6px}
 .editor-mode-switch{display:flex;align-items:stretch;gap:3px;padding:4px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:10px}
-.editor-mode-option{min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;color:var(--ink-2);background:transparent;border:1px solid transparent;border-radius:7px;font:12px var(--font-body);white-space:nowrap;transition:transform .3s var(--vigil-spring),background .2s}
+.editor-mode-option{min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;color:var(--ink-2);background:transparent;border:1px solid transparent;border-radius:7px;font:12px var(--font-body);white-space:nowrap;transition:transform .24s var(--vigil-ease),background-color .24s var(--vigil-ease),color .24s var(--vigil-ease)}
 .editor-mode-option svg{width:15px;height:15px}
 .editor-mode-option:hover:not(.active){background:var(--surface);transform:translateY(-1px)}
 .editor-mode-option.active{box-shadow:0 2px 5px rgba(38,50,37,.12)}
@@ -1764,16 +1766,18 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .refined-editor .unified-toolbar{position:sticky;top:10px;z-index:12;gap:10px;margin-top:13px;padding:7px 8px;border-radius:13px;background:color-mix(in srgb,var(--surface) 97%,transparent);box-shadow:0 5px 20px rgba(20,48,40,.045)}
 .refined-editor .format-tools.editor-tool-groups{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .refined-editor .editor-tool-cluster{gap:2px}
-.refined-editor .tool-button{width:36px;height:36px;min-height:36px;padding:8px;border:1px solid transparent;border-radius:9px;color:var(--ink-2);transition:background .15s,color .15s}
+.refined-editor .tool-button{width:36px;height:36px;min-height:36px;padding:8px;border:1px solid transparent;border-radius:9px;color:var(--ink-2)}
 .refined-editor .tool-button svg{width:18px;height:18px}
 .refined-editor .tool-button:hover{background:var(--surface-soft)!important;color:var(--ink);border-color:var(--stroke)}
 .refined-editor .tool-button:focus-visible{background:var(--surface-soft)!important;color:var(--ink);border-color:var(--stroke)}
 .refined-editor .toolbar-separator{background:var(--stroke);height:18px;margin:0 3px}
 .refined-editor .editor-dropdown-menu{position:relative;flex:0 0 auto}
 .refined-editor .editor-dropdown-menu summary{width:auto;min-width:83px;padding:0 10px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
-.refined-editor .editor-dropdown-menu summary>svg:last-child{width:12px;height:12px;opacity:.65;transition:transform .15s}
+.refined-editor .editor-dropdown-menu summary>svg:last-child{width:12px;height:12px;opacity:.65;transition:transform .26s var(--vigil-ease)}
 .refined-editor .editor-dropdown-menu[open] summary{color:var(--appearance-accent);background:var(--surface-soft);border-color:var(--stroke)}
 .refined-editor .editor-dropdown-menu[open] summary>svg:last-child{transform:rotate(180deg)}
+.refined-editor .editor-dropdown-menu[open] .editor-dropdown-panel{animation:editor-menu-reveal .2s var(--vigil-ease)}
+@keyframes editor-menu-reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .refined-editor .text-tool-button span{font-size:12px;letter-spacing:.02em;font-weight:600}
 .refined-editor .editor-dropdown-panel{position:absolute;top:calc(100% + 9px);left:0;z-index:50;width:245px;min-width:0;max-height:min(390px,70vh);overflow-y:auto;padding:7px;border:1px solid var(--stroke);border-radius:14px;box-shadow:0 16px 40px rgba(20,44,36,.14)}
 .refined-editor .editor-menu-item{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;border:0;border-radius:9px;padding:7px 10px;background:transparent;text-align:left;color:var(--ink);cursor:pointer}
@@ -1812,6 +1816,7 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   .refined-editor .editor-tool-cluster{gap:2px}
   .refined-editor .tool-button{min-width:38px;width:38px;height:38px;min-height:38px;padding:8px}
   .refined-editor .editor-dropdown-menu summary{width:auto;min-width:71px;height:38px;min-height:38px;padding:0 7px;gap:5px}
+  .refined-editor .editor-dropdown-menu{position:static}
   .refined-editor .editor-dropdown-menu summary svg{height:15px;width:15px}
   .refined-editor .editor-dropdown-menu summary svg:last-child{height:11px;width:11px}
   .refined-editor .editor-tool-groups>.toolbar-separator{display:none}
@@ -1844,13 +1849,10 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   .refined-editor .unified-edit-host{max-width:100%;min-width:0}
   .refined-editor .unified-edit-host .CodeMirror{max-width:100%;min-width:0}
 }
-.refined-editor .editor-toolbar-slim{background:color-mix(in srgb,var(--surface) 88%,transparent)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.refined-editor .editor-dropdown-panel{background:color-mix(in srgb,var(--surface) 93%,transparent)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .editor-mode-option.active{background:var(--user-primary-bg)!important;color:var(--appearance-contrast)!important;border-color:color-mix(in srgb,var(--user-primary-bg) 73%,var(--ink))!important}
 .refined-editor .editor-title{font-family:var(--font-display)!important;font-size:var(--page-title-size)!important;line-height:1.23!important;font-weight:var(--page-title-weight)!important;letter-spacing:-.02em!important}
 .editor-topline{margin-top:0}
 :root[data-theme=night] .refined-editor :is(.editor-paper,.unified-reader){color:var(--ink)}
-:root[data-theme=night] .refined-editor .editor-toolbar-slim{background:rgba(49,48,55,.93)!important}
 :root[data-theme=night] .unified-reader{color:var(--ink)!important}
 .refined-editor .editor-properties[hidden]{display:none!important}
 .refined-editor .cm-live-heading.cm-live-h4{font:700 clamp(17px,1.65vw,20px)/1.7 var(--font-display)!important;border-left:3px solid var(--appearance-accent);padding-left:10px}
@@ -1879,12 +1881,18 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .cm-live-styled.font-serif{font-family:serif}
 .cm-live-styled.font-accent{color:var(--appearance-accent)}
 @layer overrides{
-  .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--glass-panel-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important}
+  /* A blurred toolbar would form a backdrop root and stop its menus blurring the manuscript.
+     Keep its glass on a sibling underlay, just like the paper surface. */
+  .refined-editor .unified-toolbar{isolation:isolate;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .refined-editor .unified-toolbar::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none}
+  .refined-editor :is(.editor-dropdown-panel,.editor-outline-sidebar),.refined-editor .unified-toolbar::before{background-color:var(--glass-panel-bg)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .refined-editor .editor-dropdown-panel{background-color:var(--glass-menu-bg)!important}
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-    .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--surface)!important}
+    .refined-editor :is(.editor-dropdown-panel,.editor-outline-sidebar),.refined-editor .unified-toolbar::before{background-color:var(--surface)!important}
   }
   @media (prefers-reduced-transparency:reduce){
-    .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+    .refined-editor :is(.editor-dropdown-panel,.editor-outline-sidebar),.refined-editor .unified-toolbar::before{background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   }
       .refined-editor .unified-manuscript{margin-top:14px!important}
   }
@@ -1952,7 +1960,7 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .refined-editor .unified-reader > *{max-width:880px;margin-inline:auto}
 @media (max-width:900px){.composer-page.refined-editor{--editor-gap:176px}}
 @media (max-width:680px){.composer-page.refined-editor{--editor-gap:172px}}
-.shell.zen-mode .composer-page.refined-editor{--editor-gap:48px}
+.shell.zen-mode .composer-page.refined-editor{--editor-gap:20px;max-width:none}
 
 /* Date & tags: the chevron follows the label instead of floating under the outline tab. */
 .refined-editor .editor-properties summary{display:inline-flex;width:auto;max-width:100%}
@@ -2740,7 +2748,7 @@ body[data-page=insights] .glass-dock{display:flex}
 .shell.zen-mode{display:block!important;grid-template-columns:1fr!important}
 .shell.zen-mode .sidebar{display:none!important}
 .shell.zen-mode .topbar{display:none!important}
-.shell.zen-mode .main-inner{max-width:min(1180px,100%);margin:0 auto;padding:23px clamp(14px,4vw,56px)}
+.shell.zen-mode .main-inner{max-width:var(--workspace-max-width);margin:0 auto;padding:10px clamp(8px,1.5vw,24px) max(10px,env(safe-area-inset-bottom,0px))}
 /* Backdrop fallback always present; scene replica activates only with SVG filter. */
 /* (glass) kept in this module: it must cascade after the rule it refines above. */
 .liquid-glass{position:relative!important;isolation:isolate;overflow:hidden;background:rgba(232,245,238,.69)!important;border:1px solid rgba(255,255,255,.78)!important;box-shadow:0 9px 23px rgba(19,37,41,.11),inset 0 1px 0 rgba(255,255,255,.72)!important;-webkit-backdrop-filter:blur(13px) saturate(1.08);backdrop-filter:blur(13px) saturate(1.08);color:#243c3d!important;transition:transform .42s var(--vigil-spring),box-shadow .24s ease,border-color .24s ease}
@@ -3797,6 +3805,21 @@ html body .main-inner{padding-top:10px!important}
   70%{transform:translateY(-4px) scale(1.01);opacity:1}
   100%{transform:none;opacity:1}
 }
+
+/* ---- /src/styles/floating.css ---- */
+/* All pointer-driven depth lives here. Individual rotate/translate compose with
+   existing entrance, hover and focus animations without replacing transform. */
+:root{--float-axis-x:0;--float-axis-y:1;--float-angle:0deg;--float-depth:3px}
+:root[data-floating=true] [data-floating-scene]{perspective:1800px}
+:root[data-floating=true] [data-floating-surface]{
+  rotate:var(--float-axis-x) var(--float-axis-y) 0 var(--float-angle);
+  translate:0 0 var(--float-depth);
+  transition:var(--float-existing-transition,transform 0s),rotate .65s var(--vigil-ease),translate .65s var(--vigil-ease);
+}
+@media (prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+  [data-floating-surface]{rotate:none!important;translate:none!important;transition:none!important}
+}
+:root[data-motion=off] [data-floating-surface]{rotate:none!important;translate:none!important;transition:none!important}
 
 /* ---- /src/styles/focus.css ---- */
 /* Final interaction policy: hidden scrollbars and quiet focus. Loaded last on purpose. */

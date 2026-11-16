@@ -55,6 +55,9 @@ test('v1.7.1: 毛玻璃覆盖卡片、面板、菜单、对话框、阅读与写
   assert.match(frosted,/:is\(\.reading-paper,\.editor-paper\)::before/);
   assert.match(plain,/:is\(\.reading-paper,\.editor-paper\)\{[^}]*backdrop-filter:none!important/);
   assert.match(css,/prefers-reduced-transparency:reduce/);
+  assert.match(plain,/\.refined-editor \.unified-toolbar\{[^}]*backdrop-filter:none!important/,'工具栏不再阻断菜单的背景采样');
+  assert.match(plain,/\.refined-editor \.editor-dropdown-panel\{background-color:var\(--glass-menu-bg\)!important/);
+  assert.doesNotMatch(plain,/\.refined-editor \.editor-toolbar-slim\{background:color-mix|\.refined-editor \.editor-dropdown-panel\{background:color-mix/,'旧的重复玻璃背景不再出现');
 });
 
 test('专注按钮在大纲按钮下方；日期与标签留在稿纸内；GitHub 文件提示移到写作窗口外',()=>{
@@ -99,6 +102,7 @@ test('编辑器固定在视口内：标题与工具栏不动，只有正文滚�
   assert.match(css,/\.refined-editor \.unified-reader\{flex:1 1 0;min-height:0;[^}]*overflow:auto/);
   assert.match(css,/\.refined-editor \.unified-edit-host \.CodeMirror\{height:100%\}/);
   assert.doesNotMatch(css,/min-height:510px|CodeMirror-scroll\{[^}]*max-height:\d+vh/);
+  assert.doesNotMatch(css,/\.shell\.zen-mode \.main-inner\{[^}]*min\(1180px,100%\)|\.shell\.zen-mode \.composer-page\.refined-editor\{[^}]*--editor-gap:48px/,'专注模式不再沿用压缩书写空间的旧宽度与留白限制');
   assert.match(main,/function fitEditorFrame/);
   assert.doesNotMatch(read('src/editor/unified-editor.js'),/minHeight=510/);
   assert.match(css,/\.refined-editor \.editor-outline-sidebar\.is-open\{[^}]*height:100%/);

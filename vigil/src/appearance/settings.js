@@ -5,7 +5,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   surfaceOpacity:91,bodyFontSize:16,lineHeight:1.8,contentWidth:1460,
   texture:true,heroMode:'original',theme:'paper',fontFamily:'heritage',
   sidebarTone:'accent',sidebarGlass:74,sidebarBlur:24,glassTint:72,motionMode:'standard',
-  spectralDrape:false,drapeIntensity:48
+  spectralDrape:false,drapeIntensity:48,floating:true
 });
 export const COLOR_PRESETS=[
   {name:'朱砂',color:'#a83f2a'}, {name:'松绿',color:'#375d4f'},
@@ -39,6 +39,7 @@ export function normalizeAppearance(input){
   }
   if(typeof input.texture==='boolean')a.texture=input.texture;
   if(typeof input.spectralDrape==='boolean')a.spectralDrape=input.spectralDrape;
+  if(typeof input.floating==='boolean')a.floating=input.floating;
   return a;
 }
 export function readAppearance(storage){

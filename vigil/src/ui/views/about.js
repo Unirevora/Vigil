@@ -26,9 +26,9 @@ export function aboutPanel(state){
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('spark')} <h3>当前版本</h3></div>
-      <div class="about-release"><span>01</span><div><strong>一种标签，一条滑痕</strong><small>全部手记、日历与风物、设置共用下划线标签，切换时主题色下划线平滑滑向新标签。</small></div></div>
-      <div class="about-release"><span>02</span><div><strong>满窗毛玻璃</strong><small>卡片、面板、对话框与阅读、写作稿纸都透出背景，透明度随「纸面透光」调整。</small></div></div>
-      <div class="about-release"><span>03</span><div><strong>定框的书写台</strong><small>标题与工具栏固定、只滚动正文；大纲与专注收在稿纸右缘，展开后与稿纸等高。</small></div></div>
+      <div class="about-release"><span>01</span><div><strong>随光轻浮</strong><small>纸面、卡片与弹层随鼠标轻微转动；全局统一控制，在交互设置中即时开关。</small></div></div>
+      <div class="about-release"><span>02</span><div><strong>柔和的格式栏</strong><small>悬停与按压连贯过渡，格式菜单恢复半透明玻璃，让纸面透过细腻的模糊。</small></div></div>
+      <div class="about-release"><span>03</span><div><strong>轻一些的微光</strong><small>点阵帷幕缓存光点、限制绘制预算；后台暂停，关闭动效后保持静态。</small></div></div>
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('info')} <h3>本地环境检查</h3></div>

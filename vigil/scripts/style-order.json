@@ -20,6 +20,7 @@
     "/src/styles/settings.css",
     "/src/styles/chronicle.css",
     "/src/styles/motion.css",
+    "/src/styles/floating.css",
     "/src/styles/focus.css"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "name": "vigil-inkpress",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "private": true,
   "type": "module",
-  "description": "不眠手记 v1.7.4：本地与 GitHub 双文库、统一三态编辑器、Obsidian Callout 与安全字体样式",
+  "description": "不眠手记 v1.7.5：全局 3D 浮动、半透明格式菜单与轻量点阵帷幕",
   "scripts": {
     "dev": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
     "start": "node scripts/build-css.mjs && node scripts/dev-server.mjs",

@@ -63,14 +63,14 @@
 .editor-paper{background-blend-mode:soft-light}
 .editor-title{font-size:37px}
 :root[data-theme=night] .editor-paper{background-color:var(--surface)}
-.tool-button{transition:transform .46s var(--vigil-spring),
+.tool-button{transition:transform .24s var(--vigil-ease),
     background-color .22s ease,border-color .24s ease,color .2s ease,
     box-shadow .35s var(--vigil-ease)}
 .tag-option{transition:transform .46s var(--vigil-spring),
     background-color .22s ease,border-color .24s ease,color .2s ease,
     box-shadow .35s var(--vigil-ease)}
-.tool-button:hover:not(:disabled){transform:translateY(-2px) scale(1.075)}
-.tool-button:active:not(:disabled){transform:scale(.91)}
+.tool-button:hover:not(:disabled){transform:translateY(-1px)}
+.tool-button:active:not(:disabled){transform:translateY(0) scale(.96)}
 @media (prefers-reduced-motion:reduce){
   .tool-button{animation:none!important;transition:none!important;transform:none!important}
 }
@@ -86,7 +86,7 @@
 .unified-toolbar .format-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
 .unified-toolbar .tool-button{flex:0 0 auto;width:32px;height:33px;padding:6px}
 .editor-mode-switch{display:flex;align-items:stretch;gap:3px;padding:4px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:10px}
-.editor-mode-option{min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;color:var(--ink-2);background:transparent;border:1px solid transparent;border-radius:7px;font:12px var(--font-body);white-space:nowrap;transition:transform .3s var(--vigil-spring),background .2s}
+.editor-mode-option{min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;color:var(--ink-2);background:transparent;border:1px solid transparent;border-radius:7px;font:12px var(--font-body);white-space:nowrap;transition:transform .24s var(--vigil-ease),background-color .24s var(--vigil-ease),color .24s var(--vigil-ease)}
 .editor-mode-option svg{width:15px;height:15px}
 .editor-mode-option:hover:not(.active){background:var(--surface);transform:translateY(-1px)}
 .editor-mode-option.active{box-shadow:0 2px 5px rgba(38,50,37,.12)}
@@ -321,16 +321,18 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .refined-editor .unified-toolbar{position:sticky;top:10px;z-index:12;gap:10px;margin-top:13px;padding:7px 8px;border-radius:13px;background:color-mix(in srgb,var(--surface) 97%,transparent);box-shadow:0 5px 20px rgba(20,48,40,.045)}
 .refined-editor .format-tools.editor-tool-groups{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .refined-editor .editor-tool-cluster{gap:2px}
-.refined-editor .tool-button{width:36px;height:36px;min-height:36px;padding:8px;border:1px solid transparent;border-radius:9px;color:var(--ink-2);transition:background .15s,color .15s}
+.refined-editor .tool-button{width:36px;height:36px;min-height:36px;padding:8px;border:1px solid transparent;border-radius:9px;color:var(--ink-2)}
 .refined-editor .tool-button svg{width:18px;height:18px}
 .refined-editor .tool-button:hover{background:var(--surface-soft)!important;color:var(--ink);border-color:var(--stroke)}
 .refined-editor .tool-button:focus-visible{background:var(--surface-soft)!important;color:var(--ink);border-color:var(--stroke)}
 .refined-editor .toolbar-separator{background:var(--stroke);height:18px;margin:0 3px}
 .refined-editor .editor-dropdown-menu{position:relative;flex:0 0 auto}
 .refined-editor .editor-dropdown-menu summary{width:auto;min-width:83px;padding:0 10px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
-.refined-editor .editor-dropdown-menu summary>svg:last-child{width:12px;height:12px;opacity:.65;transition:transform .15s}
+.refined-editor .editor-dropdown-menu summary>svg:last-child{width:12px;height:12px;opacity:.65;transition:transform .26s var(--vigil-ease)}
 .refined-editor .editor-dropdown-menu[open] summary{color:var(--appearance-accent);background:var(--surface-soft);border-color:var(--stroke)}
 .refined-editor .editor-dropdown-menu[open] summary>svg:last-child{transform:rotate(180deg)}
+.refined-editor .editor-dropdown-menu[open] .editor-dropdown-panel{animation:editor-menu-reveal .2s var(--vigil-ease)}
+@keyframes editor-menu-reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .refined-editor .text-tool-button span{font-size:12px;letter-spacing:.02em;font-weight:600}
 .refined-editor .editor-dropdown-panel{position:absolute;top:calc(100% + 9px);left:0;z-index:50;width:245px;min-width:0;max-height:min(390px,70vh);overflow-y:auto;padding:7px;border:1px solid var(--stroke);border-radius:14px;box-shadow:0 16px 40px rgba(20,44,36,.14)}
 .refined-editor .editor-menu-item{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;border:0;border-radius:9px;padding:7px 10px;background:transparent;text-align:left;color:var(--ink);cursor:pointer}
@@ -369,6 +371,7 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   .refined-editor .editor-tool-cluster{gap:2px}
   .refined-editor .tool-button{min-width:38px;width:38px;height:38px;min-height:38px;padding:8px}
   .refined-editor .editor-dropdown-menu summary{width:auto;min-width:71px;height:38px;min-height:38px;padding:0 7px;gap:5px}
+  .refined-editor .editor-dropdown-menu{position:static}
   .refined-editor .editor-dropdown-menu summary svg{height:15px;width:15px}
   .refined-editor .editor-dropdown-menu summary svg:last-child{height:11px;width:11px}
   .refined-editor .editor-tool-groups>.toolbar-separator{display:none}
@@ -401,13 +404,10 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   .refined-editor .unified-edit-host{max-width:100%;min-width:0}
   .refined-editor .unified-edit-host .CodeMirror{max-width:100%;min-width:0}
 }
-.refined-editor .editor-toolbar-slim{background:color-mix(in srgb,var(--surface) 88%,transparent)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.refined-editor .editor-dropdown-panel{background:color-mix(in srgb,var(--surface) 93%,transparent)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .editor-mode-option.active{background:var(--user-primary-bg)!important;color:var(--appearance-contrast)!important;border-color:color-mix(in srgb,var(--user-primary-bg) 73%,var(--ink))!important}
 .refined-editor .editor-title{font-family:var(--font-display)!important;font-size:var(--page-title-size)!important;line-height:1.23!important;font-weight:var(--page-title-weight)!important;letter-spacing:-.02em!important}
 .editor-topline{margin-top:0}
 :root[data-theme=night] .refined-editor :is(.editor-paper,.unified-reader){color:var(--ink)}
-:root[data-theme=night] .refined-editor .editor-toolbar-slim{background:rgba(49,48,55,.93)!important}
 :root[data-theme=night] .unified-reader{color:var(--ink)!important}
 .refined-editor .editor-properties[hidden]{display:none!important}
 .refined-editor .cm-live-heading.cm-live-h4{font:700 clamp(17px,1.65vw,20px)/1.7 var(--font-display)!important;border-left:3px solid var(--appearance-accent);padding-left:10px}
@@ -436,12 +436,18 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .cm-live-styled.font-serif{font-family:serif}
 .cm-live-styled.font-accent{color:var(--appearance-accent)}
 @layer overrides{
-  .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--glass-panel-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important}
+  /* A blurred toolbar would form a backdrop root and stop its menus blurring the manuscript.
+     Keep its glass on a sibling underlay, just like the paper surface. */
+  .refined-editor .unified-toolbar{isolation:isolate;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .refined-editor .unified-toolbar::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none}
+  .refined-editor :is(.editor-dropdown-panel,.editor-outline-sidebar),.refined-editor .unified-toolbar::before{background-color:var(--glass-panel-bg)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .refined-editor .editor-dropdown-panel{background-color:var(--glass-menu-bg)!important}
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-    .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--surface)!important}
+    .refined-editor :is(.editor-dropdown-panel,.editor-outline-sidebar),.refined-editor .unified-toolbar::before{background-color:var(--surface)!important}
   }
   @media (prefers-reduced-transparency:reduce){
-    .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+    .refined-editor :is(.editor-dropdown-panel,.editor-outline-sidebar),.refined-editor .unified-toolbar::before{background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   }
       .refined-editor .unified-manuscript{margin-top:14px!important}
   }
@@ -509,7 +515,7 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .refined-editor .unified-reader > *{max-width:880px;margin-inline:auto}
 @media (max-width:900px){.composer-page.refined-editor{--editor-gap:176px}}
 @media (max-width:680px){.composer-page.refined-editor{--editor-gap:172px}}
-.shell.zen-mode .composer-page.refined-editor{--editor-gap:48px}
+.shell.zen-mode .composer-page.refined-editor{--editor-gap:20px;max-width:none}
 
 /* Date & tags: the chevron follows the label instead of floating under the outline tab. */
 .refined-editor .editor-properties summary{display:inline-flex;width:auto;max-width:100%}

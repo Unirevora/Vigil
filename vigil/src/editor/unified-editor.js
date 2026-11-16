@@ -10,7 +10,7 @@
  */
 import {mathToHtml} from '../core/math.js';
 import {renderMarkdown} from '../core/markdown.js';
-import {BLOCK_FORMATS,formatBlockSelection,INLINE_WRAPS,formatInlineSelection,INSERT_TEMPLATES} from './formatting.js';
+import {BLOCK_FORMATS,formatBlockSelection,INLINE_WRAPS,formatInlineRange,INSERT_TEMPLATES,formatTemplateSelection} from './formatting.js';
 import {
   inlineSegments,markdownHeading,markdownListMarker,markdownRule,markdownTableAt,
   markdownMathBlockAt,markdownFenceAt,markdownQuoteAt,markdownSafeStart
@@ -357,23 +357,16 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
       cm.focus();return;
     }
     if(INLINE_WRAPS[kind]){
-      const previous=cm.getSelection();
-      const from=cm.getCursor('from');
-      const insertion=formatInlineSelection(previous,kind);
-      cm.replaceSelection(insertion.text,'around','+format');
-      const fromIndex=cm.indexFromPos(from);
-      cm.setSelection(cm.posFromIndex(fromIndex+insertion.caretFrom),
-        cm.posFromIndex(fromIndex+insertion.caretTo));
+      const insertion=formatInlineRange(cm.getValue(),cm.indexFromPos(cm.getCursor('from')),
+        cm.indexFromPos(cm.getCursor('to')),kind);
+      cm.replaceRange(insertion.text,cm.posFromIndex(insertion.from),cm.posFromIndex(insertion.to),'+format');
+      cm.setSelection(cm.posFromIndex(insertion.selectionFrom),cm.posFromIndex(insertion.selectionTo));
       cm.focus();return;
     }
     if(INSERT_TEMPLATES[kind]){
       const selected=cm.getSelection(),cursor=cm.getCursor('from');
-      const startOfLine=cursor.ch===0;
-      const prefix=startOfLine?'':'\n';
-      const suffix='\n';
-      const template=kind==='codeBlock'&&selected?('```text\n'+selected+'\n```'):
-        kind==='blockMath'&&selected?('$$\n'+selected+'\n$$'):INSERT_TEMPLATES[kind];
-      cm.replaceSelection(prefix+template+suffix,'around','+format');
+      const text=formatTemplateSelection(selected,kind,{startOfLine:cursor.ch===0});
+      cm.replaceSelection(text,'around','+format');
       cm.focus();return;
     }
   }

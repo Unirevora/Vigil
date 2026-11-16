@@ -23,7 +23,8 @@ import {collectDiagnostics,formatDiagnostics} from './core/diagnostics.js';
 import {showToast,confirmDialog} from './ui/feedback.js';
 import {requestPassphrase} from './ui/passphrase.js';
 import {mountCommandPalette} from './ui/command-palette.js';
-import {playEntranceMotion} from './ui/motion.js';
+import {playEntranceMotion,animateEditorFrame} from './ui/motion.js';
+import {createFloatingSurfaces} from './ui/floating.js';
 import {mountUnifiedEditor,readEditorMode,persistEditorMode} from './editor/unified-editor.js';
 import {DEFAULT_APPEARANCE,readAppearance,writeAppearance,mixHex,contrastInk,hexToRgb,sidebarPalette} from './appearance/settings.js';
 import {preparePhoto,createVisualAssets} from './appearance/background.js';
@@ -65,9 +66,11 @@ let draftTimer=null;
 let previewFrame=null;
 let almanacController=null;
 let unifiedEditor=null;
+let zenFrameAnimation=null;
 let glass=null; // scene sampler is refreshed after every theme / wallpaper change
 const visualAssets=createVisualAssets();
 const spectralDrape=createSpectralDrape(document.querySelector('#spectralDrape'));
+const floatingSurfaces=createFloatingSurfaces();
 let requireEncryptedImport=false;
 let gitCryptLocalMode='';
 const SIDEBAR_STORAGE_KEY='vigil-sidebar-collapsed-v1';
@@ -161,7 +164,8 @@ function applyAppearance(){
   document.body.dataset.wallpaper=a.background;
   document.body.dataset.paperTexture=a.texture?'on':'off';
   spectralDrape.setOptions({enabled:a.spectralDrape,intensity:a.drapeIntensity/100,
-    accent:a.accent,night:state.theme==='night'});
+    accent:a.accent,night:state.theme==='night',motion:a.motionMode});
+  floatingSurfaces.setOptions({enabled:a.floating,motion:a.motionMode});
   const urls=visualAssets.urls();
   if(a.background==='custom'&&urls.backgroundURL){
     r.setProperty('--wallpaper-image',`url("${urls.backgroundURL}")`);
@@ -643,6 +647,8 @@ function applyFormat(style){
 }
 function toggleZenMode(){
   if(state.view!=='editor')return;
+  const page=document.querySelector('.composer-page.refined-editor');
+  const previous=page?.getBoundingClientRect();
   state.zenMode=!state.zenMode;
   document.querySelector('.shell')?.classList.toggle('zen-mode',state.zenMode);
   for(const button of document.querySelectorAll('.editor-zen-button')){
@@ -650,6 +656,12 @@ function toggleZenMode(){
     button.title=state.zenMode?'退出沉浸 · Ctrl/⌘+Shift+F':'沉浸书写 · Ctrl/⌘+Shift+F';
   }
   fitEditorFrame();
+  const animation=animateEditorFrame(page,previous);
+  zenFrameAnimation=animation;
+  animation?.finished.then(()=>{
+    if(zenFrameAnimation!==animation)return;
+    zenFrameAnimation=null;unifiedEditor?.refresh();
+  }).catch(()=>{});
 }
 function toggleFindBar(visible=true,{replace=false}={}){
   const bar=$('#editorSearchBar');if(!bar)return;
@@ -1088,6 +1100,7 @@ async function ghDisconnect(){
 
 /** Fit the editor frame to the viewport so only its body scrolls, never the page. */
 function fitEditorFrame(){
+  zenFrameAnimation?.cancel();zenFrameAnimation=null;
   const page=document.querySelector('.composer-page.refined-editor');
   if(!page)return;
   const top=page.getBoundingClientRect().top+window.scrollY;
@@ -1098,6 +1111,7 @@ function fitEditorFrame(){
 }
 window.addEventListener('resize',fitEditorFrame);
 function render(){
+  zenFrameAnimation?.cancel();zenFrameAnimation=null;
   state.storageUsage=storageFootprint(storage);
   if(unifiedEditor){unifiedEditor.destroy();unifiedEditor=null;}
   if(almanacController){almanacController.destroy();almanacController=null;}

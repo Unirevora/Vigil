@@ -12,7 +12,7 @@
 | `docs/USER-GUIDE.md` | 面向用户的功能说明、快捷键、Markdown 语法 |
 | `docs/CHANGELOG-original.md` | 原项目（v2.0–v2.8.2）历史，**只读，不得修改** |
 
-当前版本以 `package.json` 为准（发稿时 1.7.4「定框」）。本文与代码冲突时，以代码为准，并顺手修正文档。
+当前版本以 `package.json` 为准（发稿时 1.7.5「浮光」）。本文与代码冲突时，以代码为准，并顺手修正文档。
 
 ---
 
@@ -121,7 +121,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 
 ## 7. 样式体系
 
-- 只改 `src/styles/*.css`，**不手改 `assets/vigil.css`**；改后 `npm run build:css`（`npm run dev` 自动构建）。层叠顺序唯一来源 `scripts/style-order.json`（现 20 个模块，含 `focus.css`）。构建器纯 Node、不压缩，按顺序拼接并加源路径注释。
+- 只改 `src/styles/*.css`，**不手改 `assets/vigil.css`**；改后 `npm run build:css`（`npm run dev` 自动构建）。层叠顺序唯一来源 `scripts/style-order.json`（现 21 个模块，含 `floating.css` 与 `focus.css`）。构建器纯 Node、不压缩，按顺序拼接并加源路径注释。
 - 源 CSS 中资源地址写**项目根相对路径**（`/assets/x.webp`、`/fonts/x.ttf`），构建时换算为相对 bundle 的路径；引用不存在的文件会构建失败（用户自备字体除外）；相对路径 `url()` 被拒。`@font-face` 在 `tokens.css`。
 - 需要压过遗留 `!important` 的规则放 `@layer overrides`（层内 `!important` 胜过未分层 `!important`）；注意：分层的 `!important` 会压过未分层的 `!important`，写新规则前先查是否被 `overrides` 层或 `surfaces.css`/`motion.css`/`focus.css` 覆盖。
 - 比所属功能更靠后的规则要加注释说明为何必须后置。
@@ -137,6 +137,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 - **标题**：每页唯一 `h1.page-title`（`pageHeading` 组件），字号 `--page-title-size`（桌面 `clamp(36px,3.35vw,52px)`，≤900 `clamp(34px,5.3vw,43px)`，≤640 `clamp(31px,8.2vw,38px)`），行高 1.14，字重 600；顶栏不重复页面名。
 - **字体**：`VigilTitle`(`fonts/titlefont.ttf`，回退宋体)、`VigilText`(`fonts/textfont.ttf`，回退苹方/雅黑)；用户自备，不提交二进制，缺失只提示并回退。
 - **动效**：`--vigil-ease`、`--vigil-spring`；设置可选轻盈回弹/更克制/关闭；**所有动画必须服从 `prefers-reduced-motion`**，并且「要平滑，不要生硬」（位置、尺寸、透明度同曲线过渡）。
+- **全局浮动**：统一维护 `src/ui/floating.js` 与 `src/styles/floating.css`，只给最外层界面面板加轻微 3D 角度，嵌套元素随父面板移动，排除侧栏与顶栏；不分散写逐组件鼠标监听或倾斜规则。设置 `floating` 放在既有外观键中，支持热切换；减少动效、触屏、关闭动效与后台时停用。
 - **滚动条全站隐藏**（不影响滚轮/触控/键盘）；鼠标点击不出现焦点方框，只有键盘 Tab 时显示淡淡圆角光晕（`focus.css`）。
 - 布局宽度验证：320 / 390 / 768–810 / 1024 / 1440 / 1672 px，**不允许横向溢出**；≤900px 侧栏收为顶部并带底部快捷导航。
 - 内置背景四个（晴岚、薄雾、素岸、月汐）各用不同文件，另有「我的背景」（IndexedDB）与纯色；玻璃场景图与当前壁纸一一对应采样。

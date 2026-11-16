@@ -8,6 +8,21 @@ export function motionAllowed(){
   return document.documentElement.dataset.motion!=='off' && typeof matchMedia==='function' &&
     !matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
+
+/** Animate the existing editor between measured frames without scaling its text. */
+export function animateEditorFrame(page,previous){
+  if(!page||!previous||!motionAllowed()||typeof page.animate!=='function')return null;
+  const next=page.getBoundingClientRect();
+  // Resolve auto margins once: interpolating width must not also recenter the frame.
+  const style=getComputedStyle(page);
+  const size=rect=>({width:rect.width+'px',maxWidth:rect.width+'px',height:rect.height+'px',
+    marginLeft:style.marginLeft,marginRight:style.marginRight});
+  const easing=getComputedStyle(document.documentElement).getPropertyValue('--vigil-ease').trim()||'ease-out';
+  return page.animate([
+    {...size(previous),transform:`translate(${previous.left-next.left}px,${previous.top-next.top}px)`},
+    {...size(next),transform:'translate(0,0)'}
+  ],{duration:document.documentElement.dataset.motion==='subtle'?220:420,easing});
+}
 export function playEntranceMotion(container){
   activeObserver?.disconnect();
   activeObserver=null;
