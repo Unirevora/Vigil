@@ -61,6 +61,10 @@ export function markdownHeading(line){
   return {level:match[2].length,prefix:match[1].length+match[2].length+match[3].length,
     title:match[4]};
 }
+/** Thematic break (---, ***, ___); matches the reader's renderer. */
+export function markdownRule(line){
+  return /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(String(line));
+}
 export function markdownListMarker(line){
   const task=String(line).match(/^(\s*)([-*+])(\s+)\[([ xX])\]([ \t]+)/);
   if(task)return {kind:'task',prefix:task[0].length,checked:task[4].toLowerCase()==='x',

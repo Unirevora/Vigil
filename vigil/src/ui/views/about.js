@@ -28,7 +28,7 @@ export function aboutPanel(state){
       <div class="about-section-heading">${icon('spark')} <h3>当前版本</h3></div>
       <div class="about-release"><span>01</span><div><strong>一种标签，一条滑痕</strong><small>全部手记、日历与风物、设置共用下划线标签，切换时主题色下划线平滑滑向新标签。</small></div></div>
       <div class="about-release"><span>02</span><div><strong>满窗毛玻璃</strong><small>卡片、面板、对话框与阅读、写作稿纸都透出背景，透明度随「纸面透光」调整。</small></div></div>
-      <div class="about-release"><span>03</span><div><strong>清简的书写台</strong><small>大纲在编辑区右侧展开、与稿纸等高；滚动条隐去，焦点不再出现主题色方框。</small></div></div>
+      <div class="about-release"><span>03</span><div><strong>定框的书写台</strong><small>标题与工具栏固定、只滚动正文；大纲与专注收在稿纸右缘，展开后与稿纸等高。</small></div></div>
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('info')} <h3>本地环境检查</h3></div>

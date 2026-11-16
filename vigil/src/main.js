@@ -605,33 +605,28 @@ async function copyAboutDiagnostics(){
 function toggleOutlineSidebar(force){
   if(state.view!=='editor')return;
   state.editorOutlineOpen=typeof force==='boolean'?force:!state.editorOutlineOpen;
-  const pane=$('#editorUnifiedPane');
-  if(pane)pane.dataset.outlineOpen=String(state.editorOutlineOpen);
-  pane?.classList.toggle('outline-open',state.editorOutlineOpen);
+  document.querySelector('.refined-editor')?.classList.toggle('outline-open',state.editorOutlineOpen);
   const sidebar=$('#editorOutlineSidebar');
   if(sidebar){
     sidebar.classList.toggle('is-open',state.editorOutlineOpen);
-    // Collapsed outline has zero width: keep its controls out of the tab order.
-    sidebar.toggleAttribute('inert',!state.editorOutlineOpen);
-  }
-  // The outline column animates its width; re-measure CodeMirror once it settles.
-  const layout=pane?.querySelector('.editor-manuscript-layout');
-  if(layout){
-    let settled=false;
-    const settle=()=>{if(settled)return;settled=true;layout.removeEventListener('transitionend',onEnd);unifiedEditor?.refresh();};
-    const onEnd=event=>{if(event.target===layout&&event.propertyName==='grid-template-columns')settle();};
-    layout.addEventListener('transitionend',onEnd);
-    setTimeout(settle,600);
+    sidebar.querySelector('.editor-outline-sticky')?.toggleAttribute('inert',!state.editorOutlineOpen);
   }
   const button=$('.editor-outline-toggle');
   if(button){
     button.classList.toggle('active',state.editorOutlineOpen);
     button.setAttribute('aria-pressed',String(state.editorOutlineOpen));
-    button.innerHTML=`${icon(state.editorOutlineOpen?'panel-right-close':'panel-right-open')} <span>${state.editorOutlineOpen?'收起大纲':'大纲'}</span>`;
+  }
+  // The paper's width animates; re-measure CodeMirror once it settles.
+  const stage=document.querySelector('.editor-stage');
+  if(stage){
+    let settled=false;
+    const settle=()=>{if(settled)return;settled=true;stage.removeEventListener('transitionend',onEnd);unifiedEditor?.refresh();};
+    const onEnd=event=>{if(event.target===stage&&event.propertyName==='grid-template-columns')settle();};
+    stage.addEventListener('transitionend',onEnd);
+    setTimeout(settle,650);
   }
   if(state.editorOutlineOpen){
     updateEditorOutline();
-    if(window.innerWidth<=1180)sidebar?.querySelector('[data-action="close-outline-sidebar"]')?.focus({preventScroll:true});
   }else if(typeof force==='boolean'){$('.editor-outline-toggle')?.focus({preventScroll:true});}
   unifiedEditor?.refresh();
 }
@@ -650,10 +645,11 @@ function toggleZenMode(){
   if(state.view!=='editor')return;
   state.zenMode=!state.zenMode;
   document.querySelector('.shell')?.classList.toggle('zen-mode',state.zenMode);
-  const button=$('.editor-zen-button');
-  if(button){button.classList.toggle('active',state.zenMode);button.setAttribute('aria-pressed',String(state.zenMode));
-    button.innerHTML=`${icon('maximize')} <span>${state.zenMode?'退出沉浸':'专注'}</span>`;}
-  unifiedEditor?.refresh();
+  for(const button of document.querySelectorAll('.editor-zen-button')){
+    button.classList.toggle('active',state.zenMode);button.setAttribute('aria-pressed',String(state.zenMode));
+    button.title=state.zenMode?'退出沉浸 · Ctrl/⌘+Shift+F':'沉浸书写 · Ctrl/⌘+Shift+F';
+  }
+  fitEditorFrame();
 }
 function toggleFindBar(visible=true,{replace=false}={}){
   const bar=$('#editorSearchBar');if(!bar)return;
@@ -1090,6 +1086,17 @@ async function ghDisconnect(){
   render();
 }
 
+/** Fit the editor frame to the viewport so only its body scrolls, never the page. */
+function fitEditorFrame(){
+  const page=document.querySelector('.composer-page.refined-editor');
+  if(!page)return;
+  const top=page.getBoundingClientRect().top+window.scrollY;
+  const inner=page.closest('.main-inner');
+  const pad=inner?parseFloat(getComputedStyle(inner).paddingBottom)||0:0;
+  page.style.setProperty('--editor-height',Math.max(480,Math.floor(window.innerHeight-top-pad))+'px');
+  unifiedEditor?.refresh();
+}
+window.addEventListener('resize',fitEditorFrame);
 function render(){
   state.storageUsage=storageFootprint(storage);
   if(unifiedEditor){unifiedEditor.destroy();unifiedEditor=null;}
@@ -1134,6 +1141,7 @@ function render(){
       $('#'+id)?.addEventListener('input',trackDraftFromInputs);
       $('#'+id)?.addEventListener('change',trackDraftFromInputs);
     });
+    fitEditorFrame();
     unifiedEditor=mountUnifiedEditor({
       host:$('#unifiedEditorHost'),reader:$('#unifiedReader'),
       initial:state.draft?.content||'',mode:state.editorMode,

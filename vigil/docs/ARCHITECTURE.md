@@ -165,7 +165,7 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 - **标题**：每页一个 `h1.page-title`，`--page-title-size` 桌面 `clamp(36px,3.35vw,52px)`、≤900px `clamp(34px,5.3vw,43px)`、≤640px `clamp(31px,8.2vw,38px)`，行高 1.14，字重 600。顶栏不重复页面名。
 - **字体**：`--font-display`（`VigilTitle` = `fonts/titlefont.ttf`，回退宋体）、`--font-body`（`VigilText` = `fonts/textfont.ttf`，回退苹方/雅黑）、`--font-typed`（等宽）。字体文件由用户自备，不随源码分发（见 `fonts/README.md`、`scripts/restore-fonts.py`）。
 - **动效**：`--vigil-ease`、`--vigil-spring: cubic-bezier(.2,1.22,.31,1)`；设置中可选轻盈回弹 / 更克制 / 关闭；始终服从 `prefers-reduced-motion`。
-- **布局**：侧栏 `--sidebar-width: clamp(226px,15.9vw,270px)`，折叠 `--sidebar-closed: 79px`；≤900px 侧栏收为顶部并可折叠，底部有快捷导航；工作区最大宽度 `--workspace-max-width`（用户可调）；编辑器大纲桌面为 `--outline-width: 288px` 的等高右侧栏，平板/手机为抽屉。验证宽度 320 / 390 / 768–810 / 1024 / 1440 / 1672 px，不允许横向溢出。
+- **布局**：侧栏 `--sidebar-width: clamp(226px,15.9vw,270px)`，折叠 `--sidebar-closed: 79px`；≤900px 侧栏收为顶部并可折叠，底部有快捷导航；工作区最大宽度 `--workspace-max-width`（用户可调）；编辑器大纲是叠在稿纸右缘的浮层：收起时为露出边缘的小标签，展开时向左过渡为与稿纸等宽的窗口，不挤占正文。验证宽度 320 / 390 / 768–810 / 1024 / 1440 / 1672 px，不允许横向溢出。
 
 ### 主要 token（以 `assets/vigil.css` 为准）
 

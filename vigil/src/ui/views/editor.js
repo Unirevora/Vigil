@@ -24,6 +24,8 @@ export function editorView(state){
   const d=state.draft||{title:'',date:todayISO(),content:'',tags:[],mood:''};
   const selected=state.editorMode||'live';
   const outlineOpen=state.editorOutlineOpen===true;
+  const zenButton=`<button class="editor-zen-button ${state.zenMode?'active':''}" type="button" data-action="toggle-zen"
+    aria-pressed="${state.zenMode===true}" aria-label="沉浸书写" title="沉浸书写 · Ctrl/⌘+Shift+F">${icon('maximize')}</button>`;
   const remote=state.editorOrigin==='github';
   const remotePath=remote?(state.github.note?.path||'') : ''; 
   return `<section class="composer-page unified-composer-page refined-editor ${outlineOpen?'outline-open':''}">
@@ -35,32 +37,35 @@ export function editorView(state){
         <button class="btn btn-primary" data-action="save">${icon('save')} ${remote?'提交 GitHub':'保存手记'}</button>
       </div>
     </header>
+    <div class="editor-stage">
+    <aside class="editor-outline-sidebar ${outlineOpen?'is-open':''}" id="editorOutlineSidebar" aria-label="文章大纲">
+      <div class="editor-outline-handles">
+        <button class="editor-outline-toggle ${outlineOpen?'active':''}" type="button" data-action="toggle-outline-sidebar"
+          aria-pressed="${outlineOpen}" aria-controls="editorOutlineList" aria-label="展开文章大纲" title="文章大纲">${icon('list-tree')}</button>
+        ${zenButton}
+      </div>
+      <div class="editor-outline-sticky" ${outlineOpen?'':'inert'}>
+        <div class="editor-outline-sidebar-head"><div><strong>文章大纲</strong><small>根据正文标题自动生成</small></div>
+          <div class="editor-outline-head-actions">${zenButton}
+            <button type="button" class="icon-button" data-action="close-outline-sidebar" aria-label="收起大纲">${icon('close')}</button></div></div>
+        <div class="editor-outline-panel" id="editorOutlineList"><p>输入 Markdown 标题后，这里会列出大纲。</p></div>
+      </div>
+    </aside>
     <article class="editor-paper unified-paper">
       ${remote?`<div class="github-editor-origin">${icon('github')} <span>远端文库</span><strong>${escapeHtml(state.github.config?.owner||'')}/${escapeHtml(state.github.config?.repo||'')}</strong><span class="github-editor-path">${escapeHtml(remotePath)}</span>${state.github.note?.encrypted?'<span class="pill">git-crypt</span>':''}</div>`:''}
       <input id="entryTitle" class="editor-title" aria-label="手记标题" maxlength="200" ${remote?'readonly title="文件名由仓库路径决定；修改正文标题不会自动重命名远端文件"':''}
         value="${escapeHtml(d.title)}" placeholder="无题手记">
-      ${remote?`<p class="github-editor-filename-hint">${icon('info')} 文件名由仓库路径决定；正文中的 Markdown 标题可以自由编辑，提交时会校验 SHA 与加密规则。</p>`:''}
-      <div class="editor-props-row">
-        <details class="editor-properties" ${remote?'hidden':''}>
-          <summary>${icon('sliders-horizontal')} <span>日期与标签</span>
-            <span class="editor-prop-summary">${escapeHtml(d.date)}${d.mood?' · '+escapeHtml(d.mood):''}${d.tags?.length?' · '+d.tags.length+' 个标签':''}</span>
-            ${icon('chevron-down')}</summary>
-          <div class="editor-meta-line">
-            <label>日期 <input type="date" id="entryDate" value="${escapeHtml(d.date)}"></label>
-            <label>心情 <select id="entryMood">${moods.map(m=>`<option value="${escapeHtml(m)}" ${d.mood===m?'selected':''}>${m||'未选择'}</option>`).join('')}</select></label>
-            <label class="tag-label">标签 <input id="entryTags" maxlength="220"
-              value="${escapeHtml((d.tags||[]).join(', '))}" placeholder="用逗号分隔"></label>
-          </div>
-        </details>
-        <div class="editor-pane-tools" role="group" aria-label="写作视图">
-          <button class="editor-zen-button ${state.zenMode?'active':''}" type="button" data-action="toggle-zen"
-            aria-pressed="${state.zenMode===true}" title="沉浸书写 · Ctrl/⌘+Shift+F">${icon('maximize')} <span>${state.zenMode?'退出沉浸':'专注'}</span></button>
-          <button class="editor-outline-toggle ${outlineOpen?'active':''}" type="button" data-action="toggle-outline-sidebar"
-            aria-pressed="${outlineOpen}" aria-controls="editorOutlineSidebar" title="切换右侧大纲">
-            ${icon(outlineOpen?'panel-right-close':'panel-right-open')} <span>${outlineOpen?'收起大纲':'大纲'}</span>
-          </button>
+      <details class="editor-properties" ${remote?'hidden':''}>
+        <summary>${icon('sliders-horizontal')} <span>日期与标签</span>
+          <span class="editor-prop-summary">${escapeHtml(d.date)}${d.mood?' · '+escapeHtml(d.mood):''}${d.tags?.length?' · '+d.tags.length+' 个标签':''}</span>
+          ${icon('chevron-down')}</summary>
+        <div class="editor-meta-line">
+          <label>日期 <input type="date" id="entryDate" value="${escapeHtml(d.date)}"></label>
+          <label>心情 <select id="entryMood">${moods.map(m=>`<option value="${escapeHtml(m)}" ${d.mood===m?'selected':''}>${m||'未选择'}</option>`).join('')}</select></label>
+          <label class="tag-label">标签 <input id="entryTags" maxlength="220"
+            value="${escapeHtml((d.tags||[]).join(', '))}" placeholder="用逗号分隔"></label>
         </div>
-      </div>
+      </details>
       <div class="unified-toolbar editor-toolbar-slim" role="toolbar" aria-label="写作格式和模式">
         <div class="format-tools primary-tools editor-tool-groups">
           <div class="editor-tool-cluster" aria-label="常用文本格式">
@@ -113,27 +118,18 @@ export function editorView(state){
         <button class="btn btn-small" data-action="find-replace-all">全部替换</button>
         <button class="icon-button" data-action="find-close" aria-label="关闭查找">${icon('close')}</button>
       </div>
-      <div class="unified-manuscript" id="editorUnifiedPane" data-mode="${selected}" data-outline-open="${outlineOpen}">
-        <div class="editor-manuscript-layout">
-          <button class="editor-outline-scrim" type="button" data-action="close-outline-sidebar"
-            aria-label="关闭文章大纲" tabindex="-1"></button>
-          <div class="editor-manuscript-main">
-            <div id="unifiedEditorHost" class="unified-edit-host" aria-label="Markdown 写作区域"></div>
-            <div id="unifiedReader" class="unified-reader article-content" ${selected==='reading'?'':'hidden'}
-              aria-label="阅读模式正文">${selected==='reading'?renderMarkdown(d.content):''}</div>
-          </div>
-          <aside class="editor-outline-sidebar ${outlineOpen?'is-open':''}" id="editorOutlineSidebar" aria-label="文章大纲" ${outlineOpen?'':'inert'}>
-            <div class="editor-outline-sticky">
-              <div class="editor-outline-sidebar-head"><div><strong>文章大纲</strong><small>根据正文标题自动生成</small></div>
-                <button type="button" class="icon-button" data-action="close-outline-sidebar" aria-label="收起大纲">${icon('close')}</button></div>
-              <div class="editor-outline-panel" id="editorOutlineList"><p>输入 Markdown 标题后，这里会列出大纲。</p></div>
-            </div>
-          </aside>
+      <div class="unified-manuscript" id="editorUnifiedPane" data-mode="${selected}">
+        <div class="editor-manuscript-main">
+          <div id="unifiedEditorHost" class="unified-edit-host" aria-label="Markdown 写作区域"></div>
+          <div id="unifiedReader" class="unified-reader article-content" ${selected==='reading'?'':'hidden'}
+            aria-label="阅读模式正文">${selected==='reading'?renderMarkdown(d.content):''}</div>
         </div>
       </div>
       <footer class="editor-foot"><span id="editorWordCount">${charCount(d.content)} 字</span>
         <span>${remote?'本机自动暂存 · 提交才写入 GitHub':selected==='live'?'输入 Markdown 即时排版 · 当前行源码与效果共存':'同一稿纸 · 随时切换模式'}</span>
       </footer>
     </article>
+    </div>
+    ${remote?`<div class="editor-hint-dock"><p class="github-editor-filename-hint">${icon('info')} 文件名由仓库路径决定；正文中的 Markdown 标题可以自由编辑，提交时会校验 SHA 与加密规则。</p></div>`:''}
   </section>`;
 }

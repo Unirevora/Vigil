@@ -91,9 +91,9 @@
 .editor-mode-option:hover:not(.active){background:var(--surface);transform:translateY(-1px)}
 .editor-mode-option.active{box-shadow:0 2px 5px rgba(38,50,37,.12)}
 .unified-manuscript{position:relative;min-width:0;overflow:hidden;margin-top:10px;border:1px solid var(--stroke-2);border-radius:12px;background:linear-gradient(140deg,rgba(255,251,240,.8),rgba(249,241,226,.65))}
-.unified-edit-host{width:100%;min-height:510px}
-.unified-edit-host .CodeMirror{height:auto;min-height:510px;background:transparent;color:var(--ink);font:var(--reader-font-size)/var(--reader-leading) var(--font-body);letter-spacing:.015em}
-.unified-edit-host .CodeMirror-scroll{min-height:510px;max-height:66vh;overflow-x:hidden!important}
+.unified-edit-host{width:100%}
+.unified-edit-host .CodeMirror{background:transparent;color:var(--ink);font:var(--reader-font-size)/var(--reader-leading) var(--font-body);letter-spacing:.015em}
+.unified-edit-host .CodeMirror-scroll{overflow-x:hidden!important}
 .unified-edit-host .CodeMirror-lines{padding:22px 28px 50px 42px}
 .unified-edit-host .CodeMirror-line{padding:0 5px;border:0;min-height:1.7em}
 .unified-edit-host .CodeMirror-cursor{border-left:2px solid var(--appearance-accent)}
@@ -128,7 +128,7 @@
 .unified-edit-host .cm-math-display{display:block;max-width:calc(100% - 10px);margin:9px 0;padding:14px 9px;border-left:3px solid var(--appearance-accent);border-radius:4px;background:rgba(166,137,94,.075);cursor:text;overflow-x:auto;text-align:center}
 .unified-reader[hidden]{display:none!important}
 .unified-edit-host .CodeMirror[hidden]{display:none!important}
-.unified-reader{min-height:510px;padding:35px 45px 65px;max-height:72vh;overflow:auto;font-size:var(--reader-font-size);line-height:var(--reader-leading);background:transparent}
+.unified-reader{padding:35px 45px 65px;overflow:auto;font-size:var(--reader-font-size);line-height:var(--reader-leading);background:transparent}
 .unified-reader h1{font-family:var(--font-display)}
 .unified-reader h2{font-family:var(--font-display)}
 .unified-reader h3{font-family:var(--font-display)}
@@ -151,11 +151,8 @@
   .editor-mode-option{flex:1;padding:8px 6px;min-height:36px}
   .editor-mode-option svg{width:14px;height:14px}
   .editor-mode-option span{font-size:11px}
-  .unified-edit-host{min-height:430px}
-  .unified-edit-host .CodeMirror{min-height:430px}
-  .unified-edit-host .CodeMirror-scroll{min-height:430px;max-height:69vh}
   .unified-edit-host .CodeMirror-lines{padding:21px 12px 40px 21px}
-  .unified-reader{min-height:430px;padding:27px 19px;max-height:68vh}
+  .unified-reader{padding:27px 19px}
 }
 @media (prefers-reduced-motion:reduce){
   .editor-mode-option{transition:none!important}
@@ -181,15 +178,6 @@
   .unified-composer-page *::before{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0ms!important;scroll-behavior:auto!important}
   .unified-composer-page *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0ms!important;scroll-behavior:auto!important}
 }
-.editor-pane-tools{display:flex;align-items:center;gap:15px}
-.editor-zen-button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--stroke);border-radius:6px;background:var(--surface-soft);color:var(--muted);font:11px var(--font-display);padding:4px 8px}
-.editor-zen-button svg{width:13px;height:13px}
-.editor-zen-button.active{background:var(--user-primary-bg,var(--green));color:var(--appearance-contrast)}
-.shell.zen-mode .unified-edit-host .CodeMirror-scroll{max-height:75vh}
-@media (max-width:460px){
-  .editor-pane-tools{gap:6px}
-  .editor-zen-button{padding:3px 5px}
-}
 .editor-paper{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
 .editor-paper{background:var(--surface)!important}
 .editor-paper::before{display:none!important}
@@ -206,7 +194,6 @@
 .editor-properties{padding:2px 0 18px;border-bottom:1px solid var(--stroke)}
 .editor-properties summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);width:100%;min-height:29px;user-select:none}
 .editor-properties summary::-webkit-details-marker{display:none}
-.editor-outline summary::-webkit-details-marker{display:none}
 .editor-properties summary svg{width:15px;height:15px;color:var(--muted)}
 .editor-properties summary svg:last-child{width:13px;margin-left:auto;transform:rotate(90deg);transition:transform .25s}
 .editor-properties[open] summary svg:last-child{transform:rotate(-90deg)}
@@ -224,26 +211,15 @@
 .refined-editor .editor-mode-option{gap:5px}
 .refined-editor .editor-mode-option.active{background:var(--user-primary-bg,var(--green));color:var(--appearance-contrast)}
 .refined-editor .editor-mode-option svg{width:14px;height:14px}
-.editor-outline{position:relative}
 .refined-editor .unified-manuscript{margin:15px 0 0;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;overflow:visible}
-.refined-editor .editor-pane-tools{display:flex;align-items:center}
-.editor-outline summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);padding:5px 7px;min-height:28px;border-radius:7px}
-.editor-outline summary svg{width:15px;height:15px}
-.editor-outline[open] summary{background:var(--surface-soft)}
-.editor-outline summary:hover{background:var(--surface-soft)}
-.editor-outline-panel{position:absolute;right:0;top:34px;z-index:15;width:min(300px,75vw);max-height:350px;overflow:auto;background:var(--surface);border:1px solid var(--stroke);border-radius:13px;padding:10px;box-shadow:0 16px 35px rgba(33,51,46,.12)}
-.editor-outline-panel p{color:var(--muted);font-size:12px;margin:12px;line-height:1.6}
-.editor-outline-item{display:block;text-align:left;width:100%;border:0;border-radius:7px;padding:9px 9px 9px calc(10px + var(--depth)*12px);background:transparent;color:var(--ink-2);font-size:12px;cursor:pointer;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
-.editor-outline-item:hover{background:var(--surface-soft);color:var(--ink)}
-.refined-editor .unified-edit-host{min-height:300px}
-.refined-editor .unified-edit-host .CodeMirror{font:var(--reader-font-size)/1.85 var(--font-body);background:transparent;color:var(--ink);min-height:320px}
+.refined-editor .unified-edit-host .CodeMirror{font:var(--reader-font-size)/1.85 var(--font-body);background:transparent;color:var(--ink)}
 .refined-editor .unified-edit-host .CodeMirror-scroll{overflow-x:hidden!important}
 .refined-editor .unified-edit-host .CodeMirror-line{padding:0 6px;line-height:1.85;min-height:1.6em}
 /* Hide the HOST too: the old CodeMirror wrapper alone was hidden, while
  * its parent still reserved 510px and pushed Reading content far down. */
 #editorUnifiedPane[data-mode="reading"] .unified-edit-host{display:none!important;min-height:0!important;height:0!important}
 #editorUnifiedPane[data-mode="reading"] .unified-reader{display:block!important}
-.refined-editor .unified-reader{max-height:none;overflow:visible;line-height:1.85;letter-spacing:.012em}
+.refined-editor .unified-reader{line-height:1.85;letter-spacing:.012em}
 .refined-editor .editor-foot{margin-top:0;border-top:1px solid var(--stroke)}
 .refined-editor .editor-foot span:last-child{font-size:10px}
 /* Key difference: active source markers and the rendered styling coexist. */
@@ -293,7 +269,7 @@
   .refined-editor .format-tools{width:100%;justify-content:space-around;gap:0}
   .refined-editor .editor-mode-switch{width:100%;justify-content:space-between}
   .refined-editor .editor-mode-option{flex:1;justify-content:center}
-  .refined-editor .unified-reader{padding:24px 3px 25px;min-height:180px}
+  .refined-editor .unified-reader{padding:24px 3px 25px}
   .refined-editor .unified-edit-host .CodeMirror-lines{padding:21px 2px 26px 0}
   .refined-editor .unified-edit-host .CodeMirror{font-size:15px}
   .refined-editor .editor-foot span:last-child{display:none}
@@ -325,37 +301,13 @@
 .refined-editor .editor-menu-item{justify-items:start}
 .refined-editor .editor-menu-item strong{font-size:13px;font-weight:650}
 .refined-editor .editor-menu-item small{font-size:11px;color:var(--muted)}
-.refined-editor .editor-pane-tools{gap:8px}
-.refined-editor .editor-outline-toggle{background:transparent;border:1px solid transparent;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;font-size:11px}
-.refined-editor .editor-zen-button{background:transparent;border:1px solid transparent;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;font-size:11px}
-.refined-editor .editor-outline-toggle:hover{background:var(--surface-soft);border-color:var(--stroke);color:var(--ink)}
-.refined-editor .editor-zen-button:hover{background:var(--surface-soft);border-color:var(--stroke);color:var(--ink)}
-.refined-editor .editor-outline-toggle.active{background:var(--surface-soft);border-color:var(--stroke);color:var(--ink)}
-.refined-editor .editor-zen-button.active{background:var(--surface-soft);border-color:var(--stroke);color:var(--ink)}
-.refined-editor .editor-manuscript-layout{display:grid;grid-template-columns:minmax(0,1fr) 0;gap:0;align-items:start;transition:grid-template-columns .25s ease,gap .25s ease}
-.refined-editor .unified-manuscript[data-outline-open="true"] .editor-manuscript-layout{grid-template-columns:minmax(0,1fr) minmax(260px,300px);gap:18px}
-.refined-editor.outline-open .editor-manuscript-layout{grid-template-columns:minmax(0,1fr) minmax(260px,300px);gap:18px}
 .refined-editor .editor-manuscript-main{min-width:0}
-.refined-editor .editor-outline-sidebar{position:sticky;top:88px;align-self:start;height:fit-content;max-height:min(70vh,680px);overflow:hidden;background:var(--surface);border:1px solid transparent;border-radius:18px;opacity:0;transform:translateX(14px);pointer-events:none;box-shadow:none;transition:opacity .22s ease,transform .22s ease,border-color .22s ease,box-shadow .22s ease}
-.refined-editor .editor-outline-sidebar.is-open{opacity:1;transform:none;pointer-events:auto;border-color:var(--stroke);box-shadow:0 18px 38px rgba(26,48,44,.08)}
-.refined-editor .editor-outline-sidebar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:16px 16px 10px;border-bottom:1px solid var(--stroke)}
-.refined-editor .editor-outline-sidebar-head strong{display:block;font-size:14px}
-.refined-editor .editor-outline-sidebar-head small{display:block;color:var(--muted);font-size:11px;line-height:1.5;margin-top:2px}
-.refined-editor .editor-outline-panel{position:static;width:auto;box-shadow:none;border:0;background:transparent;padding:10px 10px 14px}
-.refined-editor .editor-outline-panel p{margin:10px 8px;font-size:12px}
-.refined-editor .editor-outline-item{font-size:12px;border-radius:10px;padding-block:10px}
-@media (max-width:1180px){
-  .refined-editor .unified-manuscript[data-outline-open="true"] .editor-manuscript-layout{grid-template-columns:minmax(0,1fr);gap:0}
-  .refined-editor.outline-open .editor-manuscript-layout{grid-template-columns:minmax(0,1fr);gap:0}
-  .refined-editor .editor-outline-sidebar{position:fixed;right:18px;top:96px;width:min(320px,calc(100vw - 36px));max-height:calc(100vh - 128px)}
-}
 @media (max-width:700px){
   .refined-editor .editor-toolbar-slim{padding:8px;gap:10px}
   .refined-editor .editor-tool-groups{width:100%;gap:6px}
   .refined-editor .editor-tool-cluster{flex-wrap:wrap}
   .refined-editor .text-tool-button{min-width:70px;padding-inline:8px}
   .refined-editor .editor-dropdown-panel{left:auto;right:0}
-  .refined-editor .editor-pane-tools{width:100%;justify-content:space-between}
 }
 /* (controls) kept in this module: it must cascade after the rule it refines above. */
 input:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3px}
@@ -394,31 +346,13 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .refined-editor .editor-mode-option{border-radius:8px;min-height:33px;padding:6px 10px;font-size:11px}
 .refined-editor .editor-mode-option.active{box-shadow:0 1px 5px rgba(25,48,43,.08)}
 .refined-editor .unified-manuscript{margin-top:13px}
-.refined-editor .editor-outline-toggle{min-height:34px}
-.refined-editor .editor-zen-button{min-height:34px}
-.refined-editor .editor-outline-sidebar.is-open{max-height:min(75vh,680px)}
-.refined-editor .editor-outline-panel{max-height:calc(min(75vh,680px) - 76px);overflow:auto}
-.refined-editor .editor-outline-scrim{display:none}
 .refined-editor .unified-edit-host .CodeMirror-lines{padding:20px 5px 24px}
-.refined-editor .unified-edit-host .CodeMirror-scroll{min-height:270px;max-height:72vh}
-.refined-editor .unified-reader{min-height:0;padding:22px 5px 27px}
+.refined-editor .unified-reader{padding:22px 5px 27px}
 .refined-editor .unified-reader > :last-child{margin-bottom:0!important}
 .refined-editor .editor-foot{padding-top:11px}
-/* Tablet: keep the editor usable before reaching the phone breakpoint. */
-@media (max-width:1180px){
-  .refined-editor .editor-outline-sidebar{z-index:40}
-  .refined-editor .editor-outline-scrim{position:fixed;inset:0;z-index:39;background:rgba(27,44,40,.25);border:0;padding:0;border-radius:0;cursor:pointer}
-  .refined-editor .unified-manuscript[data-outline-open="true"] .editor-outline-scrim{display:block}
-  .refined-editor .editor-outline-sidebar.is-open{max-height:calc(100dvh - 120px)}
-  .refined-editor .editor-outline-panel{max-height:calc(100dvh - 205px)}
-}
 @media (max-width:900px){
   .refined-editor .unified-toolbar{top:auto;position:relative;z-index:14}
   .refined-editor .editor-paper{padding:24px 25px 17px}
-  .refined-editor .editor-outline-sidebar{top:env(safe-area-inset-top,0px);right:0;width:min(354px,88vw);max-height:100dvh!important;height:100dvh;border-radius:20px 0 0 20px;box-shadow:-14px 0 44px rgba(22,43,37,.14)!important}
-  .refined-editor .editor-outline-panel{max-height:calc(100dvh - 94px);overflow:auto}
-  .refined-editor .editor-outline-sidebar-head{padding:22px 17px 16px}
-  .refined-editor .editor-outline-scrim{inset:0}
 }
 @media (max-width:680px){
   .refined-editor .editor-topline{min-height:40px;margin-bottom:10px;gap:6px;flex-wrap:wrap}
@@ -443,14 +377,9 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   .refined-editor .editor-mode-option{min-width:0;min-height:36px;padding:6px 7px;font-size:11px}
   .refined-editor .editor-dropdown-panel{width:min(245px,calc(100vw - 50px));top:calc(100% + 6px);left:0;right:auto;max-height:min(340px,55dvh);z-index:75}
   .refined-editor .editor-dropdown-menu[data-menu="insert"] .editor-dropdown-panel{left:auto;right:0}
-  .refined-editor .editor-pane-tools{margin-top:0}
-  .refined-editor .editor-outline-toggle{min-height:36px;padding:7px 9px}
-  .refined-editor .editor-zen-button{min-height:36px;padding:7px 9px}
-  .refined-editor .unified-edit-host{min-height:240px}
-  .refined-editor .unified-edit-host .CodeMirror{min-height:250px;font-size:15px}
-  .refined-editor .unified-edit-host .CodeMirror-scroll{max-height:70vh}
+  .refined-editor .unified-edit-host .CodeMirror{font-size:15px}
   .refined-editor .unified-edit-host .CodeMirror-lines{padding:18px 1px 24px}
-  .refined-editor .unified-reader{padding:15px 2px 20px;min-height:0}
+  .refined-editor .unified-reader{padding:15px 2px 20px}
   .refined-editor .editor-foot{padding-top:10px}
 }
 @media (max-width:390px){
@@ -471,10 +400,6 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   .refined-editor .editor-dropdown-menu[data-menu="list"] .editor-dropdown-panel{left:auto;right:0}
   .refined-editor .unified-edit-host{max-width:100%;min-width:0}
   .refined-editor .unified-edit-host .CodeMirror{max-width:100%;min-width:0}
-}
-@media (max-width:680px){
-  .refined-editor .unified-edit-host .vigil-codemirror{min-height:345px!important}
-  .refined-editor .unified-edit-host .CodeMirror-scroll{min-height:345px!important}
 }
 .refined-editor .editor-toolbar-slim{background:color-mix(in srgb,var(--surface) 88%,transparent)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .refined-editor .editor-dropdown-panel{background:color-mix(in srgb,var(--surface) 93%,transparent)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
@@ -518,35 +443,75 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
   @media (prefers-reduced-transparency:reduce){
     .refined-editor :is(.unified-toolbar,.editor-dropdown-panel,.editor-outline-sidebar){background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   }
-  /* ---------------------------------------------------------------- editor: tools in the properties row */
-  .refined-editor .editor-props-row{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:14px!important;padding:2px 0 12px!important;border-bottom:1px solid var(--stroke)!important}
-  .refined-editor .editor-props-row .editor-properties{flex:1 1 auto!important;min-width:0!important;padding:0!important;border:0!important}
-  .refined-editor .editor-props-row .editor-properties summary{min-height:36px!important}
-  /* Chevron follows the label instead of floating next to the tools on the far right. */
-  .refined-editor .editor-props-row .editor-properties summary svg:last-child{margin-left:2px!important}
-  .refined-editor .editor-props-row .editor-prop-summary{flex:0 1 auto!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .refined-editor .editor-props-row .editor-pane-tools{display:flex!important;align-items:center!important;gap:6px!important;flex:none!important;margin:0!important;width:auto!important;justify-content:flex-end!important}
-  .refined-editor .editor-props-row .editor-pane-tools button{min-height:36px!important}
-  .refined-editor .unified-manuscript{margin-top:14px!important}
-  @media (max-width:460px){
-    .refined-editor .editor-props-row .editor-pane-tools button span{display:none!important}
-    .refined-editor .editor-props-row .editor-pane-tools button{padding:7px 9px!important}
+      .refined-editor .unified-manuscript{margin-top:14px!important}
   }
-  /* ---------------------------------------------------------------- editor: outline column (desktop)
-     The outline is a real column: its width animates open beside the manuscript and it is
-     exactly as tall as the writing area. Its content stays in view while scrolling. */
-  @media (min-width:1181px){
-    .refined-editor .editor-manuscript-layout{display:grid!important;grid-template-columns:minmax(0,1fr) 0px!important;column-gap:0px!important;align-items:stretch!important;transition:grid-template-columns .46s var(--vigil-spring,cubic-bezier(.2,.9,.25,1.05)),column-gap .46s ease!important}
-    .refined-editor .unified-manuscript[data-outline-open="true"] .editor-manuscript-layout{grid-template-columns:minmax(0,1fr) var(--outline-width)!important;column-gap:18px!important}
-    .refined-editor.outline-open .editor-manuscript-layout{grid-template-columns:minmax(0,1fr) var(--outline-width)!important;column-gap:18px!important}
-    .refined-editor .editor-outline-sidebar{position:relative!important;top:auto!important;right:auto!important;z-index:1!important;align-self:stretch!important;width:auto!important;height:auto!important;min-width:0!important;max-height:none!important;overflow:clip!important;border:0 solid transparent!important;border-radius:18px!important;opacity:0!important;transform:translateX(24px)!important;pointer-events:none!important;transition:opacity .3s ease,transform .46s var(--vigil-spring,cubic-bezier(.2,.9,.25,1.05))!important}
-    .refined-editor .editor-outline-sidebar.is-open{opacity:1!important;transform:none!important;pointer-events:auto!important;border-width:1px!important;border-color:var(--glass-panel-edge)!important}
-    /* Fixed inner width: the text does not reflow while the column grows. */
-    .refined-editor .editor-outline-sticky{position:sticky;top:84px;width:var(--outline-width);max-height:calc(100vh - 108px);display:flex;flex-direction:column}
-    .refined-editor .editor-outline-panel{flex:1 1 auto;max-height:none!important;overflow:auto!important}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .refined-editor .editor-manuscript-layout{transition:none!important}
-    .refined-editor .editor-outline-sidebar{transition:none!important}
-  }
+
+.cm-live-hr{display:block;height:0;border-top:1px solid var(--stroke,rgba(125,123,101,.4));margin:.8em 0;width:100%}
+.refined-editor .cm-live-rule{color:var(--muted)}
+/* ---------------------------------------------------------------- editor: outline window
+   Same row as the paper, on its right. Collapsed it is a small tab overlapping the paper's right
+   edge; opening grows it into a tall column and the paper gives up a little width (animated). */
+.editor-stage{--outline-width:272px;--outline-tab-top:30px;--outline-tab-h:94px;--outline-ease:cubic-bezier(.22,1,.36,1);display:grid;grid-template-columns:minmax(0,1fr) 0px;grid-template-rows:minmax(0,1fr);column-gap:0;
+  transition:grid-template-columns .52s var(--outline-ease),column-gap .52s var(--outline-ease)}
+.refined-editor.outline-open .editor-stage{grid-template-columns:minmax(0,1fr) var(--outline-width);column-gap:16px}
+.editor-stage > .editor-paper{grid-column:1;grid-row:1;min-width:0;min-height:0}
+.refined-editor .editor-outline-sidebar{grid-column:2;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:20;display:flex;justify-content:flex-end;box-sizing:border-box;width:46px;height:var(--outline-tab-h);margin:var(--outline-tab-top) -12px 0 0;overflow:hidden;border:1px solid var(--stroke);border-radius:14px;background:var(--surface);box-shadow:var(--vigil-soft-shadow);
+  transition:width .52s var(--outline-ease),height .52s var(--outline-ease),margin .52s var(--outline-ease),border-radius .52s var(--outline-ease)}
+.refined-editor .editor-outline-sidebar.is-open{width:var(--outline-width);height:100%;margin:0;border-radius:18px}
+.editor-outline-handles{position:absolute;inset:0;display:flex;flex-direction:column;transition:opacity .2s ease .08s}
+.refined-editor .editor-outline-sidebar.is-open .editor-outline-handles{opacity:0;pointer-events:none;transition-delay:0s}
+.refined-editor .editor-outline-handles > button{flex:1 1 0;display:grid;place-items:center;padding:0 10px 0 0;border:0;background:transparent;color:var(--muted);cursor:pointer;transition:color .2s ease,background .2s ease}
+.refined-editor .editor-outline-handles > button + button{border-top:1px solid var(--stroke)}
+.refined-editor .editor-outline-handles > button:hover{color:var(--ink);background:var(--surface-soft)}
+.refined-editor .editor-zen-button.active{color:var(--appearance-accent)}
+.refined-editor .editor-zen-button svg{width:17px;height:17px}
+.refined-editor .editor-outline-head-actions{display:flex;align-items:center;gap:6px}
+.refined-editor .editor-outline-head-actions .editor-zen-button{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--stroke);border-radius:10px;background:transparent;color:var(--muted);cursor:pointer}
+.refined-editor .editor-outline-head-actions .editor-zen-button:hover{color:var(--ink);background:var(--surface-soft)}
+/* The counter-margin cancels the window's own movement, so the text stays still while it opens. */
+.refined-editor .editor-outline-sticky{display:flex;flex:none;flex-direction:column;width:var(--outline-width);height:100%;margin-top:calc(-1 * var(--outline-tab-top));opacity:0;transform:translateY(6px);pointer-events:none;transition:margin .52s var(--outline-ease),opacity .18s ease,transform .18s ease}
+.refined-editor .editor-outline-sidebar.is-open .editor-outline-sticky{margin-top:0;opacity:1;transform:none;pointer-events:auto;transition:margin .52s var(--outline-ease),opacity .3s ease .2s,transform .4s var(--outline-ease) .2s}
+.refined-editor .editor-outline-sidebar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 18px 10px;border-bottom:1px solid var(--stroke)}
+.refined-editor .editor-outline-sidebar-head strong{display:block;font-size:14px}
+.refined-editor .editor-outline-sidebar-head small{display:block;color:var(--muted);font-size:11px;line-height:1.5;margin-top:2px}
+.refined-editor .editor-outline-panel{flex:1 1 auto;min-height:0;overflow:auto;padding:8px 10px 12px}
+.refined-editor .editor-outline-panel p{column-span:all;color:var(--muted);font-size:12px;margin:10px 8px;line-height:1.6}
+.refined-editor .editor-outline-item{display:block;break-inside:avoid;width:100%;text-align:left;border:0;border-radius:10px;padding:10px 9px 10px calc(10px + var(--depth)*12px);background:transparent;color:var(--ink-2);font-size:12px;cursor:pointer;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.refined-editor .editor-outline-item:hover{background:var(--surface-soft);color:var(--ink)}
+/* Narrow screens: no room to squeeze the paper, so the open window overlays its right side. */
+@media (max-width:900px){
+  .editor-stage{--outline-width:min(300px,86vw)}
+  .refined-editor.outline-open .editor-stage{grid-template-columns:minmax(0,1fr) 0px;column-gap:0}
 }
+@media (prefers-reduced-motion:reduce){
+  .editor-stage,.refined-editor .editor-outline-sidebar,.editor-outline-handles,.refined-editor .editor-outline-sticky{transition:none!important}
+}
+
+/* ---------------------------------------------------------------- editor: remote file hint
+   The GitHub path / SHA note sits below the writing window, at its lower left. */
+.editor-hint-dock{flex:none;padding:8px 6px 0}
+.editor-hint-dock .github-editor-filename-hint{margin:0}
+.editor-hint-dock .github-editor-filename-hint svg{vertical-align:-2px}
+
+/* ---------------------------------------------------------------- editor: fixed frame
+   The editor fills the viewport: title, properties and toolbar stay put while only the body
+   (CodeMirror or the reading pane) scrolls. The outline window shares the same height. */
+.composer-page.refined-editor{--editor-gap:146px;display:flex;flex-direction:column;height:var(--editor-height,calc(100dvh - var(--editor-gap)));min-height:480px}
+.refined-editor .editor-topline{flex:none}
+.refined-editor .editor-stage{flex:1 1 auto;min-height:0}
+.refined-editor .editor-paper{display:flex;flex-direction:column;height:100%;box-sizing:border-box}
+.refined-editor .editor-paper > *{flex:none}
+.refined-editor .editor-paper > .unified-manuscript{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+.refined-editor .editor-manuscript-main{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+.refined-editor .unified-edit-host{flex:1 1 0;min-height:0}
+.refined-editor .unified-edit-host .CodeMirror{height:100%}
+.refined-editor .unified-reader{flex:1 1 0;min-height:0;max-width:none;overflow:auto;overscroll-behavior:contain}
+.refined-editor .unified-reader > *{max-width:880px;margin-inline:auto}
+@media (max-width:900px){.composer-page.refined-editor{--editor-gap:176px}}
+@media (max-width:680px){.composer-page.refined-editor{--editor-gap:172px}}
+.shell.zen-mode .composer-page.refined-editor{--editor-gap:48px}
+
+/* Date & tags: the chevron follows the label instead of floating under the outline tab. */
+.refined-editor .editor-properties summary{display:inline-flex;width:auto;max-width:100%}
+.refined-editor .editor-properties summary svg:last-child{margin-left:2px}
+.refined-editor .editor-prop-summary{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

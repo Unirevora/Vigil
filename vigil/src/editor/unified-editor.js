@@ -12,7 +12,7 @@ import {mathToHtml} from '../core/math.js';
 import {renderMarkdown} from '../core/markdown.js';
 import {BLOCK_FORMATS,formatBlockSelection,INLINE_WRAPS,formatInlineSelection,INSERT_TEMPLATES} from './formatting.js';
 import {
-  inlineSegments,markdownHeading,markdownListMarker,markdownTableAt,
+  inlineSegments,markdownHeading,markdownListMarker,markdownRule,markdownTableAt,
   markdownMathBlockAt,markdownFenceAt,markdownQuoteAt,markdownSafeStart
 } from './live-markdown.js';
 
@@ -52,7 +52,7 @@ function visualMarker(kind,number){
   return node;
 }
 
-export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minHeight=510}){
+export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minHeight=0}){
   if(!globalThis.CodeMirror)throw new Error('CodeMirror 未加载，请检查 vendor 目录');
   const cm=new globalThis.CodeMirror(host,{
     value:String(initial||''),mode:'markdown',lineNumbers:false,lineWrapping:true,
@@ -65,7 +65,7 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   const wrapper=cm.getWrapperElement();
   wrapper.classList.add('vigil-codemirror');
   wrapper.setAttribute('aria-label','Markdown 编辑区');
-  wrapper.style.minHeight=`${minHeight}px`;
+  if(minHeight>0)wrapper.style.minHeight=`${minHeight}px`;
   reader.classList.add('unified-reader');
   const input=cm.getInputField();
   let activeMode='source',decorations=[],lineClasses=[],lineWidgets=[];
@@ -176,6 +176,13 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
       addClass(line,`cm-live-heading cm-live-h${heading.level}`);
       if(active)style(line,0,heading.prefix,'cm-live-syntax');
       else hide(line,0,heading.prefix);
+    }else if(markdownRule(text)){
+      addClass(line,'cm-live-rule');
+      if(!active){
+        const hr=document.createElement('span');
+        hr.className='cm-live-hr';hr.setAttribute('aria-hidden','true');
+        mark({line,ch:0},{line,ch:text.length},{replacedWith:hr,clearOnEnter:true});
+      }
     }else if(/^\s*>\s?/.test(text)){
       addClass(line,/^\s*>\s?\[![a-z]/i.test(text)?'cm-live-quote cm-live-callout':'cm-live-quote');
       const prefix=text.match(/^\s*>\s?/)[0].length;

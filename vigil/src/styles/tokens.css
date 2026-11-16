@@ -52,13 +52,13 @@
    without changing document structure or user data. */
 :root{--paper-alpha:91%;--wallpaper-opacity:.24;--sidebar-blur:24px;--focus-ring:var(--appearance-accent,#a84b37)}
 /* VIGIL v1.7.1 · One tab language, more frosted glass, editor tools in the properties row,
-   and an outline column that slides open beside the manuscript.
+   and an outline window that grows from the paper edge.
 
    Legacy rules style tabs and panels with !important at many different specificities.
    Rules that must win over them live in @layer overrides:
    an !important declaration inside a cascade layer beats every unlayered !important
    declaration, regardless of selector specificity — no specificity arms race. */
-:root{--vigil-tab-bar:4px;--outline-width:288px;--glass-panel-alpha:calc(var(--paper-opacity,91%) * .74);--glass-panel-bg:color-mix(in srgb,var(--surface) var(--glass-panel-alpha),transparent);--glass-panel-blur:blur(22px) saturate(1.45);--glass-paper-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .86),transparent);--glass-panel-edge:rgba(255,255,255,.62);--glass-panel-shadow:0 12px 32px rgba(31,49,44,.07),inset 0 1px rgba(255,255,255,.7)}
+:root{--vigil-tab-bar:4px;--glass-panel-alpha:calc(var(--paper-opacity,91%) * .74);--glass-panel-bg:color-mix(in srgb,var(--surface) var(--glass-panel-alpha),transparent);--glass-panel-blur:blur(22px) saturate(1.45);--glass-paper-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .86),transparent);--glass-panel-edge:rgba(255,255,255,.62);--glass-panel-shadow:0 12px 32px rgba(31,49,44,.07),inset 0 1px rgba(255,255,255,.7)}
 :root[data-theme=night]{--glass-panel-alpha:calc(var(--paper-opacity,91%) * .8);--glass-panel-edge:rgba(255,255,255,.1);--glass-panel-shadow:0 14px 36px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.07)}
 
 /* Dialogs sit on a dark scrim: a thinner glass would mix with it into muddy grey and

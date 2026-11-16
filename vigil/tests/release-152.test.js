@@ -47,10 +47,10 @@ test('行内格式不污染原文，选中的包装格式可切换',()=>{
   assert.ok(INSERT_TEMPLATES.codeBlock.includes('```text'));
 });
 
-test('文章大纲是右侧侧栏，拥有移动端遮罩与关闭按钮',()=>{
+test('文章大纲是编辑器外的独立面板，带关闭按钮',()=>{
   const html=editorView({...sample,editorOutlineOpen:true});
-  assert.match(html,/data-outline-open="true"/);
-  assert.match(html,/editor-outline-scrim/);
+  assert.doesNotMatch(html,/editor-outline-scrim/);
+  assert.ok(html.indexOf('editor-outline-sidebar')<html.indexOf('class="editor-paper'),'outline sits beside the paper');
   assert.match(html,/editor-outline-sidebar is-open/);
   assert.match(html,/data-action="close-outline-sidebar"/);
 });
@@ -72,7 +72,6 @@ test('响应式细修样式在入口页面最后加载',()=>{
   assert.match(html,/assets\/vigil\.css/);
   assert.ok(styleModules().includes('/src/styles/editor.css'));
   assert.match(css,/@media ?\(max-width:680px\)/);
-  assert.match(css,/editor-outline-scrim/);
   assert.match(css,/reading-paper/);
   assert.match(css,/glass-dock\{display:none!important\}/);
 });

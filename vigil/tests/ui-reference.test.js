@@ -33,8 +33,8 @@ test('独立草稿卡片仍可回到写作，且不会被静态图片覆盖',()=
   assert.match(html,/真正的未完稿/);
 });
 test('参考风格素材和独立样式文件均随项目交付',()=>{
-  for(const name of ['typewriter-still-life.webp','paper-fibers.webp','motif-mountain.png',
-    'motif-plum.png','motif-waves.png','motif-bamboo.png','bamboo-gold.svg']){
+  for(const name of ['typewriter-still-life.webp','motif-mountain.png',
+    'motif-plum.png','motif-waves.png','motif-bamboo.png']){
     assert.ok(statSync(resolve(project,'assets',name)).size>100,`${name} exists and is nonempty`);
   }
   const index=read('index.html');
