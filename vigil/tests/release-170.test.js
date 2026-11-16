@@ -35,7 +35,12 @@ test('v1.7.0: Obsidian callouts, custom titles, folding, nesting and normal quot
  const quote=renderMarkdown('> 普通引用\n> 第二行');
  assert.match(quote,/<blockquote class="markdown-quote">/);
  assert.doesNotMatch(quote,/\[!note\]/);
- assert.equal(markdownQuoteAt(['> [!tip] 提示','> 内容','下一行'],0).end,1);
+ // Obsidian/CommonMark lazy continuation: a non-blank text line continues the quote.
+ assert.equal(markdownQuoteAt(['> [!tip] 提示','> 内容','下一行'],0).end,2);
+ assert.equal(markdownQuoteAt(['> [!tip] 提示','> 内容','','下一行'],0).end,1);
+ assert.equal(markdownQuoteAt(['> [!tip] 提示','> 内容','# 标题'],0).end,1);
+ assert.match(renderMarkdown('> 引用\n懒续行\n\n后文'),/<p>引用 懒续行<\/p><\/blockquote><p>后文<\/p>/);
+ assert.match(renderMarkdown('> [!todo] 事项\n> 内容'),/callout-todo/);
 });
 test('v1.7.0: typography HTML styles render through allowlist and retain classes',()=>{
  const md=renderMarkdown('<span class="font-kai" style="font-family: KaiTi; font-size: 20px">以字会友</span>');

@@ -4,6 +4,7 @@
  * never edits text and is independently testable in Node.
  */
 import {findInlineMath} from '../core/math.js';
+import {quoteBlockEnd} from '../core/markdown.js';
 import {sanitizeStyledTag} from '../core/safe-html.js';
 
 const patterns=[
@@ -107,10 +108,29 @@ export function markdownFenceAt(lines,index){
 /** Full quote/callout group in a CodeMirror document. Pure, source-preserving. */
 export function markdownQuoteAt(lines,index){
   if(!/^\s*>/.test(lines[index]||''))return null;
-  let end=index;
-  while(end+1<lines.length&&/^\s*>/.test(lines[end+1]))end++;
+  const end=quoteBlockEnd(lines,index);
   const first=(lines[index]||'').replace(/^\s*>\s?/,'').trim();
   const callout=first.match(/^\[!([a-z][\w-]{0,30})\]([+-])?(?:\s+.*)?$/i);
   return {start:index,end,source:lines.slice(index,end+1).join('\n'),
     isCallout:Boolean(callout),type:callout?.[1]?.toLowerCase()||''};
+}
+
+/**
+ * First line of a repaint window that never starts inside a fenced/math block
+ * or the middle of a table/quote/paragraph: the closest blank line at or before
+ * `target` that lies outside every fence/math block. Pure; O(target).
+ */
+export function markdownSafeStart(lines,target,maxBack=400){
+  let i=0,safe=0;
+  const limit=Math.min(target,lines.length);
+  while(i<limit){
+    const line=lines[i];
+    if(!line.trim()){safe=i;i++;continue;}
+    if(/^\s*(?:`{3,}|~{3,}|\$\$|\\\[)/.test(line)){
+      const block=markdownFenceAt(lines,i)||markdownMathBlockAt(lines,i);
+      if(block&&block.end>=i){i=block.end+1;continue;}
+    }
+    i++;
+  }
+  return limit-safe>maxBack?limit:safe;
 }

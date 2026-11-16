@@ -66,8 +66,37 @@ function isBlockAt(lines,i){
     || /^\s*<div\b/i.test(line)
     || (i+1<lines.length&&line.includes('|')&&tableSeparator(lines[i+1]));
 }
-const CALLOUT_ALIASES={summary:'abstract',tldr:'abstract',todo:'info',hint:'tip',important:'tip',check:'success',done:'success',help:'question',faq:'question',caution:'warning',attention:'warning',fail:'failure',missing:'failure',error:'danger',cite:'quote'};
-const CALLOUT_LABELS={note:'笔记',abstract:'摘要',info:'信息',tip:'提示',success:'完成',question:'问题',warning:'注意',failure:'失败',danger:'危险',bug:'问题',example:'示例',quote:'引用'};
+/**
+ * End index of the quote/callout group starting at `index` (shared with the
+ * live editor). Lines starting with ">" always belong to the group. Like
+ * CommonMark/Obsidian, a following non-blank line that is not itself a block
+ * start continues the quote ("lazy continuation") when the quote's last line
+ * is paragraph text, not a heading, rule, fence, math or table row.
+ */
+export function quoteBlockEnd(lines,index){
+  let end=index,fence=null;
+  const inner=line=>String(line).replace(/^\s*>\s?/,'');
+  const track=text=>{
+    const f=codeFence(text);
+    if(!f)return;
+    if(!fence)fence=f[1];
+    else if(f[1][0]===fence[0]&&f[1].length>=fence.length&&!f[2].trim())fence=null;
+  };
+  track(inner(lines[index]));
+  while(end+1<lines.length){
+    const next=lines[end+1];
+    if(/^\s*>/.test(next)){end++;track(inner(next));continue;}
+    const prev=inner(lines[end]);
+    const lazyOk=!fence&&prev.trim()&&next.trim()&&!isBlockAt(lines,end+1)
+      &&!/^\s*(?:#{1,6}[ \t]|-{3,}\s*$|\*{3,}\s*$|_{3,}\s*$|\$\$|\\\[|\||<div\b)/i.test(prev)
+      &&!codeFence(prev);
+    if(!lazyOk)break;
+    end++;
+  }
+  return end;
+}
+const CALLOUT_ALIASES={summary:'abstract',tldr:'abstract',hint:'tip',important:'tip',check:'success',done:'success',help:'question',faq:'question',caution:'warning',attention:'warning',fail:'failure',missing:'failure',error:'danger',cite:'quote'};
+const CALLOUT_LABELS={note:'笔记',abstract:'摘要',info:'信息',todo:'待办',tip:'提示',success:'完成',question:'问题',warning:'注意',failure:'失败',danger:'危险',bug:'问题',example:'示例',quote:'引用'};
 function renderQuoteBlock(contents){
   const lines=contents.map(line=>line.replace(/^\s*>\s?/,''));
   const first=lines[0]?.trim()||'';
@@ -148,9 +177,8 @@ export function renderMarkdown(source){
       html.push('<hr>');i++;continue;
     }
     if(/^\s*>/.test(line)){
-      const linesInQuote=[];
-      while(i<lines.length&&/^\s*>/.test(lines[i]))linesInQuote.push(lines[i++]);
-      html.push(renderQuoteBlock(linesInQuote));continue;
+      const end=quoteBlockEnd(lines,i);
+      html.push(renderQuoteBlock(lines.slice(i,end+1)));i=end+1;continue;
     }
     if(/^\s*[-*+]\s+/.test(line)){
       const items=[];

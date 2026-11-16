@@ -13,8 +13,13 @@ import {renderMarkdown} from '../core/markdown.js';
 import {BLOCK_FORMATS,formatBlockSelection,INLINE_WRAPS,formatInlineSelection,INSERT_TEMPLATES} from './formatting.js';
 import {
   inlineSegments,markdownHeading,markdownListMarker,markdownTableAt,
-  markdownMathBlockAt,markdownFenceAt,markdownQuoteAt
+  markdownMathBlockAt,markdownFenceAt,markdownQuoteAt,markdownSafeStart
 } from './live-markdown.js';
+
+// Repaint window around the rendered viewport, and how close the viewport may
+// get to the window edge before it is repainted. Scrolling inside the window
+// never rebuilds decorations, so nothing flickers or changes height mid-drag.
+const PAINT_PAD=70,PAINT_TRIGGER=18;
 
 export const EDITOR_MODES=['live','reading','source'];
 const MODE_KEY='vigil-editor-mode-v142';
@@ -65,9 +70,10 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   const input=cm.getInputField();
   let activeMode='source',decorations=[],lineClasses=[],lineWidgets=[];
   let frame=null,destroyed=false,painting=false,composing=false,activeFingerprint='';
-  let lastReaderSource=null;
+  let lastReaderSource=null,painted=null;
 
   function clearDecorations(){
+    painted=null;
     for(const marker of decorations)marker.clear();
     decorations=[];
     for(const widget of lineWidgets)widget.clear();
@@ -98,7 +104,12 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   function previewUnderLine(end,node){
     node.classList.add('cm-active-block-preview');
     node.addEventListener('mousedown',event=>event.preventDefault());
-    lineWidgets.push(cm.addLineWidget(end,node,{coverGutter:false,noHScroll:true,above:false}));
+    // The slot owns the vertical spacing as padding. Margins on a line widget
+    // are not counted by CodeMirror's height measurement and skew every line below.
+    const slot=document.createElement('div');
+    slot.className='cm-preview-slot';
+    slot.appendChild(node);
+    lineWidgets.push(cm.addLineWidget(end,slot,{coverGutter:false,noHScroll:true,above:false}));
   }
   function selectionLines(){
     const set=new Set();
@@ -204,9 +215,26 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
     if(destroyed||activeMode!=='live'||painting||composing)return;
     painting=true;
     try{
-      const lines=cm.getValue().split('\n');
       const active=selectionLines(),viewport=cm.getViewport();
-      const begin=Math.max(0,viewport.from-12),end=Math.min(lines.length,viewport.to+12);
+      const gen=cm.changeGeneration(),fingerprint=[...active].join(',');
+      const total=cm.lineCount();
+      if(painted&&painted.gen===gen&&painted.fingerprint===fingerprint&&painted.total===total&&
+         (painted.from===0||viewport.from>=painted.from+PAINT_TRIGGER)&&
+         (painted.to>=total||viewport.to<=painted.to-PAINT_TRIGGER))return;
+      const lines=cm.getValue().split('\n');
+      // Window edges never fall inside a fence/math/table/quote, otherwise the
+      // cut-off lines would be painted as ordinary prose and change on scroll.
+      const begin=markdownSafeStart(lines,Math.max(0,viewport.from-PAINT_PAD));
+      let end=Math.min(lines.length,viewport.to+PAINT_PAD);
+      while(end<lines.length&&end-viewport.to<PAINT_PAD+300&&lines[end].trim())end++;
+      // Keep the visible content pinned: rebuilding collapsed blank runs and
+      // block widgets changes line heights above the viewport.
+      const scroll=cm.getScrollInfo();
+      let anchor=null;
+      if(scroll.top>0){
+        const line=cm.lineAtHeight(scroll.top,'local');
+        anchor={line,offset:scroll.top-cm.heightAtLine(line,'local')};
+      }
       cm.operation(()=>{
         clearDecorations();
         for(let i=begin;i<end;i++){
@@ -229,6 +257,7 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
           const table=markdownTableAt(lines,i);
           const quote=markdownQuoteAt(lines,i);
           const block=fence||math||table||quote;
+          if(block&&block.end>=end&&block.end-i<400)end=Math.min(lines.length,block.end+1);
           if(block&&block.end<end){
             const inSelection=Array.from({length:block.end-i+1},(_,k)=>i+k).some(k=>active.has(k));
             if(!inSelection){
@@ -250,7 +279,12 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
           paintSimpleLine(i,text,editable);
         }
       });
-      activeFingerprint=[...active].join(',');
+      if(anchor){
+        const top=cm.heightAtLine(anchor.line,'local')+anchor.offset;
+        if(Math.abs(top-cm.getScrollInfo().top)>.5)cm.scrollTo(null,top);
+      }
+      activeFingerprint=fingerprint;
+      painted={from:begin,to:end,gen,fingerprint,total};
     }finally{painting=false;}
   }
   function scheduleDecorate(){
@@ -384,12 +418,16 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
     cm.setCursor(target,0);cm.scrollIntoView({line:target,ch:0},120);cm.focus();
   }
   function focus(){cm.focus();}
+  // Web fonts that arrive after first paint change glyph metrics; CodeMirror must
+  // re-measure or the caret, selection and hidden-syntax boundaries drift off their text.
+  function onFontsLoaded(){if(!destroyed&&activeMode!=='reading')cm.refresh();}
   function destroy(){
     destroyed=true;
     if(frame!==null){cancelAnimationFrame(frame);frame=null;}
     cm.operation(clearDecorations);
     cm.off('changes',onChanges);cm.off('cursorActivity',onCursor);
     cm.off('viewportChange',scheduleDecorate);
+    globalThis.document?.fonts?.removeEventListener?.('loadingdone',onFontsLoaded);
     input.removeEventListener('compositionstart',onCompositionStart);
     input.removeEventListener('compositionend',onCompositionEnd);
     wrapper.remove();
@@ -399,6 +437,8 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   cm.on('changes',onChanges);
   cm.on('cursorActivity',onCursor);
   cm.on('viewportChange',scheduleDecorate);
+  globalThis.document?.fonts?.addEventListener?.('loadingdone',onFontsLoaded);
+  globalThis.document?.fonts?.ready?.then(onFontsLoaded).catch(()=>{});
   setMode(mode);
   return {getValue,setMode,getMode:()=>activeMode,format,findNext,replaceMatch,
     replaceAll,focus,destroy,getOutline,goToLine,
