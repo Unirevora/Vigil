@@ -14,17 +14,17 @@ const SURFACES=[
 ].join(',');
 const EXCLUDED='.sidebar,.topbar';
 const clamp=value=>Math.max(0,Math.min(1,Number.isFinite(value)?value:.5));
-export function floatingPose(x,y,subtle=false){
+export function floatingPose(x,y,subtle=false,intensity=50){
   const nx=clamp(x)*2-1,ny=clamp(y)*2-1;
   const distance=Math.hypot(nx,ny);
   return {axisX:distance?-ny/distance:0,axisY:distance?nx/distance:1,
-    angle:Math.min(1,distance)*(subtle?.35:.85)};
+    angle:Math.min(1,distance)*(subtle?.35:.85)*clamp(intensity/100)*2};
 }
 
 export function createFloatingSurfaces(root=document.documentElement){
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pointer=window.matchMedia('(hover: hover) and (pointer: fine)');
-  let enabled=true,motion='standard',active=false,frame=0,scan=0,x=.5,y=.5,destroyed=false;
+  let enabled=true,motion='standard',intensity=50,active=false,frame=0,scan=0,x=.5,y=.5,destroyed=false;
   let surfaces=[],scenes=[];
   function clear(){
     for(const node of surfaces){node.removeAttribute('data-floating-surface');node.style.removeProperty('--float-existing-transition');}
@@ -49,10 +49,11 @@ export function createFloatingSurfaces(root=document.documentElement){
   }
   function paint(){
     frame=0;if(!active)return;
-    const pose=floatingPose(x,y,motion==='subtle');
+    const pose=floatingPose(x,y,motion==='subtle',intensity);
     root.style.setProperty('--float-axis-x',String(pose.axisX));
     root.style.setProperty('--float-axis-y',String(pose.axisY));
     root.style.setProperty('--float-angle',pose.angle.toFixed(4)+'deg');
+    root.style.setProperty('--float-depth',(intensity/50*3).toFixed(2)+'px');
   }
   function queue(){if(active&&!frame)frame=requestAnimationFrame(paint);}
   function move(event){
@@ -67,7 +68,7 @@ export function createFloatingSurfaces(root=document.documentElement){
       if(frame)cancelAnimationFrame(frame);frame=0;
       if(scan)cancelAnimationFrame(scan);scan=0;
       clear();root.style.removeProperty('--float-axis-x');root.style.removeProperty('--float-axis-y');
-      root.style.removeProperty('--float-angle');return;
+      root.style.removeProperty('--float-angle');root.style.removeProperty('--float-depth');return;
     }
     refresh();queue();
   }
@@ -85,8 +86,10 @@ export function createFloatingSurfaces(root=document.documentElement){
   document.addEventListener('visibilitychange',update);
   reduced.addEventListener('change',update);pointer.addEventListener('change',update);
   return {refresh,setOptions(options={}){
-    const same=enabled===(options.enabled!==false)&&motion===(options.motion||'standard');
+    const nextIntensity=Number.isFinite(options.intensity)?Math.max(0,Math.min(100,options.intensity)):50;
+    const same=enabled===(options.enabled!==false)&&motion===(options.motion||'standard')&&intensity===nextIntensity;
     enabled=options.enabled!==false;motion=options.motion||'standard';
+    intensity=nextIntensity;
     if(!same||root.dataset.floating===undefined)update();
   },destroy(){
     destroyed=true;enabled=false;update();observer.disconnect();

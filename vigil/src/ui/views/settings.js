@@ -6,9 +6,9 @@ import {pageHeading} from './page-heading.js';
 
 const bgClass={paper:'bg-paper',mountains:'bg-mountains',sage:'bg-sage',sea:'bg-sea',custom:'bg-custom',none:'bg-none'};
 const selectOption=(value,current,name)=>`<option value="${value}" ${value===current?'selected':''}>${name}</option>`;
-const rangeControl=(label,key,value,min,max,step=1,unit='')=>`<label class="settings-range-row" for="setting-${key}">
+const rangeControl=(label,key,value,min,max,step=1,unit='',disabled=false)=>`<label class="settings-range-row" for="setting-${key}">
   <span class="settings-row-title">${label}<output id="${key}Value" for="setting-${key}">${value}${unit}</output></span>
-  <input type="range" id="setting-${key}" min="${min}" max="${max}" step="${step}" value="${value}" data-setting="${key}"/>
+  <input type="range" id="setting-${key}" min="${min}" max="${max}" step="${step}" value="${value}" data-setting="${key}" ${disabled?'disabled':''}/>
 </label>`;
 const sectionHead=(title,subtitle)=>`<header class="settings-section-heading"><h2>${title}</h2><p>${subtitle}</p></header>`;
 
@@ -52,6 +52,8 @@ function appearancePanel(state){
           ${rangeControl('光点强度','drapeIntensity',a.drapeIntensity,15,85,1,'%')}
           <span class="settings-hint">开启系统的「减少动态效果」后，光点自动停在静态画面。</span>
         </div>
+        <label class="settings-toggle-row" for="floatingToggle"><span><strong>全局 3D 浮动</strong><small>纸面、卡片和浮层随鼠标轻微转动；侧栏与顶栏保持静止，即开即用</small></span><input id="floatingToggle" type="checkbox" data-setting="floating" ${a.floating?'checked':''} aria-label="全局 3D 浮动"/><span class="settings-toggle-visual" aria-hidden="true"></span></label>
+        ${rangeControl('浮动幅度','floatingIntensity',a.floatingIntensity,0,100,1,'%',!a.floating)}
       </div>
     </section>
     <section class="settings-group">
@@ -103,7 +105,6 @@ function interactionPanel(state){
     </section>
     <section class="settings-group">
       ${sectionHead('动效','在操作反馈与静谧书写之间选择合适的节奏。')}
-      <label class="settings-toggle-row" for="floatingToggle"><span><strong>全局 3D 浮动</strong><small>纸面、卡片和浮层随鼠标轻微转动；侧栏与顶栏保持静止，即开即用</small></span><input id="floatingToggle" type="checkbox" data-setting="floating" ${a.floating?'checked':''} aria-label="全局 3D 浮动"/><span class="settings-toggle-visual" aria-hidden="true"></span></label>
       <div class="settings-inline-field"><label for="motionModeSelect">动效强度</label><select id="motionModeSelect" data-setting="motionMode" aria-label="动效强度">
         ${selectOption('standard',a.motionMode,'轻盈回弹')}${selectOption('subtle',a.motionMode,'更克制')}${selectOption('off',a.motionMode,'关闭动效')}
       </select></div>

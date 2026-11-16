@@ -5,7 +5,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   surfaceOpacity:91,bodyFontSize:16,lineHeight:1.8,contentWidth:1460,
   texture:true,heroMode:'original',theme:'paper',fontFamily:'heritage',
   sidebarTone:'accent',sidebarGlass:74,sidebarBlur:24,glassTint:72,motionMode:'standard',
-  spectralDrape:false,drapeIntensity:48,floating:true
+  spectralDrape:false,drapeIntensity:48,floating:true,floatingIntensity:50
 });
 export const COLOR_PRESETS=[
   {name:'朱砂',color:'#a83f2a'}, {name:'松绿',color:'#375d4f'},
@@ -34,7 +34,7 @@ export function normalizeAppearance(input){
   if(['standard','subtle','off'].includes(input.motionMode))a.motionMode=input.motionMode;
   for(const [key,min,max] of [['backgroundOpacity',0,85],['surfaceOpacity',50,100],
     ['bodyFontSize',13,22],['lineHeight',1.45,2.5],['contentWidth',860,1740],
-    ['sidebarGlass',55,96],['sidebarBlur',0,36],['glassTint',28,92],['drapeIntensity',15,85]]){
+    ['sidebarGlass',55,96],['sidebarBlur',0,36],['glassTint',28,92],['drapeIntensity',15,85],['floatingIntensity',0,100]]){
     if(typeof input[key]==='number'&&Number.isFinite(input[key]))a[key]=Math.min(max,Math.max(min,input[key]));
   }
   if(typeof input.texture==='boolean')a.texture=input.texture;

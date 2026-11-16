@@ -158,7 +158,7 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 
 编辑器工具栏的玻璃绘制在 `::before` 底层，工具栏本身不设 `backdrop-filter`，避免成为菜单的背景采样边界。菜单独立使用 `--glass-panel-blur` 与半透明的 `--glass-menu-bg`（日间 72%、夜间 78%），减少透明度或缺少背景模糊支持时回退为实色；对话框仍使用较厚的 `--glass-dialog-bg`。
 
-全局 3D 浮动只由 `ui/floating.js` 与 `styles/floating.css` 管理：一处指针监听把角度写入根变量，独立的 `rotate` / `translate` 与原有 `transform` 动画组合。控制器只标记最外层面板，排除侧栏与顶栏，缓存既有过渡并保留它们；新增页面与弹层统一发现，正文的 CodeMirror 装饰变化不触发全站扫描。偏好 `floating` 默认开启、存入既有外观键；关闭动效、减少动效、触屏与页面隐藏时移除浮动。没有逐面板监听或常驻帧循环。
+全局 3D 浮动只由 `ui/floating.js` 与 `styles/floating.css` 管理：一处指针监听把角度写入根变量，独立的 `rotate` / `translate` 与原有 `transform` 动画组合。控制器只标记最外层面板，排除侧栏与顶栏，缓存既有过渡并保留它们；新增页面与弹层统一发现，正文的 CodeMirror 装饰变化不触发全站扫描。偏好 `floating` 默认开启、`floatingIntensity` 为 0–100%（默认 50%，对应原幅度），共同存入既有外观键；在外观页与 Spectral Drape 相邻，可热切换与调节幅度，关闭时禁用幅度控件；关闭动效、减少动效、触屏与页面隐藏时移除浮动。没有逐面板监听或常驻帧循环。
 
 延续「铅字旧梦」的复古文房：墨色 / 主题色侧栏、朱砂「眠」印记（`assets/vigil-mark.svg`，favicon 为 `vigil-favicon.svg`）、宣纸与山水、打字机静物（`assets/typewriter-still-life.webp`，纯装饰、不拦截指针）。不另建第二套视觉系统。
 

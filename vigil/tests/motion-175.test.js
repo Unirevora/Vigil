@@ -4,6 +4,24 @@ import {floatingPose} from '../src/ui/floating.js';
 import {drapeResolution,createSpectralDrape} from '../src/effects/spectral-drape.js';
 import {DEFAULT_APPEARANCE,normalizeAppearance,writeAppearance,readAppearance} from '../src/appearance/settings.js';
 import {readStyle} from './support/styles.js';
+import {settingsView} from '../src/ui/views/settings.js';
+
+test('浮动开关和幅度只在外观中、紧邻点阵帷幕，幅度严格校验并持久化',()=>{
+  const base={appearance:DEFAULT_APPEARANCE};
+  const appearance=settingsView({...base,settingsTab:'appearance'});
+  const interaction=settingsView({...base,settingsTab:'interaction'});
+  assert.match(appearance,/data-setting="floating"/);
+  assert.match(appearance,/data-setting="floatingIntensity"/);
+  assert.ok(appearance.indexOf('floatingToggle')>appearance.indexOf('spectralDrapeControls'));
+  assert.doesNotMatch(interaction,/floatingToggle|floatingIntensity/);
+  assert.equal(DEFAULT_APPEARANCE.floatingIntensity,50);
+  assert.equal(normalizeAppearance({floatingIntensity:-10}).floatingIntensity,0);
+  assert.equal(normalizeAppearance({floatingIntensity:900}).floatingIntensity,100);
+  assert.equal(normalizeAppearance({floatingIntensity:'90'}).floatingIntensity,50);
+  assert.equal(normalizeAppearance({floatingIntensity:NaN}).floatingIntensity,50);
+  assert.equal(floatingPose(1,0,false,0).angle,0);
+  assert.equal(floatingPose(1,0,false,100).angle,floatingPose(1,0,false,50).angle*2);
+});
 
 test('全局浮动偏好严格校验，热切换只写外观键；拒绝保存时已有记录不变',()=>{
   assert.equal(DEFAULT_APPEARANCE.floating,true);
@@ -11,8 +29,9 @@ test('全局浮动偏好严格校验，热切换只写外观键；拒绝保存�
   assert.equal(normalizeAppearance({floating:'false'}).floating,true);
   const data=new Map([['vigil-mvp-data-v1','保留正式手记']]);
   const storage={getItem:key=>data.get(key)||null,setItem:(key,value)=>data.set(key,value)};
-  const next=writeAppearance(storage,readAppearance(storage),{floating:false});
+  const next=writeAppearance(storage,readAppearance(storage),{floating:false,floatingIntensity:75});
   assert.equal(next.floating,false);assert.equal(readAppearance(storage).floating,false);
+  assert.equal(readAppearance(storage).floatingIntensity,75);
   assert.equal(data.get('vigil-mvp-data-v1'),'保留正式手记');
   const saved=data.get('vigil-appearance-v142');
   assert.throws(()=>writeAppearance({...storage,setItem(){throw Error('quota');}},next,{floating:true}));

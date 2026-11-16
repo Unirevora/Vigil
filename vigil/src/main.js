@@ -165,7 +165,7 @@ function applyAppearance(){
   document.body.dataset.paperTexture=a.texture?'on':'off';
   spectralDrape.setOptions({enabled:a.spectralDrape,intensity:a.drapeIntensity/100,
     accent:a.accent,night:state.theme==='night',motion:a.motionMode});
-  floatingSurfaces.setOptions({enabled:a.floating,motion:a.motionMode});
+  floatingSurfaces.setOptions({enabled:a.floating,motion:a.motionMode,intensity:a.floatingIntensity});
   const urls=visualAssets.urls();
   if(a.background==='custom'&&urls.backgroundURL){
     r.setProperty('--wallpaper-image',`url("${urls.backgroundURL}")`);
@@ -1407,8 +1407,12 @@ document.body.addEventListener('input',event=>{
       controls?.classList.toggle('is-enabled',value);
       controls?.classList.toggle('is-disabled',!value);
     }
+    if(key==='floating'){
+      const amplitude=$('#setting-floatingIntensity');
+      if(amplitude)amplitude.disabled=!value;
+    }
     const output=$(`#${key}Value`);
-    if(output)output.textContent=String(value)+(key==='backgroundOpacity'||key==='surfaceOpacity'||key==='sidebarGlass'||key==='glassTint'||key==='drapeIntensity'?'%':key==='bodyFontSize'||key==='contentWidth'||key==='sidebarBlur'?'px':'');
+    if(output)output.textContent=String(value)+(key==='backgroundOpacity'||key==='surfaceOpacity'||key==='sidebarGlass'||key==='glassTint'||key==='drapeIntensity'||key==='floatingIntensity'?'%':key==='bodyFontSize'||key==='contentWidth'||key==='sidebarBlur'?'px':'');
   }
 });
 document.body.addEventListener('change',async event=>{

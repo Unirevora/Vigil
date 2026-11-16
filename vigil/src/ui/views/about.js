@@ -26,7 +26,7 @@ export function aboutPanel(state){
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('spark')} <h3>当前版本</h3></div>
-      <div class="about-release"><span>01</span><div><strong>随光轻浮</strong><small>纸面、卡片与弹层随鼠标轻微转动；全局统一控制，在交互设置中即时开关。</small></div></div>
+      <div class="about-release"><span>01</span><div><strong>随光轻浮</strong><small>纸面、卡片与弹层随鼠标轻微转动；在外观设置中即时开关并调节幅度。</small></div></div>
       <div class="about-release"><span>02</span><div><strong>柔和的格式栏</strong><small>悬停与按压连贯过渡，格式菜单恢复半透明玻璃，让纸面透过细腻的模糊。</small></div></div>
       <div class="about-release"><span>03</span><div><strong>轻一些的微光</strong><small>点阵帷幕缓存光点、限制绘制预算；后台暂停，关闭动效后保持静态。</small></div></div>
     </section>

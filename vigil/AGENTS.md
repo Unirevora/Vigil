@@ -137,7 +137,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 - **标题**：每页唯一 `h1.page-title`（`pageHeading` 组件），字号 `--page-title-size`（桌面 `clamp(36px,3.35vw,52px)`，≤900 `clamp(34px,5.3vw,43px)`，≤640 `clamp(31px,8.2vw,38px)`），行高 1.14，字重 600；顶栏不重复页面名。
 - **字体**：`VigilTitle`(`fonts/titlefont.ttf`，回退宋体)、`VigilText`(`fonts/textfont.ttf`，回退苹方/雅黑)；用户自备，不提交二进制，缺失只提示并回退。
 - **动效**：`--vigil-ease`、`--vigil-spring`；设置可选轻盈回弹/更克制/关闭；**所有动画必须服从 `prefers-reduced-motion`**，并且「要平滑，不要生硬」（位置、尺寸、透明度同曲线过渡）。
-- **全局浮动**：统一维护 `src/ui/floating.js` 与 `src/styles/floating.css`，只给最外层界面面板加轻微 3D 角度，嵌套元素随父面板移动，排除侧栏与顶栏；不分散写逐组件鼠标监听或倾斜规则。设置 `floating` 放在既有外观键中，支持热切换；减少动效、触屏、关闭动效与后台时停用。
+- **全局浮动**：统一维护 `src/ui/floating.js` 与 `src/styles/floating.css`，只给最外层界面面板加轻微 3D 角度，嵌套元素随父面板移动，排除侧栏与顶栏；不分散写逐组件鼠标监听或倾斜规则。设置 `floating` 与幅度 `floatingIntensity`（0–100%，默认 50%）放在既有外观键中，在「外观」中与 Spectral Drape 相邻，支持热切换；减少动效、触屏、关闭动效与后台时停用。
 - **滚动条全站隐藏**（不影响滚轮/触控/键盘）；鼠标点击不出现焦点方框，只有键盘 Tab 时显示淡淡圆角光晕（`focus.css`）。
 - 布局宽度验证：320 / 390 / 768–810 / 1024 / 1440 / 1672 px，**不允许横向溢出**；≤900px 侧栏收为顶部并带底部快捷导航。
 - 内置背景四个（晴岚、薄雾、素岸、月汐）各用不同文件，另有「我的背景」（IndexedDB）与纯色；玻璃场景图与当前壁纸一一对应采样。
