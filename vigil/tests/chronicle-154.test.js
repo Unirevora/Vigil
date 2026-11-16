@@ -44,9 +44,9 @@ test('v1.5.4: 独立的旧日历/风物渲染仍可调用，支持嵌入',()=>{
   assert.doesNotMatch(embeddedCalendar,/<h1>/);
   assert.doesNotMatch(almanacView(fakeState(),{embedded:true}),/<h1>/);
 });
-test('v1.5.4: 设置中心新增关于页签，与外观、排版、交互和数据并列',()=>{
+test('设置中心关于页签与外观、排版、数据并列',()=>{
   const html=settingsView(fakeState({settingsTab:'about'}));
-  assert.equal((html.match(/role="tab"/g)||[]).length,5);
+  assert.equal((html.match(/role="tab"/g)||[]).length,4);
   assert.match(html,/role="tabpanel" aria-labelledby="settings-tab-about"/);
   assert.match(html,/本地环境检查/);
   assert.match(html,/你的文字，归你所有/);

@@ -9,11 +9,11 @@ import {settingsView} from '../src/ui/views/settings.js';
 test('浮动开关和幅度只在外观中、紧邻点阵帷幕，幅度严格校验并持久化',()=>{
   const base={appearance:DEFAULT_APPEARANCE};
   const appearance=settingsView({...base,settingsTab:'appearance'});
-  const interaction=settingsView({...base,settingsTab:'interaction'});
+  const reading=settingsView({...base,settingsTab:'reading'});
   assert.match(appearance,/data-setting="floating"/);
   assert.match(appearance,/data-setting="floatingIntensity"/);
   assert.ok(appearance.indexOf('floatingToggle')>appearance.indexOf('spectralDrapeControls'));
-  assert.doesNotMatch(interaction,/floatingToggle|floatingIntensity/);
+  assert.doesNotMatch(reading,/floatingToggle|floatingIntensity/);
   assert.equal(DEFAULT_APPEARANCE.floatingIntensity,50);
   assert.equal(normalizeAppearance({floatingIntensity:-10}).floatingIntensity,0);
   assert.equal(normalizeAppearance({floatingIntensity:900}).floatingIntensity,100);
@@ -57,6 +57,12 @@ test('工具栏旧骤变缩放与颜色专用过渡已清理，浮动样式集�
   assert.doesNotMatch(readStyle('editor'),/scale\(1\.075\)|scale\(\.91\)|transition:background \.15s,color \.15s/);
   assert.doesNotMatch(readStyle('editor'),/data-floating-surface/);
   assert.match(readStyle('floating'),/prefers-reduced-motion/);
+});
+
+test('点阵帷幕控件不再使用独立背景、圆角或内边距',()=>{
+  const rules=[...readStyle('settings').matchAll(/\.settings-effect-controls\{([^}]+)\}/g)];
+  assert.ok(rules.length>0);
+  for(const [,rule] of rules)assert.doesNotMatch(rule,/background(?:-color)?:|border-radius:|padding(?:-[a-z]+)?:/);
 });
 
 test('帷幕相同设置不重启，静态/隐藏/关闭/销毁不遗留调度，光晕只在换色时构建',()=>{

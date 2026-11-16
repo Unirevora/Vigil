@@ -75,7 +75,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 - `glass/liquid-glass.js`：悬浮控件的光学层。支持时挂 SVG `feDisplacementMap`（`#vigil-glass-bend`），同时绘制与当前壁纸对齐、仅边缘位移的 Canvas 作为稳定背衬；文字与焦点环不受影响。
 - `effects/spectral-drape.js`：原创 Canvas 2D 点阵帷幕，默认关闭；缓存光点贴图、预计算网格、最多约 160 万像素 / DPR≤1、≤30fps 按需唤醒；相同参数不重启、后台暂停、关闭动效或减少动效时只画静态帧。
 - `ui/`：`command-palette.js`（Ctrl/⌘+K 本地检索与跳转）、`passphrase.js`（临时口令弹窗，关闭即清空）、`feedback.js`（toast 与确认框）、`motion.js`（WAAPI 进场动画与专注切换的书写台位置、宽高过渡；不缩放文字，服从动效偏好）、`themed-select.js`（自绘浮层下拉，原生 `<select>` 仍是状态源与无障碍基础）、`tab-indicator.js`（所有 `.vigil-tabs` 共用的滑动下划线，重渲染后用 WAAPI 从旧位置动画到新位置）、`almanac-controller.js`（节气盘拖拽/滚轮/键盘，空闲 3 秒回到今天）、`icons.js`。
-- `ui/views/`：`home`、`entries`（本地手记 / GitHub 仓库两个同级页签）、`entry-cards`、`editor`、`reader`、`chronicle`（日历与风物合页，内嵌 `calendar` 与 `almanac`）、`insights`、`github`、`settings`（外观 / 排版 / 交互 / 数据 / 关于五个页签）、`data`、`about`、`page-heading`（每页唯一主标题组件）、`hero-paper`。`index.js` 导出视图表，旧视图名仍可作为别名渲染。
+- `ui/views/`：`home`、`entries`（本地手记 / GitHub 仓库两个同级页签）、`entry-cards`、`editor`、`reader`、`chronicle`（日历与风物合页，内嵌 `calendar` 与 `almanac`）、`insights`、`github`、`settings`（外观 / 排版 / 数据 / 关于四个页签，`SETTINGS_TABS` 共用于视图、路由与键盘导航）、`data`、`about`、`page-heading`（每页唯一主标题组件）、`hero-paper`。`index.js` 导出视图表，旧视图名仍可作为别名渲染。
 
 ## 3. 数据与存储
 
@@ -153,6 +153,12 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 - 少数规则放在比其功能更靠后的模块里，因为它必须在被它细化的那条规则之后层叠；这类规则前有注释 `/* (原功能) kept in this module: it must cascade after the rule it refines above. */`。
 - 需要压过遗留 `!important` 声明的规则放在 `@layer overrides { … }` 中：层内的 `!important` 胜过所有未分层的 `!important`，无需比拼选择器优先级。
 - 修改 CSS 后执行 `npm run build:css`（或重启 `npm run dev`）。不要手改 `assets/vigil.css`。
+
+### 设置组织
+
+`ui/views/settings.js` 提供统一的开关、滑杆与下拉行函数，背景和首页静物共用图片选择样式。外观按颜色、背景、纸面与玻璃、首页静物、光影动效分组；排版只保留字体与版心。设置模块 `styles/settings.css` 维护最终规则，标题、标签和表面材质分别复用 pages / tabs / surfaces，不再维护旧标签卡片或反复覆盖同一控件。数据与关于保持独立页签；存储键和偏好值不变。
+
+`.settings-hub` 为固定高度 flex 框架：`.settings-heading` 包含标题与标签，`.settings-hub-panel` 独立滚动，页脚在框架底部。`main.js::fitSettingsFrame()` 按视口、当前位置和底部内边距计算 `--settings-height`；窗口 resize 与标题/侧栏 ResizeObserver 触发重测，离开或重渲染时断开观察。导入/导出只用 `.data-action-card`，不混用通用 `.surface`；卡片独立定义内边距、边框和颜色，按钮靠底对齐。
 
 ### 视觉语言
 

@@ -8,9 +8,9 @@ import {readStyles,styleModules} from './support/styles.js';
 const base={appearance:{...DEFAULT_APPEARANCE},entries:[],drafts:[],backups:[],github:{cryptoKey:null}};
 const style=readStyles();
 
-test('v1.5.3 为外观、排版、交互和数据提供轻量四页签',()=>{
+test('设置为外观、排版、数据、关于提供四页签，视觉偏好统一归入外观',()=>{
   const markup=settingsView(base);
-  for(const tab of ['appearance','reading','interaction','data']){
+  for(const tab of ['appearance','reading','data','about']){
     assert.ok(markup.includes(`data-tab="${tab}"`),tab);
   }
   assert.ok(markup.includes('role="tablist"'));
@@ -19,9 +19,8 @@ test('v1.5.3 为外观、排版、交互和数据提供轻量四页签',()=>{
   const reading=settingsView({...base,settingsTab:'reading'});
   assert.ok(reading.includes('id="fontFamilySelect"'));
   assert.ok(reading.includes('data-setting="bodyFontSize"'));
-  const interaction=settingsView({...base,settingsTab:'interaction'});
   for(const key of ['sidebarTone','sidebarGlass','sidebarBlur','glassTint','motionMode']){
-    assert.ok(interaction.includes(`data-setting="${key}"`));
+    assert.ok(markup.includes(`data-setting="${key}"`));
   }
   const data=settingsView({...base,settingsTab:'data'});
   assert.ok(data.includes('data-action="export-encrypted"'));
@@ -69,6 +68,6 @@ test('统一样式支持毛玻璃导航、真实 blur、主题变化与阅读实
   assert.match(style,/var\(--sidebar-glass-top\)/);
   assert.match(style,/--glass-material/);
   assert.match(style,/prefers-reduced-transparency/);
-  assert.match(style,/\.settings-hub-tabs \.settings-tab\.active/);
+  assert.match(style,/\.vigil-tabs \.vigil-tab\.active/);
   assert.match(style,/\.vigil-select-popup/);
 });

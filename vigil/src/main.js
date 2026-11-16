@@ -18,6 +18,7 @@ import {importGitCryptKeyFile,encryptGitCryptBytes,decryptGitCryptBytes,isGitCry
 import {icon} from './ui/icons.js';
 import {entriesCards} from './ui/views/entry-cards.js';
 import {VIEWS,VIEW_TITLES} from './ui/views/index.js';
+import {SETTINGS_TABS} from './ui/views/settings.js';
 import {KATEX_VERSION} from './core/math.js';
 import {collectDiagnostics,formatDiagnostics} from './core/diagnostics.js';
 import {showToast,confirmDialog} from './ui/feedback.js';
@@ -66,6 +67,7 @@ let draftTimer=null;
 let previewFrame=null;
 let almanacController=null;
 let unifiedEditor=null;
+let settingsFrameObserver=null;
 let zenFrameAnimation=null;
 let glass=null; // scene sampler is refreshed after every theme / wallpaper change
 const visualAssets=createVisualAssets();
@@ -170,7 +172,6 @@ function applyAppearance(){
   if(a.background==='custom'&&urls.backgroundURL){
     r.setProperty('--wallpaper-image',`url("${urls.backgroundURL}")`);
     r.setProperty('--glass-scene-url',`url("${urls.backgroundURL}")`);
-    r.setProperty('--settings-preview-image',`url("${urls.backgroundURL}")`);
   }else{
     r.removeProperty('--wallpaper-image');
     const scenes={
@@ -186,10 +187,8 @@ function applyAppearance(){
     const image=scenes[a.background]?absolute(scenes[a.background]):null;
     if(image){
       r.setProperty('--glass-scene-url',`url("${image}")`);
-      r.setProperty('--settings-preview-image',`url("${image}")`);
     }else{
       r.setProperty('--glass-scene-url','none');
-      r.setProperty('--settings-preview-image','none');
     }
   }
   const hero=$('.hero-scene img');
@@ -567,7 +566,7 @@ function toggleEditorFocus(){
   }
 }
 function setSettingsTab(tab){
-  state.settingsTab=['appearance','reading','interaction','data','about'].includes(tab)?tab:'appearance';
+  state.settingsTab=SETTINGS_TABS.some(([key])=>key===tab)?tab:'appearance';
   if(state.view!=='settings')state.view='settings';
   render();
 }
@@ -1110,7 +1109,18 @@ function fitEditorFrame(){
   unifiedEditor?.refresh();
 }
 window.addEventListener('resize',fitEditorFrame);
+/** Keep the settings heading outside a viewport-sized, independently scrolling panel. */
+function fitSettingsFrame(){
+  const page=document.querySelector('.settings-hub');
+  if(!page)return;
+  const top=page.getBoundingClientRect().top+window.scrollY;
+  const inner=page.closest('.main-inner');
+  const pad=inner?parseFloat(getComputedStyle(inner).paddingBottom)||0:0;
+  page.style.setProperty('--settings-height',Math.max(0,Math.floor(window.innerHeight-top-pad))+'px');
+}
+window.addEventListener('resize',fitSettingsFrame);
 function render(){
+  settingsFrameObserver?.disconnect();settingsFrameObserver=null;
   zenFrameAnimation?.cancel();zenFrameAnimation=null;
   state.storageUsage=storageFootprint(storage);
   if(unifiedEditor){unifiedEditor.destroy();unifiedEditor=null;}
@@ -1134,6 +1144,12 @@ function render(){
   applyAppearance();
   mountThemedSelects($('#mainContent'));
   syncTabIndicators($('#mainContent'));
+  if(state.view==='settings'){
+    fitSettingsFrame();
+    settingsFrameObserver=new ResizeObserver(fitSettingsFrame);
+    settingsFrameObserver.observe(document.querySelector('.settings-heading'));
+    if($('#appSidebar'))settingsFrameObserver.observe($('#appSidebar'));
+  }
   document.title=`${VIEW_TITLES[state.view]} · 不眠手记`;
   if(state.view==='github')ensureGithubProxyStatus();
   playEntranceMotion($('#mainContent'));
@@ -1275,6 +1291,9 @@ document.body.addEventListener('click',async e=>{
     case 'find-replace':runFind('replace');break;
     case 'find-replace-all':runFind('replace-all');break;
     case 'find-close':toggleFindBar(false);break;
+    case 'setting-upload':
+      if(['backgroundFile','heroFile'].includes(btn.dataset.input))$('#'+btn.dataset.input)?.click();
+      break;
     case 'setting-accent':selectAppearanceOption('accent',btn.dataset.color);break;
     case 'setting-background':
       if(btn.dataset.background==='custom')$('#backgroundFile')?.click();
@@ -1283,12 +1302,10 @@ document.body.addEventListener('click',async e=>{
       if(btn.dataset.hero==='custom')$('#heroFile')?.click();
       else selectAppearanceOption('heroMode',btn.dataset.hero);break;
     case 'reset-appearance':
-      if(await confirmDialog({title:'恢复经典外观？',description:'只重置背景、主题色和阅读排版，不影响任何手记和自定义图片文件。',confirmText:'恢复外观'})){
-        saveAppearance({...DEFAULT_APPEARANCE});render();showToast('经典墨绿文房已恢复');
+      if(await confirmDialog({title:'恢复默认设置？',description:'将外观、材质、动效与正文排版恢复为默认值，不影响手记和已上传的图片文件。',confirmText:'恢复默认'})){
+        if(saveAppearance({...DEFAULT_APPEARANCE})){render();showToast('外观与排版已恢复默认');}
       }break;
-    case 'remove-background':
     case 'remove-custom-background':await removeAppearanceImage('background');break;
-    case 'remove-hero':
     case 'remove-custom-hero':await removeAppearanceImage('hero');break;
     case 'new':await startEditor();break;
     case 'read':await readEntry(id);break;
@@ -1403,9 +1420,8 @@ document.body.addEventListener('input',event=>{
   const value=field.type==='checkbox'?field.checked:field.type==='range'?Number(field.value):field.value;
   if(saveAppearance({[key]:value})){
     if(key==='spectralDrape'){
-      const controls=$('#spectralDrapeControls');
-      controls?.classList.toggle('is-enabled',value);
-      controls?.classList.toggle('is-disabled',!value);
+      const intensity=$('#setting-drapeIntensity');
+      if(intensity)intensity.disabled=!value;
     }
     if(key==='floating'){
       const amplitude=$('#setting-floatingIntensity');
@@ -1449,7 +1465,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.matches?.('.settings-tab[role="tab"]')&&
       ['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
     e.preventDefault();
-    const tabs=['appearance','reading','interaction','data','about'];
+    const tabs=SETTINGS_TABS.map(([key])=>key);
     const current=Math.max(0,tabs.indexOf(e.target.dataset.tab));
     const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:
       (current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;

@@ -14,13 +14,13 @@ export function dataManagementPanels(state,{embedded=false}={}){
       <div><strong>${backups.length} / 5</strong><span>份备份</span></div>
     </div>
     <div class="data-actions">
-      <section class="surface data-action-card"><div class="data-symbol">${icon('download')}</div><h2>导出手记</h2><p>将正式手记保存为 JSON 文件。</p><button class="btn btn-primary" data-action="export" ${state.corruptStorage?'disabled':''}>${icon('download')} 导出 JSON</button></section>
-      <section class="surface data-action-card"><div class="data-symbol">${icon('upload')}</div><h2>导入手记</h2><p>导入前会先备份当前文库。</p><button class="btn" data-action="import" ${state.corruptStorage?'disabled':''}>${icon('upload')} 选择文件</button></section>
+      <section class="data-action-card"><div class="data-symbol">${icon('download')}</div><h2>导出手记</h2><p>将正式手记保存为 JSON 文件。</p><button class="btn btn-primary" data-action="export" ${state.corruptStorage?'disabled':''}>${icon('download')} 导出 JSON</button></section>
+      <section class="data-action-card"><div class="data-symbol">${icon('upload')}</div><h2>导入手记</h2><p>导入前会先备份当前文库。</p><button class="btn" data-action="import" ${state.corruptStorage?'disabled':''}>${icon('upload')} 选择文件</button></section>
     </div>
     <section class="secure-backup-strip">
       <div class="secure-seal">${icon('lock')}</div>
       <div class="secure-backup-copy">
-        <h2>口令加密备份 <span class="secure-new">NEW</span></h2>
+        <h2>口令加密备份</h2>
         <p>使用 AES-256-GCM 保护导出文件；口令仅用于本次操作。</p>
       </div>
       <button class="btn btn-primary" data-action="export-encrypted" ${state.corruptStorage?'disabled':''}>${icon('lock')} 加密导出</button>

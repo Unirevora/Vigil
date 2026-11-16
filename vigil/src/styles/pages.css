@@ -61,7 +61,11 @@
 .page-title-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:none;flex-wrap:wrap}
 .page-title-actions>.btn{min-height:44px;border-radius:999px;padding-inline:19px}
 .page-title-count{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;font:600 14px/1.4 var(--font-body);letter-spacing:0;background:var(--surface-soft);color:var(--ink-2);border:1px solid var(--stroke);border-radius:999px;min-width:27px;height:27px;padding:1px 7px;margin-left:10px}
+@media (max-width:900px){
+  .page-head.page-titlebar{margin-bottom:20px!important;gap:14px!important}
+}
 @media (max-width:640px){
+  .page-head.page-titlebar{align-items:flex-start!important;flex-wrap:wrap!important;gap:13px!important;margin-bottom:17px!important}
   .page-title-copy{min-width:0;flex:1 1 100%}
   .page-title-actions{margin-left:auto;width:100%;justify-content:flex-end}
   .page-title-actions .btn{min-height:38px;font-size:12px}
