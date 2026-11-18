@@ -35,6 +35,8 @@ export function mountAlmanac(state) {
     $('dialMoon').textContent=`${info.moon.symbol} ${info.moon.name}`;
     $('almanac-season-tag').textContent=`二十四节气 · ${info.selected.season}`;
     $('almanac-term-title').textContent=info.selected.name;
+    const verticalSlip=$('almanac-vertical-slip');
+    if(verticalSlip)verticalSlip.textContent=`${info.selected.season}令 · ${info.hou}`;
     $('almanac-term-range').textContent=`${info.selected.chinaDate} 起`;
     $('almanac-next-term').textContent=`下节 · ${info.next?.name||''}`;
     $('almanac-term-note').textContent=info.note;

@@ -1,6 +1,8 @@
 import {icon} from './icons.js';
+import {motionAllowed} from './motion.js';
 
 let toastTimer;
+let modalCloseTimer;
 let activeDialog=null;
 
 export function showToast(message,{error=false}={}) {
@@ -18,6 +20,8 @@ export function confirmDialog({title,description,confirmText='确认',danger=fal
     const confirm=document.querySelector('#modalConfirm');
     const cancel=document.querySelector('#modalCancel');
     const focusBefore=document.activeElement;
+    clearTimeout(modalCloseTimer);
+    layer.classList.remove('is-closing');
     document.querySelector('#modalIcon').innerHTML=icon(danger?'alert':'info');
     document.querySelector('#modalTitle').textContent=title;
     document.querySelector('#modalDesc').textContent=description;
@@ -29,6 +33,10 @@ export function confirmDialog({title,description,confirmText='确认',danger=fal
     const finish = answer => {
       layer.classList.remove('open');
       layer.setAttribute('aria-hidden','true');
+      if(motionAllowed()){
+        layer.classList.add('is-closing');
+        modalCloseTimer=setTimeout(()=>layer.classList.remove('is-closing'),155);
+      }
       confirm.removeEventListener('click',onConfirm);
       cancel.removeEventListener('click',onCancel);
       layer.removeEventListener('click',onBackdrop);

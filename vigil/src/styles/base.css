@@ -71,7 +71,8 @@ summary:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:
  * These tokens override the seven historical theme layers consistently. */
 :root[data-theme=night]{--color-focus:#c28e80}
 :root[data-theme=night] body::before{filter:grayscale(1) brightness(.33) contrast(.90)!important;opacity:calc(var(--wallpaper-alpha) * .43)!important}
-:root[data-theme=night] :is(.heritage-hero,.heritage-copy){background:linear-gradient(120deg,#333138,#282a30)!important}
+:root[data-theme=night] .heritage-hero{background:linear-gradient(120deg,color-mix(in srgb,#33343c 92%,var(--appearance-accent)),#262930)!important}
+:root[data-theme=night] .heritage-copy{background:transparent!important}
 :root[data-theme=night] :is(.season-teaser,.home-quick-row .draft-banner){background:#36343b!important;color:var(--ink)!important}
 :root[data-theme=night] :is(.note-card,.reading-paper,.editor-paper,.calendar-card,
  .archive-mini-card,.filter-panel,.github-files,.github-detail,.data-action-card,

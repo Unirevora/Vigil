@@ -1,4 +1,5 @@
 import {icon} from './icons.js';
+import {motionAllowed} from './motion.js';
 
 /** Offline command palette: functional navigation and searchable local notes.
  *  Uses textContent for user-supplied titles; no HTML injection.
@@ -8,8 +9,8 @@ export function mountCommandPalette({getItems,onSelect}){
   const input=document.querySelector('#commandInput');
   const results=document.querySelector('#commandResults');
   if(!layer||!input||!results)throw new Error('Command palette DOM is missing');
-  let previous=null,visible=[],selected=0,allItems=[];
-  const isOpen=()=>!layer.hidden;
+  let previous=null,visible=[],selected=0,allItems=[],closeTimer=null;
+  const isOpen=()=>!layer.hidden&&!layer.classList.contains('is-closing');
 
   function renderItems(){
     const query=input.value.trim().toLocaleLowerCase();
@@ -67,16 +68,29 @@ export function mountCommandPalette({getItems,onSelect}){
   }
   function close(){
     if(!isOpen())return;
+    clearTimeout(closeTimer);
     layer.hidden=true;layer.setAttribute('aria-hidden','true');
-    input.value='';results.replaceChildren();allItems=[];
+    input.value='';allItems=[];visible=[];
     input.setAttribute('aria-expanded','false');
     input.removeAttribute('aria-activedescendant');
+    if(motionAllowed()){
+      layer.classList.add('is-closing');
+      closeTimer=setTimeout(()=>{
+        layer.classList.remove('is-closing');
+        results.replaceChildren();
+      },155);
+    }else{
+      results.replaceChildren();
+    }
     if(previous?.isConnected)previous.focus();
   }
   function open(){
     if(isOpen()){close();return;}
+    const passLayer=document.querySelector('#passphraseLayer');
     if(document.querySelector('#modalLayer.open')||
-       !document.querySelector('#passphraseLayer')?.hidden)return;
+       (passLayer&&!passLayer.hidden&&!passLayer.classList.contains('is-closing')))return;
+    clearTimeout(closeTimer);
+    layer.classList.remove('is-closing');
     previous=document.activeElement;
     layer.hidden=false;layer.setAttribute('aria-hidden','false');
     input.value='';

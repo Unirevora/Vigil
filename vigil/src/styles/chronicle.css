@@ -51,22 +51,24 @@
 .season-notes{display:grid;grid-template-rows:auto 1fr;gap:16px;min-width:0}
 .season-current{position:relative}
 .season-current-top{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--accent);font-size:11px}
-.season-current h2{font:clamp(39px,4vw,58px)/1.45 var(--font-display);letter-spacing:.06em;margin:13px 0 9px}
+.season-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0 10px}
+.season-current h2{font:clamp(39px,4vw,58px)/1.32 var(--font-display);letter-spacing:.06em;margin:0}
+.season-vertical-slip{writing-mode:vertical-rl;text-orientation:upright;font:11px/1.35 var(--font-display);letter-spacing:.15em;color:var(--ink-2);border-left:1px solid color-mix(in srgb,var(--appearance-accent) 32%,var(--stroke));padding:2px 0 2px 10px;max-height:92px;overflow:hidden;flex:none}
 .term-times{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);padding-bottom:19px;border-bottom:1px solid var(--stroke);font:11px var(--font-typed)}
-.season-current>p{margin:20px 0 23px;font-size:13px;line-height:2;color:var(--ink-2)}
+.season-current>p{margin:20px 0 23px;font-size:13px;line-height:2;color:var(--ink-2);text-autospace:normal;line-break:strict}
 .lunar-meta{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 16px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:11px;color:var(--ink-2);font-size:11px}
 .lunar-meta small{color:var(--muted)}
 .hou-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
 .hou-heading h3{font:21px var(--font-display)}
 .hou-heading span{font-size:10px;color:var(--muted)}
 .hou-list{display:grid;gap:9px}
-.hou-item{display:flex;align-items:center;gap:17px;padding:14px 17px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:10px;min-height:59px;opacity:.78;transition:opacity .2s,transform .2s,background .2s,border-color .2s}
+.hou-item{display:flex;align-items:center;gap:15px;padding:12px 17px;background:var(--surface-soft);border:1px solid var(--stroke);border-radius:10px;min-height:59px;opacity:.78;transition:opacity .2s,transform .2s,background .2s,border-color .2s}
 .hou-item.active{opacity:1;transform:translateX(2px);background:var(--green-soft);border-color:var(--stroke-2)}
-.hou-index{font:11px var(--font-display);color:var(--accent);white-space:nowrap}
+.hou-index{writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.14em;font:11px/1.15 var(--font-display);color:var(--accent);padding:3px 10px 3px 0;border-right:1px solid color-mix(in srgb,var(--appearance-accent) 26%,var(--stroke));white-space:nowrap}
 .hou-item strong{font:19px var(--font-display);letter-spacing:.04em;color:var(--ink)}
 .season-verse{margin-top:17px;min-height:140px;text-align:center;padding:23px 30px 18px}
 .season-verse-overline{font:11px var(--font-display);color:var(--accent);letter-spacing:.12em}
-.season-verse blockquote{font:clamp(20px,2.9vw,31px)/1.6 var(--font-display);letter-spacing:.07em;margin:7px 0 8px;color:var(--ink)}
+.season-verse blockquote{font:clamp(20px,2.9vw,31px)/1.6 var(--font-display);letter-spacing:.07em;margin:7px 0 8px;color:var(--ink);text-autospace:normal;hanging-punctuation:first allow-end;line-break:strict}
 .season-verse p{font-size:10px;color:var(--muted)}
 .almanac-footnote{font-size:11px;line-height:1.9;color:var(--muted);margin-top:13px}
 /* Date calendar shows solar terms without forcing extra labels on empty dates. */
@@ -74,12 +76,12 @@
 .day.selected{border:1px solid var(--accent)}
 .day.is-term{background:var(--accent-soft);color:var(--accent)}
 .day-term{font:11px var(--font-display);color:var(--accent);white-space:nowrap}
-.day-num{font:13px var(--font-body)}
+.day-num{font:13px var(--font-body);font-variant-numeric:tabular-nums}
 .day i{width:5px;height:5px;background:var(--accent);border-radius:50%}
 .day-details h3{font:23px/1.4 var(--font-display);margin-top:12px}
 .day-lunar{font-size:12px;color:var(--accent);margin:8px 0 13px}
 .day-details-verse{border-top:1px solid var(--stroke);padding-top:13px;font:16px/1.7 var(--font-display);color:var(--ink-2)}
-.day-empty{color:var(--muted);font-size:11px;margin:16px 0}
+.day-empty{color:var(--muted);font-size:11px;margin:14px 0;padding:12px 14px;border:1px dashed var(--stroke-2);border-radius:var(--radius-sm,10px);background:color-mix(in srgb,var(--surface-soft) 72%,transparent);text-align:center}
 .day-details-actions{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:12px;flex-wrap:wrap}
 @media (max-width:1150px){
   .almanac-layout{grid-template-columns:minmax(0,1fr) minmax(265px,.87fr)}
@@ -191,11 +193,12 @@
   body[data-page="calendar"] .glass-dock{display:flex!important}
   body[data-page="almanac"] .glass-dock{display:flex!important}
 }
-.archive-mini-card{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
-.calendar-card{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
-.dial-panel{border-radius:22px!important;border-color:var(--stroke)!important}
-.season-current{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
-.hou-panel{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.archive-mini-card{border-radius:var(--radius-lg,20px)!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.calendar-card{border-radius:var(--radius-lg,20px)!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.dial-panel{border-radius:var(--radius-lg,20px)!important;border-color:var(--stroke)!important}
+.season-current{border-radius:var(--radius-lg,20px)!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.hou-panel{border-radius:var(--radius-lg,20px)!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.season-verse{border-radius:var(--radius-lg,20px)!important}
 /* (shell) kept in this module: it must cascade after the rule it refines above. */
 .today{font-size:12px;letter-spacing:.04em}
 @media (max-width:1000px){
@@ -204,25 +207,39 @@
 }
 /* (shell) kept in this module: it must cascade after the rule it refines above. */
 .today{font:12px var(--font-body);color:var(--ink-2);white-space:nowrap;margin:0 6px}
-/* The almanac is a pale porcelain instrument, not a heavy bronze dial. */
+/* The almanac is a pale porcelain instrument by day, and smoked ink-jade by night. */
 .dial-panel{background:var(--surface)!important;box-shadow:none!important;padding:17px 19px 16px}
 .dial-frame{padding:12px 0 8px}
-.season-dial{background:radial-gradient(circle at 46% 40%,#fffefa 0%,#faf8f1 58%,#eef2e9 100%);box-shadow:inset 0 0 0 1px rgba(91,127,110,.24),0 15px 28px rgba(36,59,52,.06)}
-.season-dial::before{inset:20px;border-color:rgba(93,127,106,.23)}
-.season-dial::after{inset:23%;border:1px dashed rgba(112,140,117,.22)}
+.season-dial{background:radial-gradient(circle at 46% 40%,#fffefa 0%,#faf8f1 58%,#eef2e9 100%);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--appearance-accent) 18%,var(--stroke-2)),0 15px 28px rgba(36,59,52,.06)}
+.season-dial::before{inset:20px;border-color:color-mix(in srgb,var(--ink-2) 22%,transparent)}
+.season-dial::after{inset:23%;border:1px dashed color-mix(in srgb,var(--ink-2) 20%,transparent)}
 .dial-tick-ring{opacity:.28;inset:25px;filter:saturate(.55)}
-.dial-inner-ring{border-color:rgba(127,154,135,.3);box-shadow:none}
-.term-node{color:#677a70;font-size:11px;border-radius:7px;transition:left .12s,top .12s,color .15s,background .15s}
-.term-node.same-season{color:#355e54}
-.term-node.selected{background:rgba(53,93,79,.10);border:1px solid rgba(53,93,79,.18);color:#274c41;font-weight:700;box-shadow:none}
-.term-node.selected:hover{background:rgba(53,93,79,.16);color:#274c41}
-.dial-center{background:rgba(255,255,249,.92);border:1px solid rgba(107,141,119,.26);box-shadow:0 0 0 5px rgba(255,255,255,.65),0 6px 14px rgba(35,55,43,.04);inset:30%}
-.dial-center-minor{color:#8a9b90}
-.dial-center-term{color:#27433b;font-size:clamp(27px,3vw,39px)}
-.dial-center-date{color:#7b8e81}
-.dial-center-moon{color:#7b8e81}
-.dial-pointer{border-left-width:6px;border-right-width:6px;border-top-width:10px;top:3.8%;opacity:.76}
+.dial-inner-ring{border-color:color-mix(in srgb,var(--ink-2) 24%,transparent);box-shadow:none}
+.term-node{color:var(--muted);font-size:11px;border-radius:7px;transition:left .12s,top .12s,color .15s,background .15s}
+.term-node.same-season{color:var(--ink-2)}
+.term-node:hover{background:color-mix(in srgb,var(--appearance-accent) 12%,transparent);color:var(--appearance-accent)}
+.term-node.selected{background:color-mix(in srgb,var(--appearance-accent) 14%,transparent);border:1px solid color-mix(in srgb,var(--appearance-accent) 32%,transparent);color:var(--appearance-accent);font-weight:700;box-shadow:none}
+.term-node.selected:hover{background:color-mix(in srgb,var(--appearance-accent) 20%,transparent);color:var(--appearance-accent)}
+.dial-center{background:rgba(255,255,249,.92);border:1px solid color-mix(in srgb,var(--appearance-accent) 20%,var(--stroke-2));box-shadow:0 0 0 5px rgba(255,255,255,.65),0 6px 14px rgba(35,55,43,.04);inset:30%}
+.dial-center-minor{color:var(--muted);font-variant-numeric:tabular-nums}
+.dial-center-term{color:var(--ink);font-size:clamp(27px,3vw,39px)}
+.dial-center-date{color:var(--ink-2)}
+.dial-center-moon{color:var(--muted)}
+.dial-pointer{border-left-width:6px;border-right-width:6px;border-top-width:10px;border-top-color:var(--appearance-accent);top:3.8%;opacity:.84}
 .dial-hint{line-height:1.65;margin-top:10px}
+:root[data-theme=night] .season-dial{background:radial-gradient(circle at 46% 40%,#383c45 0%,#2d3139 58%,#23272f 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.11),0 16px 32px rgba(0,0,0,.28)}
+:root[data-theme=night] .season-dial::before{border-color:rgba(225,230,228,.14)}
+:root[data-theme=night] .season-dial::after{border-color:rgba(225,230,228,.13)}
+:root[data-theme=night] .dial-tick-ring{opacity:.26;filter:invert(1) grayscale(1) brightness(1.35)}
+:root[data-theme=night] .dial-inner-ring{border-color:rgba(225,230,228,.16)}
+:root[data-theme=night] .term-node{color:var(--muted)}
+:root[data-theme=night] .term-node.same-season{color:var(--ink-2)}
+:root[data-theme=night] .term-node:hover{background:color-mix(in srgb,var(--appearance-accent) 20%,transparent);color:var(--ink)}
+:root[data-theme=night] .term-node.selected{background:color-mix(in srgb,var(--appearance-accent) 24%,transparent);border-color:color-mix(in srgb,var(--appearance-accent) 48%,transparent);color:var(--ink)}
+:root[data-theme=night] .dial-center{background:rgba(41,45,53,.94);border-color:rgba(255,255,255,.14);box-shadow:0 0 0 5px rgba(255,255,255,.04),0 8px 20px rgba(0,0,0,.26)}
+:root[data-theme=night] .dial-center-term{color:var(--ink)}
+:root[data-theme=night] .dial-center-date{color:var(--ink-2)}
+:root[data-theme=night] .dial-center-minor,:root[data-theme=night] .dial-center-moon{color:var(--muted)}
 @media (max-width:680px){
   .almanac-layout{grid-template-columns:1fr}
   .season-dial{width:min(100%,410px)}

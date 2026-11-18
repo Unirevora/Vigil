@@ -118,7 +118,7 @@
 .heritage-copy .hero-actions{gap:15px;flex-wrap:nowrap}
 .heritage-copy .hero-actions .btn{min-height:47px;padding:10px 22px;border-radius:10px;font:15px/1.4 var(--font-display);letter-spacing:.08em}
 .heritage-copy .hero-actions .btn svg{width:19px;height:19px;stroke-width:1.8}
-.heritage-copy .hero-actions .btn-primary{background:#29483d;color:#fff7e8;border:1px solid #2b4b3d;box-shadow:inset 0 1px rgba(255,255,255,.17),0 3px 0 rgba(31,48,37,.12)}
+.heritage-copy .hero-actions .btn-primary{background:var(--user-primary-bg,var(--green));color:var(--appearance-contrast,#fff7e8);border:1px solid color-mix(in srgb,var(--user-primary-bg,var(--green)) 75%,var(--ink));box-shadow:inset 0 1px rgba(255,255,255,.17),0 3px 0 rgba(31,48,37,.12)}
 .heritage-copy .hero-actions .btn-quiet{background:rgba(253,247,234,.56);border:1px solid #a98b68;color:#3c392f}
 .heritage-copy .hero-footer{display:flex;align-items:center;gap:18px;justify-content:initial;margin-top:auto;padding-top:18px;font:11px Georgia,var(--font-typed);letter-spacing:.14em;color:#977b5c}
 .hero-footer-line{height:1px;flex:1;max-width:165px;background:#c8ad8a;opacity:.75}
@@ -287,7 +287,6 @@
 .season-teaser{box-shadow:0 8px 24px rgba(36,66,66,.06)!important}
 .home-quick-row .draft-banner{box-shadow:0 8px 24px rgba(36,66,66,.06)!important}
 .heritage-copy h1{letter-spacing:-.015em}
-body[data-page=home] .glass-dock{display:flex}
 @media (max-width:900px){
   .hero-scene{max-width:100%}
 }
@@ -297,34 +296,36 @@ body[data-page=home] .glass-dock{display:flex}
 @media (max-width:900px){
   body[data-page="home"] .glass-dock{display:flex!important}
 }
-.heritage-hero{border-radius:24px!important;box-shadow:0 13px 40px rgba(31,53,47,.08)!important}
+.heritage-hero{border-radius:var(--radius-lg,20px)!important;box-shadow:0 13px 40px rgba(31,53,47,.08)!important}
 .heritage-stats{gap:11px}
-.heritage-stat{border-radius:18px!important}
-.heritage-stat::before{display:none!important}
-.season-teaser::before{display:none!important}
-.home-quick-row .draft-banner::before{display:none!important}
-.season-teaser{background:var(--surface)!important;border-radius:17px!important}
-.home-quick-row .draft-banner{background:var(--surface)!important;border-radius:17px!important}
+.heritage-stat{border-radius:var(--radius-md,14px)!important}
+/* Subtle ink-wash landscape/flora motifs: subdued multiply by day, soft screen watermark by night. */
+.heritage-stat::before{display:block!important;opacity:.22}
+.season-teaser::before{display:block!important;opacity:.20}
+.home-quick-row .draft-banner::before{display:block!important;opacity:.24}
+:root[data-theme=night] :is(.heritage-stat,.season-teaser,.home-quick-row .draft-banner)::before{filter:invert(1) grayscale(1);mix-blend-mode:screen;opacity:.085}
+.season-teaser{background:var(--surface)!important;border-radius:var(--radius-md,14px)!important}
+.home-quick-row .draft-banner{background:var(--surface)!important;border-radius:var(--radius-md,14px)!important}
 /* A lighter, calmer first impression with far less vertical whitespace. */
 .home-layout{max-width:1320px;margin-inline:auto}
-.home-layout .heritage-hero{height:430px;min-height:430px;border:1px solid rgba(172,184,167,.45)!important;border-radius:22px!important;background:#f6f4ed;box-shadow:0 16px 40px rgba(26,52,43,.06)!important}
-.home-layout .heritage-hero::after{inset:12px;border-color:rgba(70,88,75,.075);border-radius:14px}
+.home-layout .heritage-hero{height:430px;min-height:430px;border:1px solid rgba(172,184,167,.45)!important;border-radius:var(--radius-lg,20px)!important;background:#f6f4ed;box-shadow:0 16px 40px rgba(26,52,43,.06)!important}
+.home-layout .heritage-hero::after{inset:12px;border-color:rgba(70,88,75,.075);border-radius:var(--radius-md,14px)}
 .home-layout .heritage-copy{width:49%;padding:33px 12px 26px 43px}
 .home-layout .heritage-kicker{font-size:12px;letter-spacing:.22em;margin-bottom:13px}
 .home-layout .heritage-copy h1{font-size:clamp(45px,4.4vw,66px);line-height:1.12;letter-spacing:.012em}
 .home-layout .heritage-copy>p{font-size:14px;line-height:1.65;margin:18px 0 17px;white-space:normal}
 .home-layout .hero-actions{gap:10px}
-.home-layout .hero-actions .btn{min-height:42px;padding:9px 16px;font-size:13px;letter-spacing:.02em;box-shadow:none;border-radius:12px}
+.home-layout .hero-actions .btn{min-height:42px;padding:9px 16px;font-size:13px;letter-spacing:.02em;box-shadow:none;border-radius:var(--radius-sm,10px)}
 .home-layout .heritage-copy .hero-footer{padding-top:11px;font-size:9px;letter-spacing:.16em}
 .home-layout .hero-scene{width:62%;mix-blend-mode:multiply;opacity:.92}
 .home-layout .heritage-stats{gap:12px;margin-top:14px}
-.home-layout .heritage-stat{height:70px;padding:11px 22px;border-color:var(--stroke)!important;border-radius:15px!important;background:color-mix(in srgb,var(--surface) 91%,transparent)!important;box-shadow:none!important}
-.home-layout .heritage-stat strong{font-size:clamp(29px,2.7vw,38px);color:var(--ink)}
+.home-layout .heritage-stat{height:70px;padding:11px 22px;border-color:var(--stroke)!important;border-radius:var(--radius-md,14px)!important;background:color-mix(in srgb,var(--surface) 91%,transparent)!important;box-shadow:none!important}
+.home-layout .heritage-stat strong{font-size:clamp(29px,2.7vw,38px);color:var(--ink);font-variant-numeric:tabular-nums}
 .home-layout .heritage-stat span{font-size:12px;color:var(--ink-2)}
 .home-layout .heritage-stat small{font-size:10px;color:var(--muted)}
 .home-layout .home-quick-row{gap:12px;margin-top:12px}
-.home-layout .season-teaser{height:70px;min-height:70px;border:1px solid var(--stroke)!important;border-radius:15px!important;box-shadow:none!important;padding:11px 17px;gap:13px}
-.home-layout .draft-banner{height:70px;min-height:70px;border:1px solid var(--stroke)!important;border-radius:15px!important;box-shadow:none!important;padding:11px 17px;gap:13px}
+.home-layout .season-teaser{height:70px;min-height:70px;border:1px solid var(--stroke)!important;border-radius:var(--radius-md,14px)!important;box-shadow:none!important;padding:11px 17px;gap:13px}
+.home-layout .draft-banner{height:70px;min-height:70px;border:1px solid var(--stroke)!important;border-radius:var(--radius-md,14px)!important;box-shadow:none!important;padding:11px 17px;gap:13px}
 .home-layout .season-teaser-seal{width:30px;height:32px;border:1px solid var(--appearance-accent);font-size:20px;outline:0;border-radius:8px;background:var(--surface-soft)}
 .home-layout .quick-symbol{width:32px;height:34px}
 .home-layout .quick-symbol svg{width:21px;height:21px}
@@ -339,7 +340,7 @@ body[data-page=home] .glass-dock{display:flex}
 .home-layout .recent-divider{height:16px;background:var(--stroke-2)}
 .home-layout .recent-head-line{background:var(--stroke)}
 .home-layout .home-recent-head .text-button{font:12px var(--font-body)}
-.home-layout .note-card{min-height:168px;border:1px solid var(--stroke)!important;border-radius:15px!important;box-shadow:none!important}
+.home-layout .note-card{min-height:168px;border:1px solid var(--stroke)!important;border-radius:var(--radius-lg,20px)!important;box-shadow:none!important}
 .home-layout .note-link{padding:18px 20px}
 .home-layout .note-link h3{font-size:18px;line-height:1.4}
 .home-layout .note-link p{font-size:12px;line-height:1.65;margin:8px 0}

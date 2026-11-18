@@ -5,10 +5,26 @@
 .note-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
 .note-card{min-width:0;position:relative}
 .note-link{width:100%;height:100%;display:flex;flex-direction:column;align-items:stretch;background:transparent;border:0;text-align:left;color:var(--ink);min-width:0}
-.note-date{margin-bottom:13px}
+.note-date{display:flex;align-items:center;gap:8px;margin-bottom:13px;padding-right:28px}
+.note-words{margin-left:auto;font:11px/1.3 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}
+.note-lead-badge{font:10px/1.25 var(--font-display);letter-spacing:.1em;padding:2px 6px;border-radius:4px;border:1px solid color-mix(in srgb,var(--appearance-accent) 40%,transparent);color:var(--appearance-accent);background:color-mix(in srgb,var(--appearance-accent-soft) 58%,transparent)}
 .note-link h3{letter-spacing:.02em;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;padding-right:27px}
-.note-link p{line-height:1.75;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:12px 0 18px}
+.note-link p{line-height:1.78;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:12px 0 18px;text-autospace:normal;hanging-punctuation:first allow-end;line-break:strict}
+/* Editorial anthology rhythm: chronological volume dividers, lead story span, and serif aphorisms. */
+.editorial-month-divider{grid-column:1/-1;display:flex;align-items:center;gap:14px;margin:10px 0 2px;padding:4px 2px;min-width:0}
+.editorial-month-divider:first-child{margin-top:0}
+.editorial-month-title{font:600 14px/1.4 var(--font-display);letter-spacing:.07em;color:var(--ink-2);white-space:nowrap}
+.editorial-month-rule{flex:1;height:1px;background:linear-gradient(90deg,var(--stroke-2),transparent 92%)}
+.editorial-month-count{font:11px/1.4 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.note-card-aphorism .note-link p{font:15px/1.92 var(--font-display);color:var(--ink);-webkit-line-clamp:3;letter-spacing:.02em}
+@media (min-width:901px){
+  .editorial-note-grid .note-card-lead{grid-column:span 2;min-height:218px}
+  .editorial-note-grid .note-card-lead .note-link{padding:26px 28px}
+  .editorial-note-grid .note-card-lead .note-link h3{font-size:clamp(24px,2.3vw,30px);line-height:1.34;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .editorial-note-grid .note-card-lead .note-link p{font-size:14px;line-height:1.88;-webkit-line-clamp:3;max-width:66ch;margin:14px 0 20px}
+}
 .note-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;min-height:22px}
+.note-tags:empty{display:none}
 /* Entry index */
 .filter-panel{padding:17px;border:1px solid var(--stroke)}
 .searchbox{position:relative}
@@ -58,8 +74,8 @@
 @media (max-width:900px){
   body[data-page="entries"] .glass-dock{display:flex!important}
 }
-.note-card{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
-.filter-panel{border-radius:22px!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.note-card{border-radius:var(--radius-lg,20px)!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
+.filter-panel{border-radius:var(--radius-lg,20px)!important;box-shadow:var(--shadow)!important;border-color:var(--stroke)!important}
 .note-card{border-left:1px solid var(--stroke)!important}
 .note-card:hover{transform:translateY(-3px) rotate(0)!important}
 :root[data-motion=subtle] .note-card:hover{transform:translateY(-2px)!important}
@@ -76,7 +92,7 @@
 .export-current:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3px}
 .entry-results-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:25px!important}
 .entry-results-head>div{display:flex;align-items:baseline;gap:12px;min-width:0}
-.entry-results-head .muted-count{white-space:nowrap}
+.entry-results-head .muted-count,#githubResultCount,.notebook-tab small{white-space:nowrap;font-variant-numeric:tabular-nums}
 .entry-results-head .export-current{color:var(--appearance-accent);font-size:12px;min-height:36px;padding:7px 12px;border-radius:999px;white-space:nowrap}
 .entry-results-head .export-current:hover:not(:disabled){background:var(--surface-soft);text-decoration:none}
 .entry-results-head .export-current:disabled{color:var(--muted);opacity:.47;cursor:not-allowed;text-decoration:none}
@@ -99,11 +115,11 @@
 .notebook-tab small{font-size:11px;font-weight:450;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis}
 .notebook-tab.active{color:var(--ink);border-bottom-color:var(--appearance-accent);background:color-mix(in srgb,var(--surface) 55%,transparent)}
 .notebook-tab:hover{color:var(--ink);background:var(--surface-soft)}
-.notebook-unlinked{display:flex;flex-direction:column;align-items:flex-start;gap:15px;padding:clamp(27px,5vw,45px);border-radius:22px;max-width:100%}
-.notebook-unlinked-icon{display:grid;place-items:center;width:44px;height:44px;color:var(--appearance-accent);background:var(--accent-soft);border-radius:14px}
+.notebook-unlinked{display:flex;flex-direction:column;align-items:flex-start;gap:15px;padding:clamp(27px,5vw,45px);border-radius:var(--radius-lg,20px);max-width:100%}
+.notebook-unlinked-icon{display:grid;place-items:center;width:44px;height:44px;color:var(--appearance-accent);background:var(--accent-soft);border-radius:var(--radius-md,14px)}
 .notebook-unlinked h2{font:clamp(20px,2vw,29px)/1.4 var(--font-display)}
 .notebook-unlinked p{max-width:630px;color:var(--muted);line-height:1.85}
-.notebook-repo-strip{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:13px;padding:14px 17px;background:var(--surface);border:1px solid var(--stroke);border-radius:17px}
+.notebook-repo-strip{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:13px;padding:14px 17px;background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius-md,14px)}
 .notebook-repo-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0}
 .notebook-repo-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0}
 .notebook-repo-title>svg{color:var(--accent)}

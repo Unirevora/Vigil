@@ -4,9 +4,41 @@
  * Respects prefers-reduced-motion and avoids rerendering text areas.
  */
 let activeObserver=null;
+let activeUnfold=null;
 export function motionAllowed(){
   return document.documentElement.dataset.motion!=='off' && typeof matchMedia==='function' &&
     !matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** Read a clean viewport rect before synchronous route DOM replacement. */
+export function captureMotionRect(node){
+  if(!node||!motionAllowed()||typeof node.getBoundingClientRect!=='function')return null;
+  const r=node.getBoundingClientRect();
+  return r.width>0&&r.height>0?{left:r.left,top:r.top,width:r.width,height:r.height}:null;
+}
+
+/** Smoothly unfold a note card into a manuscript sheet (or fold back) without delaying DOM render. */
+export function animatePaperUnfold(target,previous){
+  activeUnfold?.cancel();activeUnfold=null;
+  if(!target||!previous||!motionAllowed()||typeof target.animate!=='function')return null;
+  const next=target.getBoundingClientRect();
+  if(next.width<=0||next.height<=0)return null;
+  const dx=(previous.left+previous.width/2)-(next.left+next.width/2);
+  const dy=previous.top-next.top;
+  const sx=Math.min(1.06,Math.max(.84,previous.width/next.width));
+  const sy=Math.min(1.06,Math.max(.88,previous.height/next.height));
+  const subtle=document.documentElement.dataset.motion==='subtle';
+  const easing=getComputedStyle(document.documentElement).getPropertyValue('--vigil-ease').trim()||'cubic-bezier(.23,.84,.26,1)';
+  target.dataset.unfolding='1';
+  const anim=target.animate([
+    {opacity:subtle?.82:.68,transformOrigin:'50% 0%',
+      transform:subtle?`translate3d(${dx*.35}px,${dy*.35}px,0)`:`translate3d(${dx*.55}px,${Math.max(-90,Math.min(120,dy*.55))}px,0) scale(${sx},${sy})`},
+    {opacity:1,transformOrigin:'50% 0%',transform:'translate3d(0,0,0) scale(1,1)'}
+  ],{duration:subtle?200:380,easing});
+  activeUnfold=anim;
+  const clear=()=>{delete target.dataset.unfolding;if(activeUnfold===anim)activeUnfold=null;};
+  anim.finished?.then(clear,clear);
+  return anim;
 }
 
 /** Animate the existing editor between measured frames without scaling its text. */
@@ -29,18 +61,20 @@ export function playEntranceMotion(container){
   if(!container||!motionAllowed()||typeof IntersectionObserver==='undefined')return;
   const elements=[...container.querySelectorAll([
     '.heritage-hero','.heritage-stat','.season-teaser','.draft-banner',
-    '.home-recent-head','.note-card','.filter-panel',
-    '.reading-paper','.editor-paper','.archive-mini-card','.calendar-card',
+    '.home-recent-head','.note-card','.filter-panel','.empty',
+    '.reading-paper','.editor-paper','.pagination-card','.reader-backlinks',
+    '.archive-mini-card','.calendar-card',
     '.dial-panel','.season-current','.hou-panel','.season-verse',
-    '.github-files','.github-detail','.github-connect','.data-action-card',
-    '.secure-backup-strip','.data-summary > div'
+    '.insight-metric','.insight-panel',
+    '.github-files','.github-detail','.github-connect','.notebook-unlinked','.notebook-repo-strip',
+    '.data-action-card','.secure-backup-strip','.data-summary > div'
   ].join(','))].slice(0,30);
   activeObserver=new IntersectionObserver(entries=>{
     for(const entry of entries){
       if(!entry.isIntersecting)continue;
       const node=entry.target;
       activeObserver?.unobserve(node);
-      if(!node.isConnected || typeof node.animate!=='function')continue;
+      if(!node.isConnected || node.dataset.unfolding==='1' || typeof node.animate!=='function')continue;
       const index=Math.max(0,elements.indexOf(node));
       // One lightweight overshoot, rather than bouncing every descendant.
       const subtle=document.documentElement.dataset.motion==='subtle';

@@ -21,7 +21,7 @@
 .tag-label input{max-width:430px;border:0;padding:8px 12px;border-radius:10px;font-size:12px}
 .format-tools{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
 .toolbar-separator{height:18px;width:1px;background:var(--stroke-2);margin:0 5px}
-.editor-foot{border-top:1px solid var(--stroke);display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px}
+.editor-foot{border-top:1px solid var(--stroke);display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
 .tool-button{border-radius:10px}
 .tag-option{border-radius:10px}
 /* Writer stationery with live preview, no DOM editing tricks. */
@@ -219,7 +219,11 @@
  * its parent still reserved 510px and pushed Reading content far down. */
 #editorUnifiedPane[data-mode="reading"] .unified-edit-host{display:none!important;min-height:0!important;height:0!important}
 #editorUnifiedPane[data-mode="reading"] .unified-reader{display:block!important}
-.refined-editor .unified-reader{line-height:1.85;letter-spacing:.012em}
+.refined-editor .unified-reader{line-height:1.85;letter-spacing:.012em;text-autospace:normal;hanging-punctuation:first allow-end;line-break:strict;font-kerning:normal}
+/* Brush-to-paper quietude: chrome gently recedes while actively typing, restoring instantly on pointer/focus. */
+.refined-editor :is(.editor-topline,.editor-properties,.unified-toolbar,.editor-outline-handles,.editor-foot){transition:opacity .42s var(--vigil-ease)}
+.refined-editor.is-typing :is(.editor-topline,.editor-properties,.unified-toolbar,.editor-outline-handles,.editor-foot){opacity:.44}
+.refined-editor.is-typing :is(.editor-topline,.editor-properties,.unified-toolbar,.editor-outline-handles,.editor-foot):is(:hover,:focus-within){opacity:1}
 .refined-editor .editor-foot{margin-top:0;border-top:1px solid var(--stroke)}
 .refined-editor .editor-foot span:last-child{font-size:10px}
 /* Key difference: active source markers and the rendered styling coexist. */
@@ -227,7 +231,7 @@
 .refined-editor .cm-live-bold{font-weight:750!important;color:var(--ink)!important}
 .refined-editor .cm-live-italic{font-style:italic!important}
 .refined-editor .cm-live-strike{text-decoration:line-through!important;opacity:.69}
-.refined-editor .cm-live-code{font-family:ui-monospace,Consolas,monospace!important;background:var(--surface-soft);border-radius:4px;padding:0 3px}
+.refined-editor .cm-live-code{font-family:ui-monospace,Consolas,monospace!important;background:var(--surface-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--stroke-2) 68%,transparent);border-radius:4px;padding:0 4px}
 .refined-editor .cm-live-link{color:var(--appearance-accent)!important;text-decoration:underline;text-underline-offset:3px}
 .refined-editor .cm-live-heading.cm-live-h1{font:clamp(27px,2.7vw,36px)/1.5 var(--font-display)!important}
 .refined-editor .cm-live-heading.cm-live-h2{font:clamp(23px,2.3vw,29px)/1.55 var(--font-display)!important}
@@ -244,8 +248,9 @@
 .refined-editor .cm-rendered-block{background:var(--surface-soft);padding:10px;border-radius:10px;max-width:100%;overflow-x:auto;line-height:1.5}
 .refined-editor .cm-rendered-block p{margin:0}
 .refined-editor .cm-rendered-block pre{margin:0}
-.refined-editor .cm-code-widget{background:var(--surface-soft);border-radius:9px;padding:10px 14px;overflow-x:auto}
-.refined-editor .cm-table-widget{background:var(--surface-soft);border-radius:9px;padding:10px 14px;overflow-x:auto}
+.refined-editor .cm-code-widget{background:var(--surface-soft);box-shadow:inset 0 0 0 1px var(--stroke);border-radius:var(--radius-sm,10px);padding:10px 14px;overflow-x:auto}
+.refined-editor .cm-table-widget{background:var(--surface-soft);box-shadow:inset 0 0 0 1px var(--stroke);border-radius:var(--radius-sm,10px);padding:10px 14px;overflow-x:auto}
+.refined-editor .cm-table-widget th{background:color-mix(in srgb,var(--surface-soft) 82%,var(--appearance-accent-soft));font-weight:600}
 .refined-editor .cm-code-widget pre{margin:0}
 .refined-editor .cm-table-widget table{margin:0}
 .refined-editor .cm-math-display{background:var(--surface-soft);border-left:2px solid var(--appearance-accent);border-radius:7px;margin:6px 0;padding:12px}
@@ -315,7 +320,7 @@ input:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3p
 select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3px}
 /* Editor: universal actions up front, specialized format choices in menus. */
 .refined-editor{max-width:min(1170px,100%)}
-.refined-editor .editor-paper{padding:28px 36px 17px;border:1px solid var(--stroke)!important;border-radius:18px!important;box-shadow:var(--vigil-soft-shadow)!important}
+.refined-editor .editor-paper{padding:28px 36px 17px;border:1px solid var(--stroke)!important;border-radius:var(--radius-lg,20px)!important;box-shadow:var(--vigil-soft-shadow)!important}
 .refined-editor .editor-title{padding-bottom:10px}
 .refined-editor .editor-properties{padding-bottom:12px}
 .refined-editor .unified-toolbar{position:sticky;top:10px;z-index:12;gap:10px;margin-top:13px;padding:7px 8px;border-radius:13px;background:color-mix(in srgb,var(--surface) 97%,transparent);box-shadow:0 5px 20px rgba(20,48,40,.045)}
@@ -457,26 +462,30 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 /* ---------------------------------------------------------------- editor: outline window
    Same row as the paper, on its right. Collapsed it is a small tab overlapping the paper's right
    edge; opening grows it into a tall column and the paper gives up a little width (animated). */
-.editor-stage{--outline-width:272px;--outline-tab-top:30px;--outline-tab-h:94px;--outline-ease:cubic-bezier(.22,1,.36,1);display:grid;grid-template-columns:minmax(0,1fr) 0px;grid-template-rows:minmax(0,1fr);column-gap:0;
+.editor-stage{--outline-width:272px;--outline-tab-top:30px;--outline-tab-h:136px;--outline-ease:cubic-bezier(.22,1,.36,1);display:grid;grid-template-columns:minmax(0,1fr) 0px;grid-template-rows:minmax(0,1fr);column-gap:0;
   transition:grid-template-columns .52s var(--outline-ease),column-gap .52s var(--outline-ease)}
 .refined-editor.outline-open .editor-stage{grid-template-columns:minmax(0,1fr) var(--outline-width);column-gap:16px}
 .editor-stage > .editor-paper{grid-column:1;grid-row:1;min-width:0;min-height:0}
 .refined-editor .editor-outline-sidebar{grid-column:2;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:20;display:flex;justify-content:flex-end;box-sizing:border-box;width:46px;height:var(--outline-tab-h);margin:var(--outline-tab-top) -12px 0 0;overflow:hidden;border:1px solid var(--stroke);border-radius:14px;background:var(--surface);box-shadow:var(--vigil-soft-shadow);
   transition:width .52s var(--outline-ease),height .52s var(--outline-ease),margin .52s var(--outline-ease),border-radius .52s var(--outline-ease)}
-.refined-editor .editor-outline-sidebar.is-open{width:var(--outline-width);height:100%;margin:0;border-radius:18px}
+.refined-editor .editor-outline-sidebar:not(.is-open){box-shadow:inset 7px 0 10px -7px rgba(24,36,32,.22),var(--glass-panel-shadow)!important}
+.refined-editor .editor-outline-sidebar.is-open{width:var(--outline-width);height:100%;margin:0;border-radius:var(--radius-lg,20px)}
 .editor-outline-handles{position:absolute;inset:0;display:flex;flex-direction:column;transition:opacity .2s ease .08s}
 .refined-editor .editor-outline-sidebar.is-open .editor-outline-handles{opacity:0;pointer-events:none;transition-delay:0s}
-.refined-editor .editor-outline-handles > button{flex:1 1 0;display:grid;place-items:center;padding:0 10px 0 0;border:0;background:transparent;color:var(--muted);cursor:pointer;transition:color .2s ease,background .2s ease}
+.refined-editor .editor-outline-handles > button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 9px 4px 0;border:0;background:transparent;color:var(--ink-2);cursor:pointer;transition:color .2s ease,background .2s ease}
+.refined-editor .editor-outline-handles > button svg{width:14px;height:14px;opacity:.85}
+.refined-editor .handle-vertical-label{writing-mode:vertical-rl;text-orientation:upright;font:11px/1 var(--font-display);letter-spacing:.14em}
+.refined-editor .editor-outline-head-actions .handle-vertical-label{display:none}
 .refined-editor .editor-outline-handles > button + button{border-top:1px solid var(--stroke)}
-.refined-editor .editor-outline-handles > button:hover{color:var(--ink);background:var(--surface-soft)}
+.refined-editor .editor-outline-handles > button:hover{color:var(--appearance-accent);background:var(--surface-soft)}
 .refined-editor .editor-zen-button.active{color:var(--appearance-accent)}
 .refined-editor .editor-zen-button svg{width:17px;height:17px}
 .refined-editor .editor-outline-head-actions{display:flex;align-items:center;gap:6px}
 .refined-editor .editor-outline-head-actions .editor-zen-button{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--stroke);border-radius:10px;background:transparent;color:var(--muted);cursor:pointer}
 .refined-editor .editor-outline-head-actions .editor-zen-button:hover{color:var(--ink);background:var(--surface-soft)}
-/* The counter-margin cancels the window's own movement, so the text stays still while it opens. */
-.refined-editor .editor-outline-sticky{display:flex;flex:none;flex-direction:column;width:var(--outline-width);height:100%;margin-top:calc(-1 * var(--outline-tab-top));opacity:0;transform:translateY(6px);pointer-events:none;transition:margin .52s var(--outline-ease),opacity .18s ease,transform .18s ease}
-.refined-editor .editor-outline-sidebar.is-open .editor-outline-sticky{margin-top:0;opacity:1;transform:none;pointer-events:auto;transition:margin .52s var(--outline-ease),opacity .3s ease .2s,transform .4s var(--outline-ease) .2s}
+/* The counter-margin cancels the window's own movement, so the text stays completely still while it opens. */
+.refined-editor .editor-outline-sticky{display:flex;flex:none;flex-direction:column;width:var(--outline-width);height:100%;margin-top:calc(-1 * var(--outline-tab-top));opacity:0;pointer-events:none;transition:margin .52s var(--outline-ease),opacity .18s ease}
+.refined-editor .editor-outline-sidebar.is-open .editor-outline-sticky{margin-top:0;opacity:1;pointer-events:auto;transition:margin .52s var(--outline-ease),opacity .3s ease .16s}
 .refined-editor .editor-outline-sidebar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 18px 10px;border-bottom:1px solid var(--stroke)}
 .refined-editor .editor-outline-sidebar-head strong{display:block;font-size:14px}
 .refined-editor .editor-outline-sidebar-head small{display:block;color:var(--muted);font-size:11px;line-height:1.5;margin-top:2px}

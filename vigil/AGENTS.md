@@ -12,7 +12,7 @@
 | `docs/USER-GUIDE.md` | 面向用户的功能说明、快捷键、Markdown 语法 |
 | `docs/CHANGELOG-original.md` | 原项目（v2.0–v2.8.2）历史，**只读，不得修改** |
 
-当前版本以 `package.json` 为准（发稿时 1.7.6「轻驰」）。本文与代码冲突时，以代码为准，并顺手修正文档。
+当前版本以 `package.json` 为准（发稿时 1.7.7「墨笺」）。本文与代码冲突时，以代码为准，并顺手修正文档。
 
 ---
 
@@ -113,7 +113,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 - 编辑页高度由 `main.js::fitEditorFrame()` 计算并写入 `.composer-page.refined-editor` 的 `--editor-height`（视口高 − 元素顶部 − `.main-inner` 底部内边距，最小 480px）；在挂载编辑器前、`resize`、切换专注时调用。CSS 回退 `100dvh - var(--editor-gap)`。
 - 结构：`section.composer-page` → `header.editor-topline`(返回/类型/草稿状态/保存) → `div.editor-stage`(grid：稿纸列 + 大纲列) → 可选 `div.editor-hint-dock`。`article.editor-paper` 是 flex 纵向：标题 → 日期与标签 `details.editor-properties`（GitHub 文件隐藏）→ 工具栏 → `.unified-manuscript`(flex:1) → 页脚（字数 + 模式提示）。
 - **标题、日期与标签、工具栏固定，只有正文滚动**（`.CodeMirror` `height:100%`，`.unified-reader` `overflow:auto`）；页面本身不滚动。**禁止**给 CodeMirror/阅读区加 `min-height`/`max-height`/`vh` 上限；`mountUnifiedEditor` 的 `minHeight` 默认 0（曾因内联 510px 撑出视口）。
-- **大纲 + 专注**：`aside.editor-outline-sidebar` 在 stage 的第二列。收起 = 稿纸右缘一个叠放的小标签（`--outline-tab-top`:30px 与标题同高，`--outline-tab-h`:94px，上「大纲」下「专注」，右移 −12px 露出边缘）；展开 = 向左长成与稿纸**等高**的纵向窗口，宽 `--outline-width`(272px)，stage 的 `grid-template-columns` 与 `column-gap` 同步过渡，稿纸略微让出宽度；用 `--outline-ease: cubic-bezier(.22,1,.36,1)` 约 0.52s；内容区用反向 `margin-top` 抵消窗口位移，**展开时文字不动**，右对齐锚定。展开后手柄淡出，专注按钮出现在大纲标题栏（✕ 左侧）。收起时 `.editor-outline-sticky` 加 `inert`。≤900px 不挤正文，改为浮在稿纸右侧。动画结束后 `unifiedEditor.refresh()`。Esc 依次关闭：查找条 → 格式菜单 → 大纲 → 专注。
+- **大纲 + 专注**：`aside.editor-outline-sidebar` 在 stage 的第二列。收起 = 稿纸右缘一枚带夹页折影的竖排书口签（`--outline-tab-top`:30px 与标题同高，`--outline-tab-h`:136px，上「大纲」下「专注」竖排短签 `.handle-vertical-label`，右移 −12px 露出边缘）；展开 = 向左长成与稿纸**等高**的纵向窗口，宽 `--outline-width`(272px)，stage 的 `grid-template-columns` 与 `column-gap` 同步过渡，稿纸略微让出宽度；用 `--outline-ease: cubic-bezier(.22,1,.36,1)` 约 0.52s；内容区用反向 `margin-top` 抵消窗口位移，**展开时文字不动**，右对齐锚定。展开后手柄淡出，专注按钮出现在大纲标题栏（✕ 左侧，仅图标）。收起时 `.editor-outline-sticky` 加 `inert`。≤900px 不挤正文，改为浮在稿纸右侧。动画结束后 `unifiedEditor.refresh()`。连续敲字时编辑器加 `.is-typing` 柔和退隐周边栏位（高度与位置不变），指针移动或聚焦控件即恢复。Esc 依次关闭：查找条 → 格式菜单 → 大纲 → 专注。
 - 专注：`.shell.zen-mode` 隐藏侧栏与顶栏；所有 `.editor-zen-button` 同步 `active`/`aria-pressed`；快捷键 Ctrl/⌘+Shift+F。
 - GitHub 文件提示「文件名由仓库路径决定；…校验 SHA 与加密规则。」在写作窗口外左下角（`.editor-hint-dock`），不在稿纸内。
 
@@ -133,7 +133,7 @@ vendor/                  codemirror/ katex/ NOTICE.md
 - **主题色唯一色源** `--appearance-accent`（`main.js` 运行时同步到 `--accent`、`--accent-soft`、`--green`、`--green-soft`、`--sidebar-glass-*`、`--glass-material`）。六预设：朱砂、松绿、黛蓝、铜金、梅紫、墨青，可自选；侧栏可固定经典墨色。夜间侧栏中性石墨。
 - 常用 token：`--bg --surface --paper --ink --ink-2 --muted --stroke --stroke-2 --side --accent --green --glass-panel-bg --glass-panel-blur --paper-opacity --wallpaper-alpha --color-focus --focus-ring --vigil-ease --vigil-spring --vigil-tab-bar --sidebar-width --sidebar-closed --workspace-max-width --page-title-size --font-display --font-body --font-typed --vigil-soft-shadow`。**先复用 token，不硬编码色值。**
 - 夜间 `:root[data-theme=night]` 整套覆盖：背景 `#191b20`、纸面 `#30333a`、墨字 `#f2f1ed`；卡片背景与文字成对设置，别只改文字。
-- **毛玻璃**用于导航、顶栏控件、搜索、弹层、卡片、筛选栏、统计、日历/节气面板、线索卡、GitHub 面板、设置面板、编辑工具栏、大纲、对话框；**长文阅读与写作稿纸保持不透明**。不支持 `backdrop-filter` 或系统「减少透明度」→ 回退实色。稿纸的玻璃画在 `::before` 底层（不要给稿纸本身加 `backdrop-filter`，否则会成为 fixed 后代的包含块）。
+- **器透而纸温**：毛玻璃（镜面高光内边）用于导航、顶栏控件、搜索、弹层、卡片、筛选栏、统计、日历/节气面板、线索卡、GitHub 面板、设置面板、编辑工具栏、大纲、翻页/回响卡、空状态与对话框；**长文阅读与写作稿纸、节令短笺采用哑光厚棉纸与叠页阴影**（`--paper-matte-bg`、`--paper-sheet-edge`、`--paper-sheet-shadow`）。不支持 `backdrop-filter` 或系统「减少透明度」→ 回退实色。稿纸的散射底衬画在 `::before` 底层（不要给稿纸本身加 `backdrop-filter`，否则会成为 fixed 后代的包含块），`.reading-paper::after` 绘制不拦截指针的信笺内压细框。全站圆角收敛为 `--radius-sm`(10px) / `--radius-md`(14px) / `--radius-lg`(20px) / `--radius-pill`(999px) 四级。
 - **标签页**统一：无背景高亮，选中项 4px 圆角主题色下划线（`--vigil-tab-bar`），`tab-indicator.js` 滑动；「全部手记 / 日历与风物 / 设置」共用。
 - **标题**：每页唯一 `h1.page-title`（`pageHeading` 组件），字号 `--page-title-size`（桌面 `clamp(36px,3.35vw,52px)`，≤900 `clamp(34px,5.3vw,43px)`，≤640 `clamp(31px,8.2vw,38px)`），行高 1.14，字重 600；顶栏不重复页面名。
 - **字体**：`VigilTitle`(`fonts/titlefont.ttf`，回退宋体)、`VigilText`(`fonts/textfont.ttf`，回退苹方/雅黑)；用户自备，不提交二进制，缺失只提示并回退。

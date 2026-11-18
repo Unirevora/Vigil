@@ -22,24 +22,24 @@
      Long-form reading/writing paper (.reading-paper, .editor-paper) stays opaque on purpose.
      Opacity follows Settings → 纸面透光 (--paper-opacity). */
   .main-inner :is(
-    .note-card,.filter-panel,.vintage-panel,.heritage-stat,.illustrated-slip,
+    .note-card,.filter-panel,.vintage-panel:not(.season-verse),.heritage-stat,.illustrated-slip,
     .insight-metric,.insight-panel:not(.reflection-panel),.surface,.settings-hub-panel,
-    .github-anonymous-option,.notebook-repo-strip
+    .github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty
   ){background-color:var(--glass-panel-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
-  /* Reading and writing paper: frosted too, slightly more opaque for long text.
-     The glass is drawn on a ::before underlay, NOT on the paper itself — backdrop-filter
-     on the paper would become the containing block of its position:fixed descendants
-     (sticky/overlay descendants) and pin them inside the paper. */
-  .main-inner :is(.reading-paper,.editor-paper){position:relative!important;isolation:isolate!important;background-color:transparent!important;background-image:none!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-  .main-inner :is(.reading-paper,.editor-paper)::before{content:""!important;display:block!important;position:absolute!important;inset:0!important;z-index:-1!important;border:0!important;border-radius:inherit!important;pointer-events:none!important;background:var(--glass-paper-bg)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .main-inner .reflection-panel{background:linear-gradient(142deg,color-mix(in srgb,var(--glass-panel-bg) 86%,var(--appearance-accent-soft)),color-mix(in srgb,var(--glass-panel-bg) 88%,var(--green-soft)))!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  /* Matte cotton sheets: warm non-specular edge and subtle stacked-page shadow, contrasting with optical glass chrome.
+     The underlay stays on ::before so the paper never traps fixed/sticky descendants. */
+  .main-inner .season-verse{background-color:var(--paper-matte-bg)!important;border-color:var(--paper-sheet-edge)!important;box-shadow:var(--paper-sheet-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
+  .main-inner :is(.reading-paper,.editor-paper){position:relative!important;isolation:isolate!important;background-color:transparent!important;background-image:none!important;border-color:var(--paper-sheet-edge)!important;box-shadow:var(--paper-sheet-shadow)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .main-inner :is(.reading-paper,.editor-paper)::before{content:""!important;display:block!important;position:absolute!important;inset:0!important;z-index:-1!important;border:0!important;border-radius:inherit!important;pointer-events:none!important;background:var(--paper-matte-bg)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .main-inner :is(.reading-paper,.editor-paper)::before{background:var(--surface)!important}
     .main-inner :is(.note-card,.filter-panel,.vintage-panel,.heritage-stat,.illustrated-slip,.insight-metric,
-        .insight-panel:not(.reflection-panel),.surface,.settings-hub-panel,.github-anonymous-option,.notebook-repo-strip){background-color:var(--surface)!important}
+        .insight-panel,.surface,.settings-hub-panel,.github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty){background:var(--surface)!important;background-color:var(--surface)!important}
   }
   @media (prefers-reduced-transparency:reduce){
     .main-inner :is(.reading-paper,.editor-paper)::before{background:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
     .main-inner :is(.note-card,.filter-panel,.vintage-panel,.heritage-stat,.illustrated-slip,.insight-metric,
-        .insight-panel:not(.reflection-panel),.surface,.settings-hub-panel,.github-anonymous-option,.notebook-repo-strip){background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+        .insight-panel,.surface,.settings-hub-panel,.github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty){background:var(--surface)!important;background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   }
 }

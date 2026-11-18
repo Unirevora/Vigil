@@ -18,3 +18,11 @@
   70%{transform:translateY(-4px) scale(1.01);opacity:1}
   100%{transform:none;opacity:1}
 }
+@keyframes dialog-exit{
+  from{opacity:1;transform:none}
+  to{opacity:0;transform:translateY(8px) scale(.974)}
+}
+@keyframes backdrop-exit{
+  from{opacity:1}
+  to{opacity:0}
+}

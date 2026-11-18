@@ -4,7 +4,8 @@
 .toast.bad{background:#9f4e41;color:#fff}
 .modal-layer{display:none;position:fixed;inset:0;z-index:29;background:rgba(27,32,29,.48);padding:20px;place-items:center;backdrop-filter:blur(4px)}
 .modal-layer.open{display:grid}
-.modal{background:var(--surface);border:1px solid var(--stroke);border-radius:22px;padding:28px;width:min(100%,430px);box-shadow:0 30px 100px rgba(0,0,0,.17)}
+.modal-layer.is-closing{display:grid;pointer-events:none;animation:backdrop-exit .15s ease forwards}
+.modal{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius-lg,20px);padding:28px;width:min(100%,430px);box-shadow:0 30px 100px rgba(0,0,0,.17)}
 .modal-mark{width:42px;height:42px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);border-radius:12px;margin-bottom:15px}
 .modal h2{font:25px var(--title-font);margin-bottom:8px}
 .modal p{color:var(--ink-2);font-size:12px;line-height:1.85;white-space:pre-line;margin-bottom:23px}
@@ -12,12 +13,15 @@
 .command-result{transition:transform .46s var(--vigil-spring),
     background-color .22s ease,border-color .24s ease,color .2s ease,
     box-shadow .35s var(--vigil-ease)}
-/* Ink-paper dialogs move like a light sheet settling on the desk. */
+/* Ink-paper dialogs move like a light sheet settling on the desk, and settle softly on close. */
 .modal-layer.open .modal{animation:dialog-spring .48s var(--vigil-spring) both}
+.modal-layer.is-closing .modal{animation:dialog-exit .15s var(--vigil-ease) forwards}
 .toast.show{animation:toast-tap .48s var(--vigil-spring)}
-/* Native hidden attribute must win against CSS display on overlays. */
-.command-layer[hidden]{display:none!important}
-.passphrase-layer[hidden]{display:none!important}
+/* Native hidden attribute must win against CSS display on overlays; closing overlays fade out briefly. */
+.command-layer[hidden]:not(.is-closing){display:none!important}
+.passphrase-layer[hidden]:not(.is-closing){display:none!important}
+.command-layer.is-closing,.passphrase-layer.is-closing{pointer-events:none;animation:backdrop-exit .15s ease forwards}
+.command-layer.is-closing .command-dialog,.passphrase-layer.is-closing .passphrase-dialog{animation:dialog-exit .15s var(--vigil-ease) forwards}
 .passphrase-confirm[hidden]{display:none!important}
 .command-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:clamp(36px,13vh,134px) 16px 24px;background:rgba(23,34,28,.63);backdrop-filter:blur(5px)}
 .passphrase-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:clamp(36px,13vh,134px) 16px 24px;background:rgba(23,34,28,.63);backdrop-filter:blur(5px)}
@@ -39,7 +43,7 @@
 .command-enter{color:var(--accent);font:17px var(--font-display)}
 .command-empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:12px}
 .command-footer{display:flex;justify-content:space-between;gap:12px;padding:11px 19px;border-top:1px solid var(--stroke);color:var(--muted);font:10px var(--font-typed)}
-.passphrase-dialog{width:min(465px,100%);border:1px solid #ba9b74;border-radius:15px;background:var(--paper-light);padding:30px 31px 26px;box-shadow:0 30px 85px rgba(8,16,12,.3);display:flex;flex-direction:column;gap:12px;animation:dialog-spring .46s var(--vigil-spring) both}
+.passphrase-dialog{width:min(465px,100%);border:1px solid #ba9b74;border-radius:var(--radius-lg,20px);background:var(--paper-light);padding:30px 31px 26px;box-shadow:0 30px 85px rgba(8,16,12,.3);display:flex;flex-direction:column;gap:12px;animation:dialog-spring .46s var(--vigil-spring) both}
 .passphrase-seal{display:grid;place-items:center;width:37px;height:41px;border:1.5px solid var(--accent);font:24px var(--font-display);color:var(--accent);transform:rotate(-4deg);margin-bottom:4px}
 .passphrase-dialog h2{font:27px var(--font-display)}
 .passphrase-dialog p{font-size:12px;color:var(--muted);line-height:1.8}
@@ -64,23 +68,24 @@
   .command-result{animation:none!important;transition:none!important;transform:none!important}
   .command-dialog{animation:none!important}
   .passphrase-dialog{animation:none!important}
-  .modal-layer.open .modal{animation:none!important}
+  .modal-layer,.command-layer,.passphrase-layer{animation:none!important}
+  .modal-layer .modal{animation:none!important}
   .toast.show{animation:none!important}
 }
 .command-result.active .command-result-icon{color:var(--appearance-accent)!important}
 /* Temporary popovers tinted, not fully transparent, to protect labels. */
-.command-dialog{border-radius:28px;box-shadow:0 16px 40px rgba(19,37,41,.18)}
-.command-input-row{background:rgba(255,255,255,.38);border-radius:28px 28px 0 0}
-.command-result{border-radius:14px;min-height:50px}
+.command-dialog{border-radius:var(--radius-lg,20px);box-shadow:0 16px 40px rgba(19,37,41,.18)}
+.command-input-row{background:rgba(255,255,255,.38);border-radius:var(--radius-lg,20px) var(--radius-lg,20px) 0 0}
+.command-result{border-radius:var(--radius-md,14px);min-height:50px}
 .command-dialog{-webkit-backdrop-filter:blur(18px) saturate(1.15);backdrop-filter:blur(18px) saturate(1.15)}
 .command-dialog{background:color-mix(in srgb,var(--surface) 91%,transparent)!important}
 .command-result.active{background:var(--appearance-accent-soft)!important;border-color:color-mix(in srgb,var(--appearance-accent) 20%,var(--stroke))!important}
 .command-result:hover{background:var(--appearance-accent-soft)!important;border-color:color-mix(in srgb,var(--appearance-accent) 20%,var(--stroke))!important}
 .command-result-icon{background:var(--appearance-accent-soft)!important;color:var(--appearance-accent)!important}
 :root[data-theme=night] .command-dialog{background:rgba(44,44,51,.97)!important;color:var(--ink)!important}
-:root[data-theme=night] .command-result.active{background:#413b43!important;border-color:#615560!important}
-:root[data-theme=night] .command-result:hover{background:#413b43!important;border-color:#615560!important}
-:root[data-theme=night] .command-result-icon{background:#413941!important}
+:root[data-theme=night] .command-result.active{background:color-mix(in srgb,var(--appearance-accent) 20%,var(--surface-soft))!important;border-color:color-mix(in srgb,var(--appearance-accent) 36%,var(--stroke))!important}
+:root[data-theme=night] .command-result:hover{background:color-mix(in srgb,var(--appearance-accent) 20%,var(--surface-soft))!important;border-color:color-mix(in srgb,var(--appearance-accent) 36%,var(--stroke))!important}
+:root[data-theme=night] .command-result-icon{background:color-mix(in srgb,var(--appearance-accent) 18%,var(--surface-soft))!important}
 @layer overrides{
   .modal-layer .modal{background-color:var(--glass-dialog-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
   .command-dialog{background-color:var(--glass-dialog-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}

@@ -24,7 +24,7 @@ export function editorView(state){
   const selected=state.editorMode||'live';
   const outlineOpen=state.editorOutlineOpen===true;
   const zenButton=`<button class="editor-zen-button ${state.zenMode?'active':''}" type="button" data-action="toggle-zen"
-    aria-pressed="${state.zenMode===true}" aria-label="沉浸书写" title="沉浸书写 · Ctrl/⌘+Shift+F">${icon('maximize')}</button>`;
+    aria-pressed="${state.zenMode===true}" aria-label="沉浸书写" title="沉浸书写 · Ctrl/⌘+Shift+F">${icon('maximize')}<span class="handle-vertical-label" aria-hidden="true">专注</span></button>`;
   const remote=state.editorOrigin==='github';
   const remotePath=remote?(state.github.note?.path||'') : ''; 
   return `<section class="composer-page unified-composer-page refined-editor ${outlineOpen?'outline-open':''}">
@@ -40,7 +40,7 @@ export function editorView(state){
     <aside class="editor-outline-sidebar ${outlineOpen?'is-open':''}" id="editorOutlineSidebar" aria-label="文章大纲">
       <div class="editor-outline-handles">
         <button class="editor-outline-toggle ${outlineOpen?'active':''}" type="button" data-action="toggle-outline-sidebar"
-          aria-pressed="${outlineOpen}" aria-controls="editorOutlineList" aria-label="展开文章大纲" title="文章大纲">${icon('list-tree')}</button>
+          aria-pressed="${outlineOpen}" aria-controls="editorOutlineList" aria-label="展开文章大纲" title="文章大纲">${icon('list-tree')}<span class="handle-vertical-label" aria-hidden="true">大纲</span></button>
         ${zenButton}
       </div>
       <div class="editor-outline-sticky" ${outlineOpen?'':'inert'}>

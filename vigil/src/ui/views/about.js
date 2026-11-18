@@ -26,9 +26,9 @@ export function aboutPanel(state){
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('spark')} <h3>当前版本</h3></div>
-      <div class="about-release"><span>01</span><div><strong>更轻的按键响应</strong><small>外观未变时跳过 CSS 变量写入；草稿改动用标志位追踪，不再每次按键序列化全文。</small></div></div>
-      <div class="about-release"><span>02</span><div><strong>筛选更快</strong><small>手记列表筛选直接刷新当前区域，不重建整页；查找替换在长文中复用大小写缓存。</small></div></div>
-      <div class="about-release"><span>03</span><div><strong>代码更整洁</strong><small>字体栈与设置单位提升为常量；实时装饰的临时数组改用提前退出的循环。</small></div></div>
+      <div class="about-release"><span>01</span><div><strong>器透纸温与夜间墨玉</strong><small>悬浮控件保留清透折光，阅读与书写稿纸改用哑光棉纸与叠页阴影；节气盘新增夜间墨玉色阶，全站单色源统一。</small></div></div>
+      <div class="about-release"><span>02</span><div><strong>编年文集与东方骨骼</strong><small>全部手记按年月分卷并设卷首导读、短章引言；节气笺、三候签与编辑器右缘书耳引入克制竖排点缀。</small></div></div>
+      <div class="about-release"><span>03</span><div><strong>精微字法与提笔忘器</strong><small>正文启用中西文微距、悬挂标点与铅印栏花；敲字时周边栏位柔和退隐，卡片至稿纸平滑展卷过渡。</small></div></div>
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('info')} <h3>本地环境检查</h3></div>

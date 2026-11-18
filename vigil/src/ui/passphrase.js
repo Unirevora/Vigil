@@ -1,3 +1,7 @@
+import {motionAllowed} from './motion.js';
+
+let closeTimer=null;
+
 /**
  * Ephemeral passphrase prompt for *new* v1 encrypted JSON format.
  * Never writes secrets to localStorage or global app state.
@@ -14,7 +18,9 @@ export function requestPassphrase({mode='export'}={}){
   const okay=document.querySelector('#passphraseOk');
   const cancel=document.querySelector('#passphraseCancel');
   if(!layer || !form) return Promise.resolve(null);
-  if(!layer.hidden) return Promise.resolve(null);
+  if(!layer.hidden && !layer.classList.contains('is-closing')) return Promise.resolve(null);
+  clearTimeout(closeTimer);
+  layer.classList.remove('is-closing');
   const creating=mode==='export';
   title.textContent=creating?'为备份设置口令':'解锁加密备份';
   desc.textContent=creating
@@ -36,12 +42,16 @@ export function requestPassphrase({mode='export'}={}){
     const cleanup=answer=>{
       layer.hidden=true;
       layer.setAttribute('aria-hidden','true');
+      if(motionAllowed()){
+        layer.classList.add('is-closing');
+        closeTimer=setTimeout(()=>layer.classList.remove('is-closing'),155);
+      }
       form.removeEventListener('submit',onSubmit);
       cancel.removeEventListener('click',onCancel);
       layer.removeEventListener('click',onBackdrop);
       document.removeEventListener('keydown',onKey,true);
-      // Wipe both DOM inputs. The returned string is held only in caller scope
-      // until the crypto operation ends.
+      // Wipe both DOM inputs immediately. The returned string is held only in caller
+      // scope until the crypto operation ends.
       first.value='';again.value='';
       if(previous?.isConnected)previous.focus();
       resolve(answer);

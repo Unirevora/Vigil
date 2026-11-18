@@ -4,19 +4,18 @@
 .memory-link{display:flex;align-items:flex-start;flex-direction:column}
 .memory-link strong{font:16px var(--title-font)}
 .memory-link small{color:var(--muted)}
-body[data-page=insights] .glass-dock{display:flex}
 @media (max-width:900px){
   body[data-page="insights"] .glass-dock{display:flex!important}
 }
 /* A useful second brain: local tasks, journal connections, and weekly review. */
 .insights-page{max-width:1320px;margin-inline:auto}
 .insight-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:22px}
-.insight-metric{display:flex;flex-direction:column;gap:3px;background:rgba(252,251,245,.92);border:1px solid var(--stroke);border-radius:24px;padding:22px 25px;box-shadow:var(--shadow)}
-.insight-metric strong{font:35px/1.15 var(--font-display);color:var(--ink)}
+.insight-metric{display:flex;flex-direction:column;gap:3px;background:rgba(252,251,245,.92);border:1px solid var(--stroke);border-radius:var(--radius-lg,20px);padding:22px 25px;box-shadow:var(--shadow)}
+.insight-metric strong{font:35px/1.15 var(--font-display);color:var(--ink);font-variant-numeric:tabular-nums}
 .insight-metric span{font-size:12px;color:var(--muted)}
 .insights-columns{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(300px,.86fr);gap:19px;align-items:start}
 .insight-side-stack{display:grid;gap:19px}
-.insight-panel{background:var(--surface);border:1px solid var(--stroke);border-radius:24px;min-width:0;padding:26px;box-shadow:var(--shadow)}
+.insight-panel{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius-lg,20px);min-width:0;padding:26px;box-shadow:var(--shadow)}
 .insight-panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px}
 .insight-panel-head small{display:block;font-size:10px;letter-spacing:.1em;color:var(--appearance-accent);margin-bottom:5px}
 .reflection-panel>small{display:block;font-size:10px;letter-spacing:.1em;color:var(--appearance-accent);margin-bottom:5px}
@@ -31,7 +30,7 @@ body[data-page=insights] .glass-dock{display:flex}
 .insight-task:hover{background:var(--surface-soft);border-radius:12px}
 .insight-task:last-child{border-bottom:0}
 .insight-task-check{width:26px;height:26px;min-width:26px;border-radius:9px;border:1.5px solid var(--color-focus);background:transparent;display:grid;place-items:center;color:var(--color-focus);cursor:pointer}
-.insight-task.completed .insight-task-check{background:#476d61;color:#fff;border-color:#476d61}
+.insight-task.completed .insight-task-check{background:var(--user-primary-bg,var(--green));color:var(--appearance-contrast,#fff);border-color:var(--user-primary-bg,var(--green))}
 .insight-task-check svg{width:17px;height:17px}
 .insight-task-copy{min-width:0;flex:1}
 .insight-task-copy strong{display:block;color:var(--ink);font-size:13px;font-weight:500;overflow-wrap:anywhere}
@@ -39,11 +38,11 @@ body[data-page=insights] .glass-dock{display:flex}
 .insight-task.completed strong{text-decoration:line-through;color:var(--muted)}
 .insight-task-open{width:31px;height:31px;display:grid;place-items:center;background:none;border:0;color:var(--muted);border-radius:9px}
 .insight-task-open:hover{background:var(--accent-soft);color:var(--accent)}
-.insight-empty{color:var(--muted);font-size:12px;padding:24px 6px;line-height:2}
-.reflection-panel{background:linear-gradient(145deg,#f7f1e7,#edf4ef);position:relative;overflow:hidden}
-.reflection-mark{position:absolute;top:13px;right:24px;font:65px var(--font-display);color:rgba(71,114,92,.13);transform:rotate(8deg)}
+.insight-empty{color:var(--muted);font-size:12px;padding:22px 16px;line-height:1.9;border:1px dashed var(--stroke-2);border-radius:var(--radius-md,14px);background:color-mix(in srgb,var(--surface-soft) 72%,transparent);text-align:center}
+.reflection-panel{background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 86%,var(--appearance-accent-soft)),color-mix(in srgb,var(--surface) 88%,var(--green-soft)));position:relative;overflow:hidden}
+.reflection-mark{position:absolute;top:13px;right:24px;font:65px var(--font-display);color:color-mix(in srgb,var(--appearance-accent) 16%,transparent);transform:rotate(8deg)}
 .reflection-panel h2{margin-bottom:13px}
-.reflection-panel blockquote{margin:10px 0 10px;color:#345953;font:21px/1.65 var(--font-display)}
+.reflection-panel blockquote{margin:10px 0 10px;color:color-mix(in srgb,var(--ink) 78%,var(--appearance-accent));font:21px/1.65 var(--font-display)}
 .reflection-panel p{font-size:11px;color:var(--muted);margin-bottom:14px}
 .insight-connection{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0;padding:12px 5px;border:0;border-bottom:1px solid var(--stroke);text-align:left;color:var(--ink);background:transparent;font:12px var(--font-body)}
 .insight-connection>*{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -80,10 +79,11 @@ body[data-page=insights] .glass-dock{display:flex}
 @media (max-width:640px){
   .insights-head{align-items:flex-start!important;flex-wrap:wrap!important;gap:13px!important;margin-bottom:17px!important}
 }
-:root[data-theme=night] .reflection-mark{color:rgba(185,215,196,.12)!important}
+:root[data-theme=night] .reflection-mark{color:color-mix(in srgb,var(--appearance-accent) 22%,transparent)!important}
 :root[data-theme=night] .insight-helper code{background:#41474d!important;color:#f3ede4!important}
 :root[data-theme=night] .insight-empty code{background:#41474d!important;color:#f3ede4!important}
-:root[data-theme=night] .insight-task-check{border-color:#a6c7c0!important;color:#a6c7c0!important}
+:root[data-theme=night] .insight-task-check{border-color:color-mix(in srgb,var(--appearance-accent) 55%,var(--ink-2))!important;color:color-mix(in srgb,var(--appearance-accent) 65%,var(--ink))!important}
+:root[data-theme=night] .insight-task.completed .insight-task-check{background:var(--user-primary-bg,var(--green))!important;border-color:var(--user-primary-bg,var(--green))!important;color:var(--appearance-contrast,#fff)!important}
 :root[data-theme=night] .insight-tag-cloud button{background:#3b4148!important;color:#f1f0eb!important;border-color:#636d72!important}
 :root[data-theme=night] .insight-connection{background:transparent!important;color:var(--ink)!important;border-color:var(--stroke)!important}
 :root[data-theme=night] .insight-connection span{color:var(--ink-2)!important}

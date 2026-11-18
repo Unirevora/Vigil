@@ -82,5 +82,5 @@ export function entriesView(state) {
       <div><h2>手记列表</h2><span class="muted-count" id="resultCount" aria-live="polite">${items.length} 篇</span></div>
       <button class="text-button export-current" data-action="export-filtered" ${state.corruptStorage||!items.length?'disabled':''} title="仅导出当前筛选到的手记，原文不会改变">${icon('download')} 导出当前结果</button>
     </div>
-    <div class="note-grid" id="entryResults">${entriesCards(items,active?'已筛选':'')}</div>`}`;
+    <div class="note-grid editorial-note-grid" id="entryResults">${entriesCards(items,active?'已筛选':'',{editorial:true})}</div>`}`;
 }

@@ -21,7 +21,7 @@ import {KATEX_VERSION} from './core/math.js';
 import {collectDiagnostics,formatDiagnostics} from './core/diagnostics.js';
 import {showToast,confirmDialog} from './ui/feedback.js';
 import {mountCommandPalette} from './ui/command-palette.js';
-import {playEntranceMotion,animateEditorFrame} from './ui/motion.js';
+import {playEntranceMotion,animateEditorFrame,captureMotionRect,animatePaperUnfold} from './ui/motion.js';
 import {createFloatingSurfaces} from './ui/floating.js';
 import {mountUnifiedEditor,readEditorMode,persistEditorMode} from './editor/unified-editor.js';
 import {DEFAULT_APPEARANCE,readAppearance,writeAppearance,mixHex,contrastInk,hexToRgb,sidebarPalette} from './appearance/settings.js';
@@ -76,6 +76,7 @@ let almanacController=null;
 let unifiedEditor=null;
 let settingsFrameObserver=null;
 let zenFrameAnimation=null;
+let typingQuietTimer=null;
 let glass=null; // scene sampler is refreshed after every theme / wallpaper change
 const visualAssets=createVisualAssets();
 const spectralDrape=createSpectralDrape(document.querySelector('#spectralDrape'));
@@ -296,8 +297,27 @@ async function canLeave(){
     return confirmDialog({title:'有尚未提交的仓库修改',description:'离开将放弃尚未提交到 GitHub 的改动。',confirmText:'放弃修改',danger:true});
   return true;
 }
+function exitTypingQuietude(){
+  clearTimeout(typingQuietTimer);typingQuietTimer=null;
+  window.removeEventListener('pointermove',exitTypingQuietude);
+  window.removeEventListener('pointerdown',exitTypingQuietude);
+  document.querySelector('.composer-page.refined-editor')?.classList.remove('is-typing');
+}
+function enterTypingQuietude(){
+  if(state.view!=='editor')return;
+  if(document.querySelector('.editor-dropdown-menu[open]')||($('#editorSearchBar')&&!$('#editorSearchBar').hidden))return;
+  const page=document.querySelector('.composer-page.refined-editor');
+  if(!page)return;
+  if(!page.classList.contains('is-typing')){
+    page.classList.add('is-typing');
+    window.addEventListener('pointermove',exitTypingQuietude,{once:true,passive:true});
+    window.addEventListener('pointerdown',exitTypingQuietude,{once:true,passive:true});
+  }
+  clearTimeout(typingQuietTimer);
+  typingQuietTimer=setTimeout(exitTypingQuietude,3200);
+}
 function resetDraft(){
-  clearTimeout(draftTimer);clearTimeout(outlineUpdateTimer);state.draft=null;state.originalDraft=null;
+  clearTimeout(draftTimer);clearTimeout(outlineUpdateTimer);exitTypingQuietude();state.draft=null;state.originalDraft=null;
   state.draftSavedSignature=null;state.draftKey=null;state.editingId=null;state.editorOrigin='local';
   state.editorFocus=false;state.editorOutlineOpen=false;state.zenMode=false;document.querySelector('.shell')?.classList.remove('zen-mode');state.draftStatus='';
   draftDirty=false;
@@ -337,6 +357,10 @@ async function startEditor(id=null,{resume=false,seed=null}={}){
   const chosen=seed||((saved&&useSaved)?{
     title:saved.title,date:saved.date,content:saved.content,tags:saved.tags||[],mood:saved.mood||''
   }:original);
+  const fromRect=captureMotionRect(
+    document.querySelector('.reading-paper')||
+    (old?document.querySelector(`[data-entry-card="${CSS.escape?CSS.escape(old.id):old.id}"]`):null)
+  );
   resetDraft();
   state.editingId=old?.id||null;state.editorOrigin='local';
   state.draftKey=key;
@@ -345,7 +369,9 @@ async function startEditor(id=null,{resume=false,seed=null}={}){
   state.draftSavedSignature=useSaved?JSON.stringify(chosen):null;
   draftDirty=false;
   state.draftStatus=useSaved?'已恢复草稿，继续写吧':'输入后会自动保存草稿';
-  state.view='editor';render();window.scrollTo(0,0);$('#entryTitle')?.focus();
+  state.view='editor';render();window.scrollTo(0,0);
+  animatePaperUnfold(document.querySelector('.editor-paper'),fromRect);
+  $('#entryTitle')?.focus();
 }
 /** Shared full-screen editor for local and GitHub Markdown. The remote path,
  * sha, branch and encryption state live in gh.note; never in entry JSON. */
@@ -393,7 +419,12 @@ async function resumeDraft(key){
 async function readEntry(id){
   if(!await canLeave())return;
   if(!state.entries.some(e=>e.id===id)){showToast('手记不存在',{error:true});return;}
+  const safeId=typeof CSS!=='undefined'&&CSS.escape?CSS.escape(id):id;
+  const fromRect=captureMotionRect(
+    document.querySelector(`[data-entry-card="${safeId}"]`)||document.querySelector('.reading-paper')
+  );
   state.selectedId=id;state.readerSource='local';state.entriesSource='local';navigate('reader');
+  animatePaperUnfold(document.querySelector('.reading-paper'),fromRect);
 }
 async function saveEntry(){
   if(!state.draft)return;
@@ -407,9 +438,11 @@ async function saveEntry(){
     next=old?state.entries.map(e=>e.id===old.id?entry:e):[...state.entries,entry];
   }catch(err){showToast(err.message,{error:true});return;}
   if(!dataController.writeEntries(next)){scheduleDraftSave();return;}
+  const fromRect=captureMotionRect(document.querySelector('.editor-paper'));
   const ok=dataController.makeBackup(state.entries,'autosave','保存手记');
   try{drafts.remove(draftKey());refreshDrafts();}catch(err){state.draftError=err.message;}
   state.selectedId=entry.id;navigate('reader');
+  animatePaperUnfold(document.querySelector('.reading-paper'),fromRect);
   showToast(ok?'手记已保存':'已保存手记，备份未成功，请导出 JSON',{error:!ok});
 }
 function scheduleMarkdownPreview(){
@@ -533,6 +566,7 @@ function toggleZenMode(){
   }).catch(()=>{});
 }
 function toggleFindBar(visible=true,{replace=false}={}){
+  exitTypingQuietude();
   const bar=$('#editorSearchBar');if(!bar)return;
   bar.hidden=!visible;
   if(visible){
@@ -605,7 +639,7 @@ function activeListFilters(){
 function refreshList(){
   const node=$('#entryResults');if(!node)return;
   const list=filterEntries(state.entries,state.query,state.order,state.filters);
-  node.innerHTML=entriesCards(list,activeListFilters()?'已筛选':'');
+  node.innerHTML=entriesCards(list,activeListFilters()?'已筛选':'',{editorial:true});
   if($('#resultCount'))$('#resultCount').textContent=`${list.length} 篇`;
   if($('#pageTitleCount')){
     $('#pageTitleCount').textContent=String(list.length);
@@ -692,6 +726,7 @@ window.addEventListener('resize',fitSettingsFrame);
 function render(){
   settingsFrameObserver?.disconnect();settingsFrameObserver=null;
   zenFrameAnimation?.cancel();zenFrameAnimation=null;
+  exitTypingQuietude();
   state.storageUsage=storageFootprint(storage);
   if(unifiedEditor){unifiedEditor.destroy();unifiedEditor=null;}
   if(almanacController){almanacController.destroy();almanacController=null;}
@@ -750,6 +785,7 @@ function render(){
         state.draft.content=value;
         if($('#editorWordCount'))$('#editorWordCount').textContent=`${charCount(value)} 字`;
         draftDirty=true;
+        enterTypingQuietude();
         scheduleDraftSave();
         queueOutlineUpdate();
       }

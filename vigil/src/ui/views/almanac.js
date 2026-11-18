@@ -48,7 +48,10 @@ export function almanacView(state,{embedded=false}={}){
       <div class="season-notes">
         <div class="season-current vintage-panel">
           <div class="season-current-top"><span id="almanac-season-tag">二十四节气 · ${info.selected.season}</span><span class="seal-mini">时</span></div>
-          <h2 id="almanac-term-title">${info.selected.name}</h2>
+          <div class="season-title-row">
+            <h2 id="almanac-term-title">${info.selected.name}</h2>
+            <span class="season-vertical-slip" id="almanac-vertical-slip" aria-hidden="true">${info.selected.season}令 · ${info.hou}</span>
+          </div>
           <div class="term-times"><span id="almanac-term-range">${info.selected.chinaDate} 起</span><span id="almanac-next-term">下节 · ${info.next?.name||''}</span></div>
           <p id="almanac-term-note">${info.note}</p>
           <div class="lunar-meta"><span id="almanac-lunar-info">${escapeHtml(info.lunar)}</span><span id="almanac-phase-info">${info.moon.symbol} ${info.moon.name} <small>· 示意</small></span></div>

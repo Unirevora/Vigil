@@ -4,6 +4,8 @@ import {sortEntries} from '../../core/entries.js';
 import {renderMarkdown} from '../../core/markdown.js';
 import {connectionsFromEntries} from '../../insights/insights.js';
 
+const ORNAMENT='<div class="reading-ornament" aria-hidden="true"><span class="ornament-rule"></span><span class="ornament-fleuron">❖</span><span class="ornament-rule"></span></div>';
+
 export function readerView(state) {
   if(state.readerSource==='github'){
     const gh=state.github,note=gh.note;
@@ -18,7 +20,7 @@ export function readerView(state) {
         <div class="github-reading-path">${escapeHtml(note.path)}</div>
         ${note.locked?`<div class="gh-locked"><h3>这篇手记已加密</h3><p>请导入对应的 git-crypt 密钥后解锁阅读；密钥只保存在本次页面内存。</p>
           <button class="btn btn-primary" data-action="github-key-import">${icon('key')} 导入密钥</button></div>`:
-          `<div class="article-content">${renderMarkdown(note.content)}</div>`}
+          `${ORNAMENT}<div class="article-content">${renderMarkdown(note.content)}</div>`}
         <footer class="reading-foot"><span>${note.locked?'尚未解锁':`${charCount(note.content)} 字`}</span>
           <span>${gh.hasToken?'可编辑并提交到 GitHub':'匿名只读 · 连接令牌后可提交'}</span></footer>
       </article>`;
@@ -39,6 +41,7 @@ export function readerView(state) {
       <div class="reading-date">${escapeHtml(humanDate(entry.date))}${entry.mood?` <span class="dot-sep">·</span> ${escapeHtml(entry.mood)}`:''}</div>
       <h1 class="reading-title">${escapeHtml(entry.title||'未命名手记')}</h1>
       ${entry.tags?.length?`<div class="reading-tags">${entry.tags.map(t=>`<span class="pill">${escapeHtml(t)}</span>`).join('')}</div>`:''}
+      ${ORNAMENT}
       <div class="article-content">${renderMarkdown(entry.content)}</div>
       <footer class="reading-foot"><span>${charCount(entry.content)} 字</span><span>不眠手记</span></footer>
     </article>
