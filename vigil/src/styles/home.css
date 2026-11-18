@@ -163,7 +163,9 @@
 .home-recent-head .text-button{font:16px var(--font-display);white-space:nowrap}
 .home-recent-head .text-button svg{width:19px;height:19px}
 /* (controls) kept in this module: it must cascade after the rule it refines above. */
-.btn:not(.btn-primary):not(.side-create){border-color:#bda181;background-color:rgba(249,240,222,.72);color:var(--ink)}
+.btn:not(.btn-primary):not(.side-create){border-color:var(--stroke-2);background-color:color-mix(in srgb,var(--surface) 82%,transparent);color:var(--ink)}
+:root[data-theme=night] .btn:not(.btn-primary):not(.side-create){border-color:var(--stroke-2);background-color:color-mix(in srgb,var(--surface-soft) 88%,transparent);color:var(--ink)}
+:root[data-theme=night] .btn:not(.btn-primary):not(.side-create):hover:not(:disabled){background-color:color-mix(in srgb,var(--surface-soft) 96%,var(--appearance-accent) 12%);border-color:color-mix(in srgb,var(--appearance-accent) 48%,var(--stroke-2));color:var(--ink)}
 :root[data-theme=night] .hero-scene{mix-blend-mode:normal;opacity:.68}
 :root[data-theme=night] .heritage-hero{background:linear-gradient(118deg,#424437,#353b32)}
 :root[data-theme=night] .heritage-copy h1{color:var(--ink)}

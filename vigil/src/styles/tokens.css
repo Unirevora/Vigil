@@ -69,6 +69,6 @@
 :root[data-theme=night]{--glass-menu-bg:color-mix(in srgb,var(--surface) 78%,transparent)}
 /* Unified 4-tier corner radius scale: controls, nested cards, primary panels, pills. */
 :root{--radius-sm:10px;--radius-md:14px;--radius-lg:20px;--radius-pill:999px}
-/* Matte cotton paper vs optical liquid glass: warm non-specular edges and stacked-sheet depth. */
-:root{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:color-mix(in srgb,var(--stroke-2) 82%,rgba(255,255,255,.36));--paper-stack-sheet:color-mix(in srgb,var(--surface-soft) 94%,var(--stroke));--paper-sheet-shadow:0 1px 0 var(--paper-sheet-edge),0 4px 0 -1px var(--paper-stack-sheet),0 5px 0 -1px var(--stroke-2),0 18px 38px rgba(28,44,39,.06)}
-:root[data-theme=night]{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:rgba(255,255,255,.075);--paper-stack-sheet:#272a31;--paper-sheet-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 0 -1px #272a31,0 5px 0 -1px rgba(0,0,0,.4),0 20px 42px rgba(0,0,0,.28)}
+/* Matte cotton paper vs optical liquid glass: warm non-specular edges and soft natural elevation. */
+:root{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:color-mix(in srgb,var(--stroke) 86%,rgba(255,255,255,.5));--paper-stack-sheet:color-mix(in srgb,var(--surface-soft) 94%,var(--stroke));--paper-sheet-shadow:0 1px 2px rgba(24,38,34,.025),0 18px 46px rgba(24,38,34,.058)}
+:root[data-theme=night]{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:rgba(255,255,255,.085);--paper-stack-sheet:#272a31;--paper-sheet-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 22px 52px rgba(0,0,0,.3)}

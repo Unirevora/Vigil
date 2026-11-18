@@ -26,9 +26,9 @@ export function aboutPanel(state){
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('spark')} <h3>当前版本</h3></div>
-      <div class="about-release"><span>01</span><div><strong>器透纸温与夜间墨玉</strong><small>悬浮控件保留清透折光，阅读与书写稿纸改用哑光棉纸与叠页阴影；节气盘新增夜间墨玉色阶，全站单色源统一。</small></div></div>
-      <div class="about-release"><span>02</span><div><strong>编年文集与东方骨骼</strong><small>全部手记按年月分卷并设卷首导读、短章引言；节气笺、三候签与编辑器右缘书耳引入克制竖排点缀。</small></div></div>
-      <div class="about-release"><span>03</span><div><strong>精微字法与提笔忘器</strong><small>正文启用中西文微距、悬挂标点与铅印栏花；敲字时周边栏位柔和退隐，卡片至稿纸平滑展卷过渡。</small></div></div>
+      <div class="about-release"><span>01</span><div><strong>器透纸温与夜间墨玉</strong><small>悬浮控件保留清透折光，阅读与书写稿纸采用温润哑光棉纸；节气盘新增夜间墨玉色阶，全站单色源统一。</small></div></div>
+      <div class="about-release"><span>02</span><div><strong>散文书页与编年目录</strong><small>阅读页重整统一版心天头与文学书摘引文；全部手记按年月分卷并设卷首导读，卡片预览字体统一清朗。</small></div></div>
+      <div class="about-release"><span>03</span><div><strong>东方书耳与提笔忘器</strong><small>节气笺、三候签与编辑器右缘书耳引入克制竖排；敲字时周边栏位柔和退隐，卡片至稿纸平滑展卷过渡。</small></div></div>
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('info')} <h3>本地环境检查</h3></div>

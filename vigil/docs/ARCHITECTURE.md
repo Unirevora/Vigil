@@ -42,7 +42,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 | 文件 | 职责 |
 | --- | --- |
 | `entries.js` | 排序、全文检索、组合筛选（标签、收藏、日期、心情、近七天、未完成任务；任务识别忽略代码围栏）、统计、由草稿构建条目 |
-| `format.js` | 日期工具、`escapeHtml`、UUID、字数、摘要、编年四时月令标题（`editorialMonthLabel`）与短章识别（`isBriefNote`） |
+| `format.js` | 日期工具、`escapeHtml`、UUID、字数、摘要与编年四时月令标题（`editorialMonthLabel`） |
 | `calendar.js` | 月历网格、月份归档、往年今日 |
 | `almanac.js` | 二十四节气（太阳视黄经近似，UTC+8）、三候、农历标签、近似月相、节气盘模型 |
 | `markdown.js` | 阅读渲染：H1–H6、列表/任务、表格、代码、引用、Obsidian Callout（`[!type]`、`+`/`-` 折叠、可嵌套）、`[[wiki 链接]]`、公式 |
@@ -181,8 +181,8 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 
 延续「铅字旧梦」的复古文房：墨色 / 主题色侧栏、朱砂「眠」印记（`assets/vigil-mark.svg`，favicon 为 `vigil-favicon.svg`）、宣纸与山水、打字机静物（`assets/typewriter-still-life.webp`，纯装饰、不拦截指针）。不另建第二套视觉系统。
 
-- **器透纸温分工**：清透毛玻璃（含镜面内高光）用于导航、顶栏操作控件、搜索、弹层，以及卡片、筛选栏、首页统计、日历/节气面板、线索卡、GitHub 面板、设置面板、编辑工具栏、大纲、翻页/回响卡、空状态面板与对话框；**长文阅读稿纸、写作稿纸与节令短笺采用哑光厚棉纸与双层叠页阴影**（`--paper-matte-bg`、`--paper-sheet-edge`、`--paper-sheet-shadow`；稿纸底衬画在 `::before` 底层以保护固定定位后代，`.reading-paper::after` 绘制信笺内压细框与铅印栏花呼应）。浏览器不支持 `backdrop-filter` 或系统开启「减少透明度」时回退为实色。
-- **编年版式、竖排锚点与精微字法**：「全部手记」本地列表按年月输出四时月令分卷眉，首篇手记跨两列展示卷首导读，短句随笔采用衬线引言体；节气面板、三候签与编辑器右缘书耳采用局部 `writing-mode: vertical-rl` 竖排点缀；正文与引文启用 `text-autospace: normal`、`hanging-punctuation` 与 `line-break: strict`。
+- **器透纸温分工**：清透毛玻璃（含镜面内高光）用于导航、顶栏操作控件、搜索、弹层，以及卡片、筛选栏、首页统计、日历/节气面板、线索卡、GitHub 面板、设置面板、编辑工具栏、大纲、翻页/回响卡、空状态面板与对话框；**长文阅读稿纸、写作稿纸与节令短笺采用温润哑光棉纸与自然柔影**（`--paper-matte-bg`、`--paper-sheet-edge`、`--paper-sheet-shadow`；稿纸底衬画在 `::before` 底层以保护固定定位后代）。浏览器不支持 `backdrop-filter` 或系统开启「减少透明度」时回退为实色。
+- **散文书页、编年版式与精微字法**：阅读稿纸的天头（`.reading-header` 含左侧朱砂短镇线书眉）、正文与页脚共享同一 `--reading-measure` 版心轴线，普通引用块采用无底色左竖线文学书摘排法；「全部手记」本地列表按年月输出四时月令分卷眉，首篇手记跨两列展示卷首导读，所有卡片摘要统一使用 `--font-body` 正文字体；节气面板、三候签与编辑器右缘书耳采用局部 `writing-mode: vertical-rl` 竖排点缀；正文启用 `text-autospace: normal`、`hanging-punctuation` 与 `line-break: strict`。
 - **动效与转场**：`--vigil-ease`、`--vigil-spring: cubic-bezier(.2,1.22,.31,1)`；`ui/motion.js` 提供纸片入场、编辑器专注帧过渡与卡片↔稿纸同步 FLIP 展卷过渡（`captureMotionRect` + `animatePaperUnfold`，不阻塞同步 `render()`）；编辑器连续敲字时触发 `.is-typing` 柔和退隐周边栏位；弹层具备约 150 ms 轻柔退场；始终服从 `prefers-reduced-motion` 与动效开关。
 - **主题色与圆角标尺**：`--appearance-accent` 是唯一色源，运行时由 `main.js` 同步写入 `--accent`、`--accent-soft`、`--green`、`--green-soft`、侧栏 `--sidebar-glass-*` 与 `--glass-material`；节气选中项、线索回顾卡与命令面板高亮均由其混色派生。圆角统一收敛为 `--radius-sm`（10px）、`--radius-md`（14px）、`--radius-lg`（20px）、`--radius-pill`（999px）四级。六种预设：朱砂 `#a83f2a`（默认）、松绿、黛蓝、铜金、梅紫、墨青，也可自选色；侧栏可固定为经典墨色。夜间侧栏为中性石墨（`#26272c → #191a1f`），节气盘同步切换为夜间墨玉色阶。
 - **夜间**：`:root[data-theme=night]` 整套覆盖（背景 `#191b20`、纸面 `#30333a`、墨字 `#f2f1ed`），卡片背景与文字成对设置，不使用霓虹色。

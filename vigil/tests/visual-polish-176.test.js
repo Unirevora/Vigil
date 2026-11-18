@@ -23,6 +23,7 @@ test('v1.7.6 视觉打磨：水墨暗纹日夜适配，清理残留硬编码色�
   assert.match(home,/:root\[data-theme=night\] :is\(\.heritage-stat,\.season-teaser,\.home-quick-row \.draft-banner\)::before\{[^}]*mix-blend-mode:screen/);
   assert.doesNotMatch(home,/\.heritage-stat::before\{display:none!important\}/);
   assert.doesNotMatch(home,/body\[data-page=home\] \.glass-dock\{display:flex\}/);
+  assert.doesNotMatch(home,/rgba\(249,240,222,\.72\)/,'夜间次级按钮不再继承暖米色实底');
   assert.doesNotMatch(insights,/body\[data-page=insights\] \.glass-dock\{display:flex\}/);
   assert.doesNotMatch(insights,/#476d61|#345953/);
   assert.doesNotMatch(dialogs,/#413b43|#615560|#413941/);
@@ -47,12 +48,10 @@ test('v1.7.6 视觉打磨：桌面侧栏折叠文字平滑过渡，弹层补齐�
     assert.ok(motionJs.includes(`'${selector}'`),`${selector} has entrance motion`);
 });
 
-test('v1.7.6 视觉打磨：阅读稿纸恢复信笺内框与尾款，回响卡与空状态并入毛玻璃契约',()=>{
+test('v1.7.6 视觉打磨：回响卡与空状态并入毛玻璃契约，阅读稿纸保持纯净无冗余内套框',()=>{
   const css=readStyles();
   const plain=css.replace(/\/\*[\s\S]*?\*\//g,'');
-  assert.match(plain,/\.main-inner \.reading-paper::after\{[^}]*border:1px solid color-mix\(in srgb,var\(--appearance-accent\)/);
-  assert.doesNotMatch(plain,/\.main-inner \.reading-paper::after\{display:none!important\}/);
-  assert.match(plain,/\.reading-paper:not\(\.github-reading-paper\) \.reading-foot span:last-child\{[^}]*var\(--appearance-accent\)/);
+  assert.match(plain,/\.main-inner \.reading-paper::after\{display:none!important\}/);
   const frosted=[...plain.matchAll(/([^{}]+)\{[^{}]*backdrop-filter:var\(--glass-panel-blur\)!important/g)].map(m=>m[1]).join(',');
   for(const surface of ['.reader-backlinks','.empty','.reflection-panel','.pagination-card'])
     assert.ok(frosted.includes(surface),`${surface} is frosted`);

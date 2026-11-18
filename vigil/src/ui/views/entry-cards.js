@@ -1,5 +1,5 @@
 import {icon} from '../icons.js';
-import {escapeHtml,humanDate,excerpt,charCount,editorialMonthLabel,isBriefNote} from '../../core/format.js';
+import {escapeHtml,humanDate,excerpt,charCount,editorialMonthLabel} from '../../core/format.js';
 
 export function entriesCards(entries,query='',{editorial=false}={}){
   if(!entries.length) return `<div class="empty"><div class="empty-icon">${icon('book')}</div><h3>${query?'没有找到相关手记':'还没有写下手记'}</h3><p>${query?'试试其他关键词':'从今天开始吧。'}</p><button class="btn btn-primary" data-action="${query?'clear-search':'new'}">${query?'清除筛选':'开始写作'}</button></div>`;
@@ -25,10 +25,9 @@ export function entriesCards(entries,query='',{editorial=false}={}){
       </div>`);
     }
     const lead=editorial && index===0 && entries.length>=2;
-    const brief=!lead && isBriefNote(e.content);
     const words=charCount(e.content);
-    const summary=excerpt(e.content,lead?165:brief?96:88);
-    const classes=['note-card',lead?'note-card-lead':'',brief?'note-card-aphorism':''].filter(Boolean).join(' ');
+    const summary=excerpt(e.content,lead?150:90);
+    const classes=['note-card',lead?'note-card-lead':''].filter(Boolean).join(' ');
     chunks.push(`<article class="${classes}" data-entry-card="${escapeHtml(e.id)}">
       <button class="note-link" data-action="read" data-id="${escapeHtml(e.id)}">
         <div class="note-date"><span>${escapeHtml(humanDate(e.date))}</span>${lead?'<span class="note-lead-badge">卷首</span>':''}<span class="note-words">${words} 字</span></div>

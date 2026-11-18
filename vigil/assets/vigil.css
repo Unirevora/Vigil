@@ -71,9 +71,9 @@
 :root[data-theme=night]{--glass-menu-bg:color-mix(in srgb,var(--surface) 78%,transparent)}
 /* Unified 4-tier corner radius scale: controls, nested cards, primary panels, pills. */
 :root{--radius-sm:10px;--radius-md:14px;--radius-lg:20px;--radius-pill:999px}
-/* Matte cotton paper vs optical liquid glass: warm non-specular edges and stacked-sheet depth. */
-:root{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:color-mix(in srgb,var(--stroke-2) 82%,rgba(255,255,255,.36));--paper-stack-sheet:color-mix(in srgb,var(--surface-soft) 94%,var(--stroke));--paper-sheet-shadow:0 1px 0 var(--paper-sheet-edge),0 4px 0 -1px var(--paper-stack-sheet),0 5px 0 -1px var(--stroke-2),0 18px 38px rgba(28,44,39,.06)}
-:root[data-theme=night]{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:rgba(255,255,255,.075);--paper-stack-sheet:#272a31;--paper-sheet-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 0 -1px #272a31,0 5px 0 -1px rgba(0,0,0,.4),0 20px 42px rgba(0,0,0,.28)}
+/* Matte cotton paper vs optical liquid glass: warm non-specular edges and soft natural elevation. */
+:root{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:color-mix(in srgb,var(--stroke) 86%,rgba(255,255,255,.5));--paper-stack-sheet:color-mix(in srgb,var(--surface-soft) 94%,var(--stroke));--paper-sheet-shadow:0 1px 2px rgba(24,38,34,.025),0 18px 46px rgba(24,38,34,.058)}
+:root[data-theme=night]{--paper-matte-bg:color-mix(in srgb,var(--surface) calc(var(--paper-opacity,91%) * .96),transparent);--paper-sheet-edge:rgba(255,255,255,.085);--paper-stack-sheet:#272a31;--paper-sheet-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 22px 52px rgba(0,0,0,.3)}
 
 /* ---- /src/styles/base.css ---- */
 /* Element defaults, wallpaper layer and page background. */
@@ -717,7 +717,9 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .home-recent-head .text-button{font:16px var(--font-display);white-space:nowrap}
 .home-recent-head .text-button svg{width:19px;height:19px}
 /* (controls) kept in this module: it must cascade after the rule it refines above. */
-.btn:not(.btn-primary):not(.side-create){border-color:#bda181;background-color:rgba(249,240,222,.72);color:var(--ink)}
+.btn:not(.btn-primary):not(.side-create){border-color:var(--stroke-2);background-color:color-mix(in srgb,var(--surface) 82%,transparent);color:var(--ink)}
+:root[data-theme=night] .btn:not(.btn-primary):not(.side-create){border-color:var(--stroke-2);background-color:color-mix(in srgb,var(--surface-soft) 88%,transparent);color:var(--ink)}
+:root[data-theme=night] .btn:not(.btn-primary):not(.side-create):hover:not(:disabled){background-color:color-mix(in srgb,var(--surface-soft) 96%,var(--appearance-accent) 12%);border-color:color-mix(in srgb,var(--appearance-accent) 48%,var(--stroke-2));color:var(--ink)}
 :root[data-theme=night] .hero-scene{mix-blend-mode:normal;opacity:.68}
 :root[data-theme=night] .heritage-hero{background:linear-gradient(118deg,#424437,#353b32)}
 :root[data-theme=night] .heritage-copy h1{color:var(--ink)}
@@ -965,23 +967,22 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .note-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
 .note-card{min-width:0;position:relative}
 .note-link{width:100%;height:100%;display:flex;flex-direction:column;align-items:stretch;background:transparent;border:0;text-align:left;color:var(--ink);min-width:0}
-.note-date{display:flex;align-items:center;gap:8px;margin-bottom:13px;padding-right:28px}
-.note-words{margin-left:auto;font:11px/1.3 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}
-.note-lead-badge{font:10px/1.25 var(--font-display);letter-spacing:.1em;padding:2px 6px;border-radius:4px;border:1px solid color-mix(in srgb,var(--appearance-accent) 40%,transparent);color:var(--appearance-accent);background:color-mix(in srgb,var(--appearance-accent-soft) 58%,transparent)}
-.note-link h3{letter-spacing:.02em;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;padding-right:27px}
-.note-link p{line-height:1.78;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:12px 0 18px;text-autospace:normal;hanging-punctuation:first allow-end;line-break:strict}
-/* Editorial anthology rhythm: chronological volume dividers, lead story span, and serif aphorisms. */
+.note-date{display:flex;align-items:center;gap:8px;margin-bottom:11px;padding-right:28px;font:500 12px/1.4 var(--font-body)!important;font-variant-numeric:tabular-nums}
+.note-words{margin-left:auto;font:400 11px/1.3 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}
+.note-lead-badge{font:500 10px/1.25 var(--font-body);letter-spacing:.06em;padding:2px 6px;border-radius:4px;border:1px solid color-mix(in srgb,var(--appearance-accent) 36%,transparent);color:var(--appearance-accent);background:color-mix(in srgb,var(--appearance-accent-soft) 55%,transparent)}
+.note-link h3{letter-spacing:.01em;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;padding-right:27px}
+.note-link p{font:400 13.5px/1.82 var(--font-body)!important;color:var(--ink-2)!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:10px 0 16px;letter-spacing:.008em;text-autospace:normal;line-break:strict}
+/* Editorial anthology rhythm: chronological volume dividers and lead story span, keeping body font consistent across every card. */
 .editorial-month-divider{grid-column:1/-1;display:flex;align-items:center;gap:14px;margin:10px 0 2px;padding:4px 2px;min-width:0}
 .editorial-month-divider:first-child{margin-top:0}
-.editorial-month-title{font:600 14px/1.4 var(--font-display);letter-spacing:.07em;color:var(--ink-2);white-space:nowrap}
+.editorial-month-title{font:600 13px/1.4 var(--font-body);letter-spacing:.05em;color:var(--ink-2);white-space:nowrap}
 .editorial-month-rule{flex:1;height:1px;background:linear-gradient(90deg,var(--stroke-2),transparent 92%)}
 .editorial-month-count{font:11px/1.4 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.note-card-aphorism .note-link p{font:15px/1.92 var(--font-display);color:var(--ink);-webkit-line-clamp:3;letter-spacing:.02em}
 @media (min-width:901px){
-  .editorial-note-grid .note-card-lead{grid-column:span 2;min-height:218px}
-  .editorial-note-grid .note-card-lead .note-link{padding:26px 28px}
-  .editorial-note-grid .note-card-lead .note-link h3{font-size:clamp(24px,2.3vw,30px);line-height:1.34;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .editorial-note-grid .note-card-lead .note-link p{font-size:14px;line-height:1.88;-webkit-line-clamp:3;max-width:66ch;margin:14px 0 20px}
+  .editorial-note-grid .note-card-lead{grid-column:span 2;min-height:210px}
+  .editorial-note-grid .note-card-lead .note-link{padding:24px 26px}
+  .editorial-note-grid .note-card-lead .note-link h3{font-size:clamp(22px,2.1vw,27px);line-height:1.35;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .editorial-note-grid .note-card-lead .note-link p{font-size:14px!important;line-height:1.86!important;-webkit-line-clamp:3;max-width:64ch;margin:12px 0 18px}
 }
 .note-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;min-height:22px}
 .note-tags:empty{display:none}
@@ -2037,12 +2038,11 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .article-content a{color:var(--accent)}
 .article-content hr{border:0;border-top:1px solid var(--stroke);margin:29px 0}
 .reading-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--stroke);margin-top:55px;padding-top:18px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
-.reading-paper:not(.github-reading-paper) .reading-foot span:last-child{font:11px/1.3 var(--font-display);letter-spacing:.12em;color:var(--appearance-accent);border:1px solid color-mix(in srgb,var(--appearance-accent) 36%,transparent);border-radius:4px;padding:2px 8px;background:color-mix(in srgb,var(--appearance-accent-soft) 45%,transparent)}
 .reader-pagination{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.pagination-card{min-width:0;max-width:100%;width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius-md,14px);padding:15px 18px;color:var(--ink);font:16px var(--title-font)}
+.pagination-card{min-width:0;max-width:100%;width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius-md,14px);padding:13px 18px;color:var(--ink);font:600 14px/1.4 var(--font-body)}
 .pagination-card:hover{transform:translateY(-2px);color:var(--appearance-accent)}
 .pagination-card span{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pagination-card small{display:block;font:11px var(--text-font);color:var(--muted);margin-bottom:2px}
+.pagination-card small{display:block;font:400 11px/1.3 var(--font-body);color:var(--muted);margin-bottom:3px}
 .pagination-card.align-right{margin-left:auto;text-align:right;justify-content:flex-end}
 .favorite-button{color:#aa9580}
 .favorite-button:hover{color:var(--appearance-accent);background:color-mix(in srgb,var(--appearance-accent-soft) 55%,transparent)}
@@ -2135,50 +2135,47 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .math-inline .katex{display:inline-block;width:max-content;max-width:100%}
 .math-inline math{display:inline-block!important;width:max-content!important;max-width:100%}
 .reading-paper .article-content :first-child{margin-top:0!important}
-/* Reading: text as the centerpiece; compact paragraphs without crowding. */
-.reader-top{max-width:960px;margin:0 auto 15px;gap:12px}
+/* Reading: unified book-page measure, calm masthead rule, airy prose rhythm. */
+.reader-top{max-width:880px;margin:0 auto 14px;gap:12px}
+.reader-back{color:var(--ink-2);font-weight:500;font-size:13px;padding:6px 4px}
+.reader-back:hover{color:var(--appearance-accent);text-decoration:none}
 .reader-top .head-actions{gap:8px}
-.reader-top .head-actions .btn{border-radius:12px;padding:7px 12px}
-.reading-paper{width:100%;max-width:960px;margin:0 auto;min-height:0!important;padding:43px clamp(28px,5.5vw,74px) 25px!important;border:1px solid var(--stroke)!important;border-radius:var(--radius-lg,20px)!important;background:var(--surface)!important;box-shadow:var(--vigil-soft-shadow)!important}
-.reading-paper .reading-date{font-size:12px;letter-spacing:.075em;margin-bottom:9px;color:var(--muted)}
-.reading-paper .reading-title{margin:0 0 10px}
-.reading-paper .reading-tags{margin:8px 0 4px}
-.reading-ornament{display:flex;align-items:center;justify-content:center;gap:12px;max-width:790px;margin:16px auto 2px;color:color-mix(in srgb,var(--appearance-accent) 68%,var(--muted));user-select:none}
-.reading-ornament .ornament-rule{flex:1;max-width:58px;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--appearance-accent) 36%,var(--stroke-2)))}
-.reading-ornament .ornament-rule:last-child{background:linear-gradient(270deg,transparent,color-mix(in srgb,var(--appearance-accent) 36%,var(--stroke-2)))}
-.reading-ornament .ornament-fleuron{font:11px/1 var(--font-display);opacity:.82}
-.reading-paper .article-content{max-width:790px;margin:16px auto 0!important;font-size:var(--reader-font-size);line-height:var(--reader-leading);letter-spacing:.008em;overflow-wrap:anywhere;text-autospace:normal;hanging-punctuation:first allow-end;line-break:strict;font-kerning:normal}
-.reading-paper .article-content p{margin:0 0 .78em!important;line-height:1.84!important}
-.reading-paper .article-content h1{margin:1.18em 0 .42em!important;line-height:1.35!important}
-.reading-paper .article-content h2{margin:1.18em 0 .42em!important;line-height:1.35!important}
-.reading-paper .article-content h3{margin:1.18em 0 .42em!important;line-height:1.35!important}
-.reading-paper .article-content h1:first-child{margin-top:0!important}
-.reading-paper .article-content h2:first-child{margin-top:0!important}
-.reading-paper .article-content h3:first-child{margin-top:0!important}
+.reader-top .head-actions .btn{border-radius:999px;padding:6px 14px;min-height:36px;font-size:12px;font-weight:500;box-shadow:none}
+.reader-top .reader-delete-btn{padding:6px 10px;color:var(--muted)}
+.reader-top .reader-delete-btn:hover:not(:disabled){color:#ba6252;border-color:color-mix(in srgb,#ba6252 42%,var(--stroke))}
+.reading-paper{--reading-measure:700px;width:100%;max-width:880px;margin:0 auto;min-height:0!important;padding:clamp(38px,5.2vw,64px) clamp(24px,6vw,78px) clamp(30px,4vw,46px)!important;border:1px solid var(--stroke)!important;border-radius:var(--radius-lg,20px)!important;background:var(--surface)!important;box-shadow:var(--vigil-soft-shadow)!important}
+.reading-header{position:relative;max-width:var(--reading-measure);margin:0 auto 28px;padding-bottom:22px;border-bottom:1px solid var(--stroke)}
+.reading-header::after{content:"";position:absolute;left:0;bottom:-1px;width:36px;height:2px;border-radius:2px;background:var(--appearance-accent)}
+.reading-paper .reading-date{font:500 12.5px/1.5 var(--font-body)!important;letter-spacing:.04em;margin-bottom:12px;color:var(--appearance-accent)!important;font-variant-numeric:tabular-nums}
+.reading-paper .reading-title{font-family:var(--font-display)!important;font-size:clamp(26px,2.85vw,36px)!important;line-height:1.32!important;font-weight:500!important;letter-spacing:-.01em!important;color:var(--ink);margin:0!important}
+.reading-paper .reading-tags{margin:14px 0 0}
+.reading-paper .github-reading-path{margin:10px 0 0}
+.reading-paper .article-content{max-width:var(--reading-measure);margin:0 auto!important;color:color-mix(in srgb,var(--ink) 90%,var(--ink-2));font-size:var(--reader-font-size);line-height:var(--reader-leading);letter-spacing:.012em;overflow-wrap:anywhere;text-autospace:normal;hanging-punctuation:first allow-end;line-break:strict;font-kerning:normal}
+.reading-paper .article-content p{margin:0 0 1.15em!important;line-height:var(--reader-leading,1.95)!important}
+.reading-paper .article-content h1{margin:1.45em 0 .5em!important;font-size:1.58em;line-height:1.38!important;font-weight:500}
+.reading-paper .article-content h2{margin:1.4em 0 .48em!important;font-size:1.34em;line-height:1.4!important;font-weight:500}
+.reading-paper .article-content h3{margin:1.3em 0 .44em!important;font-size:1.16em;line-height:1.45!important;font-weight:500}
+.reading-paper .article-content h1:first-child,.reading-paper .article-content h2:first-child,.reading-paper .article-content h3:first-child{margin-top:0!important}
 .reading-paper .article-content > :last-child{margin-bottom:0!important}
-.reading-paper .reading-foot{margin-top:27px;padding-top:14px;border-top:1px solid var(--stroke);opacity:.8}
-.reader-pagination{max-width:960px;margin:14px auto 0}
-.reader-backlinks{max-width:960px;margin:14px auto 0}
+.reading-paper .reading-foot{max-width:var(--reading-measure);margin:38px auto 0;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--stroke) 78%,transparent);color:var(--muted);font-size:11.5px;letter-spacing:.03em;opacity:.82}
+.reading-paper .reading-foot span:last-child{font-family:var(--font-body);letter-spacing:.06em;opacity:.78}
+.reader-pagination{max-width:880px;margin:14px auto 0}
+.reader-backlinks{max-width:880px;margin:14px auto 0}
 @media (max-width:680px){
   .reader-top{margin-bottom:10px;gap:8px}
   .reader-top>.text-button{font-size:12px}
   .reader-top .head-actions{gap:6px;flex-wrap:wrap}
-  .reader-top .head-actions .btn{min-height:35px;padding:6px 10px;font-size:11px}
-  .reading-paper{padding:26px 22px 19px!important;border-radius:15px!important}
-  .reading-paper .reading-date{font-size:11px;margin-bottom:6px}
-  .reading-paper .reading-title{font-size:clamp(28px,8vw,37px);line-height:1.22;margin-bottom:8px}
-  .reading-paper .article-content{margin-top:14px!important;font-size:15px;line-height:1.76}
-  .reading-paper .article-content p{margin-bottom:.76em!important;line-height:1.79!important}
-  .reading-paper .article-content h1{font-size:26px}
-  .reading-paper .article-content h2{font-size:22px}
-  .reading-paper .article-content h3{font-size:19px}
-  .reading-paper .reading-foot{margin-top:18px;padding-top:11px}
-  .reader-pagination{margin-top:10px}
-  .reader-backlinks{padding:15px;margin-top:10px}
+  .reader-top .head-actions .btn{min-height:34px;padding:5px 11px;font-size:11px}
+  .reading-paper{padding:28px 20px 22px!important;border-radius:16px!important}
+  .reading-header{margin-bottom:20px;padding-bottom:16px}
+  .reading-paper .reading-date{font-size:11.5px!important;margin-bottom:8px}
+  .reading-paper .reading-title{font-size:clamp(23px,6.8vw,30px)!important;line-height:1.28!important}
+  .reading-paper .article-content{font-size:15px;line-height:1.85}
+  .reading-paper .article-content p{margin-bottom:1.05em!important;line-height:1.85!important}
+  .reading-paper .reading-foot{margin-top:26px;padding-top:13px}
+  .reader-pagination{margin-top:10px;grid-template-columns:1fr}
+  .reader-backlinks{padding:16px;margin-top:10px}
 }
-/* Dynamic document titles keep their own semantics but share the scale. */
-.reading-paper .reading-title{font-family:var(--font-display)!important;font-size:var(--page-title-size)!important;line-height:1.23!important;font-weight:var(--page-title-weight)!important;letter-spacing:-.02em!important}
-.reader-top{margin-top:0}
 /* Ensure a readable sheet on text-heavy pages even at high wallpaper opacity. */
 :root[data-theme=night] .article-content{color:var(--ink)!important}
 /* Readable H4–H6 hierarchy in Reader, same hierarchy in live CodeMirror. */
@@ -2189,8 +2186,9 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .article-content h5{font-size:1.045em;font-weight:700;letter-spacing:.025em}
 .article-content h6{font-size:.93em;text-transform:none;font-weight:700;letter-spacing:.05em;color:var(--ink-2)}
 .article-content :is(h1,h2,h3,h4,h5,h6):first-child{margin-top:0}
-/* Distinct ordinary block quotes, without huge empty margins. */
-.article-content .markdown-quote{border-left:3px solid color-mix(in srgb,var(--appearance-accent) 63%,var(--stroke));background:var(--surface-soft);border-radius:0 12px 12px 0;padding:12px 18px;margin:15px 0;color:var(--ink-2);font-style:normal;box-shadow:none}
+/* Literary block quotes: clean vermilion rule without a heavy grey box slab. */
+.article-content .markdown-quote{border-left:2px solid color-mix(in srgb,var(--appearance-accent) 68%,var(--stroke));background:transparent;border-radius:0;padding:2px 0 2px 18px;margin:1.25em 0!important;color:var(--ink-2);font-style:normal;box-shadow:none}
+.reading-paper .article-content :is(.markdown-quote,.vigil-callout .callout-content) > :last-child{margin-bottom:0!important}
 .article-content .markdown-quote > :first-child{margin-top:0}
 .article-content .markdown-quote > :last-child{margin-bottom:0}
 /* Obsidian-shaped, contained Callout layout; only muted color accents. */
@@ -3128,11 +3126,7 @@ html body .main-inner{padding-top:10px!important}
   html body .topbar .header-settings{display:none!important}
 }
 @layer overrides{
-  /* Delicate stationery hairline inset on reading paper without touching ::before glass underlay. */
-  .main-inner .reading-paper::after{content:""!important;display:block!important;position:absolute!important;inset:12px!important;width:auto!important;background:none!important;border:1px solid color-mix(in srgb,var(--appearance-accent) 15%,var(--stroke))!important;border-radius:calc(var(--radius-lg,20px) - 6px)!important;pointer-events:none!important;z-index:0}
-  @media (max-width:680px){
-    .main-inner .reading-paper::after{inset:7px!important;border-radius:10px!important}
-  }
+  .main-inner .reading-paper::after{display:none!important}
   .main-inner .pagination-card{background-color:var(--glass-panel-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
   .main-inner .pagination-card:hover{border-color:color-mix(in srgb,var(--appearance-accent) 42%,var(--glass-panel-edge))!important}
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){

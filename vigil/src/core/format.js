@@ -39,11 +39,3 @@ export function editorialMonthLabel(ym) {
   const alias = SEASONAL_MONTHS[month] || '';
   return `${m[1]} 年 ${month} 月${alias ? ` · ${alias}` : ''}`;
 }
-
-/** True when a note is a short aphorism/jotting suitable for full serif quote display on cards. */
-export function isBriefNote(content) {
-  const raw = String(content ?? '');
-  if (/```|~~~|\$\$|\\\[|^\|.+\|/m.test(raw)) return false;
-  const count = charCount(raw.replace(/[#*`_>~\[\]\(\)]/g, ''));
-  return count > 0 && count <= 68;
-}
