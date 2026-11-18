@@ -1,9 +1,9 @@
 {
   "name": "vigil-inkpress",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "private": true,
   "type": "module",
-  "description": "不眠手记 v1.7.5：全局 3D 浮动、半透明格式菜单与轻量点阵帷幕",
+  "description": "不眠手记 v1.7.6：全局 3D 浮动、半透明格式菜单与轻量点阵帷幕",
   "scripts": {
     "dev": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
     "start": "node scripts/build-css.mjs && node scripts/dev-server.mjs",

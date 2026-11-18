@@ -69,6 +69,7 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   reader.classList.add('unified-reader');
   const input=cm.getInputField();
   let activeMode='source',decorations=[],lineClasses=[],lineWidgets=[];
+  let lowerCache='';
   let frame=null,destroyed=false,painting=false,composing=false,activeFingerprint='';
   let lastReaderSource=null,painted=null;
 
@@ -254,7 +255,8 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
           if(!text.trim()){
             let blankEnd=i;
             while(blankEnd+1<end&&!lines[blankEnd+1].trim())blankEnd++;
-            if(blankEnd>i && !Array.from({length:blankEnd-i+1},(_,k)=>active.has(i+k)).some(Boolean)){
+            let _anyActiveBlank=false;for(let _kb=i;_kb<=blankEnd;_kb++)if(active.has(_kb)){_anyActiveBlank=true;break;}
+            if(blankEnd>i && !_anyActiveBlank){
               const from={line:i+1,ch:0};
               const to=blankEnd+1<lines.length?{line:blankEnd+1,ch:0}:{line:blankEnd,ch:0};
               if(to.line>from.line)mark(from,to,{collapsed:true,clearOnEnter:true});
@@ -268,7 +270,7 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
           const block=fence||math||table||quote;
           if(block&&block.end>=end&&block.end-i<400)end=Math.min(lines.length,block.end+1);
           if(block&&block.end<end){
-            const inSelection=Array.from({length:block.end-i+1},(_,k)=>i+k).some(k=>active.has(k));
+            let inSelection=false;for(let _ki=i;_ki<=block.end;_ki++)if(active.has(_ki)){inSelection=true;break;}
             if(!inSelection){
               const node=math?mathNode(math.latex,true):renderedBlock(renderMarkdown(block.source),
                 fence?'cm-code-widget':quote?'cm-quote-widget':'cm-table-widget');
@@ -311,6 +313,7 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   function onChanges(){
     if(destroyed)return;
     onInput(cm.getValue());
+    lowerCache='';// invalidate case-insensitive cache on content change
     if(activeMode==='reading')updateReading();
     scheduleDecorate();
   }
@@ -377,7 +380,9 @@ export function mountUnifiedEditor({host,reader,onInput,initial,mode='live',minH
   function findNext(query,{reverse=false}={}){
     const term=String(query||'');if(!term)return false;
     if(activeMode==='reading')setMode('live');
-    const text=cm.getValue(),lower=text.toLocaleLowerCase(),needle=term.toLocaleLowerCase();
+    const text=cm.getValue();
+    if(!lowerCache)lowerCache=text.toLocaleLowerCase();
+    const lower=lowerCache,needle=term.toLocaleLowerCase();
     const sel=cm.getDoc().listSelections()[0];
     const position=cm.indexFromPos(reverse?sel.from():sel.to());
     let match=reverse?lower.lastIndexOf(needle,Math.max(0,position-1)):lower.indexOf(needle,position);

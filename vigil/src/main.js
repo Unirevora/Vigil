@@ -33,6 +33,14 @@ import {tasksFromEntries} from './insights/insights.js';
 import {syncTabIndicators,watchTabIndicatorLayout} from './ui/tab-indicator.js';
 watchTabIndicatorLayout();
 
+// Font stack constants, defined once at module level (not rebuilt per applyAppearance call).
+const FONT_STACKS={
+  song:'"Songti SC","STSong","Noto Serif CJK SC",serif',
+  sans:'"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif',
+  kai:'"KaiTi","Kaiti SC","STKaiti",serif'
+};
+const SETTING_UNITS={backgroundOpacity:'%',surfaceOpacity:'%',sidebarGlass:'%',glassTint:'%',drapeIntensity:'%',floatingIntensity:'%',bodyFontSize:'px',contentWidth:'px',sidebarBlur:'px'};
+
 const $=selector=>document.querySelector(selector);
 const storage=(()=>{try{return window.localStorage;}catch{return {
   getItem(){throw new Error('无法访问本地存储');},
@@ -61,6 +69,8 @@ const state={
   storageError:'',draftError:'',backupError:'',backupUnsafe:false,corruptStorage:false,migrated:false
 };
 let draftTimer=null;
+let lastAppearanceSignature='';
+let draftDirty=false;
 let previewFrame=null;
 let almanacController=null;
 let unifiedEditor=null;
@@ -111,6 +121,10 @@ function applyTheme(){
   applyAppearance();
 }
 function applyAppearance(){
+  const urls=visualAssets.urls();
+  const sig=JSON.stringify(state.appearance)+state.theme+(urls.backgroundURL||'')+(urls.heroURL||'');
+  if(sig===lastAppearanceSignature)return;
+  lastAppearanceSignature=sig;
   const a=state.appearance,r=document.documentElement.style;
   const primary=a.accent;
   const palette=sidebarPalette(a.accent,a.sidebarTone,state.theme==='night');
@@ -147,15 +161,10 @@ function applyAppearance(){
   r.setProperty('--reader-font-size',a.bodyFontSize+'px');
   r.setProperty('--reader-leading',String(a.lineHeight));
   r.setProperty('--workspace-max-width',a.contentWidth+'px');
-  const fontFamilies={
-    song:'"Songti SC","STSong","Noto Serif CJK SC",serif',
-    sans:'"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif',
-    kai:'"KaiTi","Kaiti SC","STKaiti",serif'
-  };
   if(a.fontFamily==='heritage'){
     for(const name of ['--font-body','--font-display','--title-font','--text-font'])r.removeProperty(name);
   }else{
-    const font=fontFamilies[a.fontFamily];
+    const font=FONT_STACKS[a.fontFamily];
     for(const name of ['--font-body','--font-display','--title-font','--text-font'])r.setProperty(name,font);
   }
   document.body.dataset.wallpaper=a.background;
@@ -163,7 +172,6 @@ function applyAppearance(){
   spectralDrape.setOptions({enabled:a.spectralDrape,intensity:a.drapeIntensity/100,
     accent:a.accent,night:state.theme==='night',motion:a.motionMode});
   floatingSurfaces.setOptions({enabled:a.floating,motion:a.motionMode,intensity:a.floatingIntensity});
-  const urls=visualAssets.urls();
   if(a.background==='custom'&&urls.backgroundURL){
     r.setProperty('--wallpaper-image',`url("${urls.backgroundURL}")`);
     r.setProperty('--glass-scene-url',`url("${urls.backgroundURL}")`);
@@ -235,8 +243,7 @@ mobileMedia.addEventListener?.('change',updateSidebar);
 updateSidebar();
 
 function changedDraft(){
-  return state.view==='editor' && state.draft!==null &&
-    JSON.stringify(state.draft)!==state.originalDraft;
+  return state.view==='editor' && state.draft!==null && draftDirty;
 }
 function draftKey(){return state.draftKey||NEW_DRAFT_ID;}
 function updateDraftStatus(message,invalid=false){
@@ -253,6 +260,7 @@ function trackDraftFromInputs(){
     mood:$('#entryMood')?.value??state.draft.mood
   };
   if($('#editorWordCount'))$('#editorWordCount').textContent=`${charCount(state.draft.content)} 字`;
+  draftDirty=true;
   scheduleDraftSave();
   scheduleMarkdownPreview();
 }
@@ -266,11 +274,12 @@ function saveDraftLocal(){
   clearTimeout(draftTimer);draftTimer=null;
   if(state.view!=='editor'||!state.draft)return true;
   const signature=JSON.stringify(state.draft);
-  if(signature===state.draftSavedSignature||!changedDraft())return true;
+  if(!draftDirty||signature===state.draftSavedSignature)return true;
   try{
     const old=state.entries.find(e=>e.id===state.editingId);
     drafts.save(draftKey(),state.draft,state.editorOrigin==='github'?(gh.note?.sha||''):(old?.updatedAt||''));
     state.draftSavedSignature=signature;
+    draftDirty=false;
     refreshDrafts();
     updateDraftStatus('草稿已自动保存');
     return true;
@@ -291,6 +300,7 @@ function resetDraft(){
   clearTimeout(draftTimer);clearTimeout(outlineUpdateTimer);state.draft=null;state.originalDraft=null;
   state.draftSavedSignature=null;state.draftKey=null;state.editingId=null;state.editorOrigin='local';
   state.editorFocus=false;state.editorOutlineOpen=false;state.zenMode=false;document.querySelector('.shell')?.classList.remove('zen-mode');state.draftStatus='';
+  draftDirty=false;
 }
 function navigate(view){
   // Preserve routes for older calls while presenting one cohesive calendar/season page.
@@ -333,6 +343,7 @@ async function startEditor(id=null,{resume=false,seed=null}={}){
   state.draft={...chosen,tags:[...chosen.tags]};
   state.originalDraft=JSON.stringify(original);
   state.draftSavedSignature=useSaved?JSON.stringify(chosen):null;
+  draftDirty=false;
   state.draftStatus=useSaved?'已恢复草稿，继续写吧':'输入后会自动保存草稿';
   state.view='editor';render();window.scrollTo(0,0);$('#entryTitle')?.focus();
 }
@@ -364,6 +375,7 @@ async function startGithubEditor(){
   state.draft={...chosen,tags:[...chosen.tags]};
   state.originalDraft=JSON.stringify(original);
   state.draftSavedSignature=restore?JSON.stringify(chosen):null;
+  draftDirty=false;
   state.draftStatus=restore?'已恢复仓库草稿，尚未提交':'输入后自动保存本机草稿；保存按钮提交 GitHub';
   gh.editing=false;gh.dirty=false;
   state.view='editor';render();window.scrollTo(0,0);
@@ -607,7 +619,8 @@ function refreshList(){
   if(allButton){allButton.classList.toggle('selected',!activeListFilters());allButton.setAttribute('aria-pressed',String(!activeListFilters()));}
 }
 function filterTo(value){
-  state.filters={...state.filters,...value};render();
+  state.filters={...state.filters,...value};
+  if(state.view==='entries')refreshList();else render();
 }
 function changeTheme(){
   if(saveAppearance({theme:state.theme==='paper'?'night':'paper'})&&state.view==='settings')render();
@@ -736,6 +749,7 @@ function render(){
         if(!state.draft)return;
         state.draft.content=value;
         if($('#editorWordCount'))$('#editorWordCount').textContent=`${charCount(value)} 字`;
+        draftDirty=true;
         scheduleDraftSave();
         queueOutlineUpdate();
       }
@@ -948,7 +962,7 @@ document.body.addEventListener('input',event=>{
       if(amplitude)amplitude.disabled=!value;
     }
     const output=$(`#${key}Value`);
-    if(output)output.textContent=String(value)+(key==='backgroundOpacity'||key==='surfaceOpacity'||key==='sidebarGlass'||key==='glassTint'||key==='drapeIntensity'||key==='floatingIntensity'?'%':key==='bodyFontSize'||key==='contentWidth'||key==='sidebarBlur'?'px':'');
+    if(output)output.textContent=String(value)+(SETTING_UNITS[key]||'');
   }
 });
 document.body.addEventListener('change',async event=>{

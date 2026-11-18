@@ -26,9 +26,9 @@ export function aboutPanel(state){
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('spark')} <h3>当前版本</h3></div>
-      <div class="about-release"><span>01</span><div><strong>清楚的设置</strong><small>标题与分类固定，只滚动设置内容；材质与动效统一放在外观，导入导出卡片整齐排列。</small></div></div>
-      <div class="about-release"><span>02</span><div><strong>柔和的格式栏</strong><small>悬停与按压连贯过渡，格式菜单恢复半透明玻璃，让纸面透过细腻的模糊。</small></div></div>
-      <div class="about-release"><span>03</span><div><strong>轻一些的微光</strong><small>点阵帷幕缓存光点、限制绘制预算；后台暂停，关闭动效后保持静态。</small></div></div>
+      <div class="about-release"><span>01</span><div><strong>更轻的按键响应</strong><small>外观未变时跳过 CSS 变量写入；草稿改动用标志位追踪，不再每次按键序列化全文。</small></div></div>
+      <div class="about-release"><span>02</span><div><strong>筛选更快</strong><small>手记列表筛选直接刷新当前区域，不重建整页；查找替换在长文中复用大小写缓存。</small></div></div>
+      <div class="about-release"><span>03</span><div><strong>代码更整洁</strong><small>字体栈与设置单位提升为常量；实时装饰的临时数组改用提前退出的循环。</small></div></div>
     </section>
     <section class="about-section">
       <div class="about-section-heading">${icon('info')} <h3>本地环境检查</h3></div>

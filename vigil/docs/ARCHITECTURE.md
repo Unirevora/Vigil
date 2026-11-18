@@ -1,6 +1,6 @@
 # 架构说明 · 不眠手记 VIGIL Inkpress
 
-> 本文描述**当前代码**（`package.json` 版本 1.7.5）。它合并并取代了按版本命名的旧文档：原 `ARCHITECTURE.md`、`STRUCTURE-1.5.6.md`、`DESIGN-SYSTEM.md`、`IMPLEMENTATION.md`、`ENCRYPTED-BACKUP.md`、`REFERENCE-UI.md`、`SOURCE-ALIGNMENT.md`。产品范围与实现状态见 `PRODUCT.md`，测试方式见 `QA.md`，服务器部署见 `DEPLOY.md`。
+> 本文描述**当前代码**（`package.json` 版本 1.7.6）。它合并并取代了按版本命名的旧文档：原 `ARCHITECTURE.md`、`STRUCTURE-1.5.6.md`、`DESIGN-SYSTEM.md`、`IMPLEMENTATION.md`、`ENCRYPTED-BACKUP.md`、`REFERENCE-UI.md`、`SOURCE-ALIGNMENT.md`。产品范围与实现状态见 `PRODUCT.md`，测试方式见 `QA.md`，服务器部署见 `DEPLOY.md`。
 
 ## 1. 总体形态
 
@@ -28,6 +28,12 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 ```
 
 `main.js` 保留启动装配、共享 `state` / `gh`、路由、草稿机、`render()`、CodeMirror 单实例、键盘与页面生命周期。本地 `actions` 与 GitHub、数据两个控制器的 `actions` 合并后由 `ui/action-dispatcher.js` 统一分发；控制器只经显式 `context` 回调协作，不反向导入 `main.js`。
+
+性能约定（v1.7.6 起）：
+- `applyAppearance()` 在外观签名（含主题、所有偏好键、自定义图片 URL）未变化时短路返回，不重复写入 CSS 变量。
+- 草稿改动追踪改用 `draftDirty` 布尔标志，只在 `saveDraftLocal()` 写入时做一次完整序列化。
+- 手记列表筛选条件变化时直接调用 `refreshList()`，不触发整页 `render()`。
+- 字体栈常量（`FONT_STACKS`）与设置单位映射（`SETTING_UNITS`）提升为模块级常量，不在每次外观应用时重建。
 
 ## 2. 源码模块
 
@@ -58,7 +64,7 @@ index.html                 外壳：侧栏导航、顶栏操作、主区域、SV
 
 ### editor/
 
-- `unified-editor.js`：一个 CodeMirror 实例承载「实时 / 阅读 / 源码」三态；切换模式不替换文本、不丢撤销历史。实时模式用装饰 mark 隐藏非活动行的语法标记、渲染公式小部件、可勾选任务；包含查找替换（Ctrl/⌘+F、Ctrl/⌘+H）。
+- `unified-editor.js`：一个 CodeMirror 实例承载「实时 / 阅读 / 源码」三态；切换模式不替换文本、不丢撤销历史。实时模式用装饰 mark 隐藏非活动行的语法标记、渲染公式小部件、可勾选任务；包含查找替换（Ctrl/⌘+F、Ctrl/⌘+H）。连续空行折叠、块小部件（代码/表格/引用/公式）游标进入时恢复源码并显示实时预览。`decorateNow` 用提前退出的 for 循环代替 `Array.from` 临时数组做选区命中测试；`findNext` 在内容不变时复用小写缓存，避免每次查找对全文重复 `toLocaleLowerCase`。
 - `live-markdown.js`：行内分段、标题、列表、表格、公式块、围栏、引用块的识别。
 - `formatting.js`：工具栏与格式下拉菜单的纯函数。块级格式按样式判断统一应用或取消；行内格式依据源码范围识别选区内外的标记，并返回替换范围与新选区；代码块与公式块可解除选中包装，表格与分隔线保持插入语义。
 

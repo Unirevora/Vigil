@@ -18,7 +18,7 @@
 - **数据**：`storage`、`drafts`、`backups`、`core`、`features`——Schema v1 校验、损坏数据只读保护、草稿隔离、快照上限与去重、筛选与任务识别。
 - **加密**：`encrypted-transfer`——中文 / emoji 往返、随机盐与 IV、错误口令、密文篡改、版本 / 算法不符、短口令、非法 Base64。
 - **git-crypt**：`git-crypt`、`github-git-crypt`——密钥文件解析、与独立 OpenSSL AES-CTR/HMAC-SHA1 结果逐字节一致、错误密钥与篡改拒绝、`.gitattributes` 规则与提交前拦截。
-- **Markdown / 编辑器**：`math-142`、`editor-refine`、`release-170`——KaTeX、实时装饰范围、换行、H1–H6、Callout、白名单 HTML。
+- **Markdown / 编辑器**：`math-142`、`editor-refine`、`release-170`、`editor-scroll-stability`——KaTeX、实时装饰范围、换行、H1–H6、Callout、白名单 HTML；`decorateNow` 选区命中用 for 循环（早退），`findNext` 大小写缓存。
 - **GitHub 与网络**：`github*`、`hotfix-network-155`、`repair-155-integration`——SHA 写入与冲突、匿名 / 令牌隔离、连接三阶段、备用通道、浏览器链路诊断、fetch 生命周期、HTTP CONNECT 与 SOCKS5（本地模拟 TLS 上游，临时 CA 不随项目交付）、诊断 CLI。
 - **界面契约**：`ui-reference`、`appearance-*`、`chronicle-154`、`release-15x`、`release-171`、`tab-indicator`、`subpath-deploy`——读取 CSS 与视图源码，检查统一标签、毛玻璃范围、大纲行为、夜间对比、子路径与 CSS 地址换算、代理锁、`package.json` / 侧栏 / 关于页 / 诊断的版本号一致。
 
