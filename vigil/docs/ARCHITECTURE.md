@@ -1,6 +1,6 @@
 # 架构说明 · 不眠手记 VIGIL Inkpress
 
-> 本文描述**当前代码**（`package.json` 版本 1.7.7）。它合并并取代了按版本命名的旧文档：原 `ARCHITECTURE.md`、`STRUCTURE-1.5.6.md`、`DESIGN-SYSTEM.md`、`IMPLEMENTATION.md`、`ENCRYPTED-BACKUP.md`、`REFERENCE-UI.md`、`SOURCE-ALIGNMENT.md`。产品范围与实现状态见 `PRODUCT.md`，测试方式见 `QA.md`，服务器部署见 `DEPLOY.md`。
+> 本文描述**当前代码**（`package.json` 版本 1.7.8）。它合并并取代了按版本命名的旧文档：原 `ARCHITECTURE.md`、`STRUCTURE-1.5.6.md`、`DESIGN-SYSTEM.md`、`IMPLEMENTATION.md`、`ENCRYPTED-BACKUP.md`、`REFERENCE-UI.md`、`SOURCE-ALIGNMENT.md`。产品范围与实现状态见 `PRODUCT.md`，测试方式见 `QA.md`，服务器部署见 `DEPLOY.md`。
 
 ## 1. 总体形态
 
@@ -169,7 +169,7 @@ tokens → base → controls → dialogs → glass → pages → home → entrie
 
 `ui/views/settings.js` 提供统一的开关、滑杆与下拉行函数，背景和首页静物共用图片选择样式。外观按颜色、背景、纸面与玻璃、首页静物、光影动效分组；排版只保留字体与版心。设置模块 `styles/settings.css` 维护最终规则，标题、标签和表面材质分别复用 pages / tabs / surfaces，不再维护旧标签卡片或反复覆盖同一控件。数据与关于保持独立页签；存储键和偏好值不变。
 
-`.settings-hub` 为固定高度 flex 框架：`.settings-heading` 包含标题与标签，`.settings-hub-panel` 独立滚动，页脚在框架底部。`main.js::fitSettingsFrame()` 按视口、当前位置和底部内边距计算 `--settings-height`；窗口 resize 与标题/侧栏 ResizeObserver 触发重测，离开或重渲染时断开观察。导入/导出只用 `.data-action-card`，不混用通用 `.surface`；卡片独立定义内边距、边框和颜色，按钮靠底对齐。
+`.settings-layer` 独立于页面路由，打开期间通过 `inert` 暂停底下的工作台与快捷导航，关闭时还原焦点。遮罩用半透明暗色和模糊处理背景。`.settings-window` 高度由 CSS 按视口限制，`.settings-heading` 与页脚固定，`.settings-hub-panel` 独立滚动。切换设置标签只更新浮层内容，保留当前页面和 CodeMirror 实例。导入导出使用 `.data-action-card`，卡片独立定义内边距、边框和颜色，按钮靠底对齐。
 
 ### 视觉语言
 

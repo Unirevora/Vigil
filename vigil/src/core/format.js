@@ -26,7 +26,16 @@ export const uuid = () => globalThis.crypto?.randomUUID?.() ||
   `e-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const charCount = value => Array.from(String(value ?? '').replace(/\s/g,'')).length;
 export const excerpt = (value, max = 88) => String(value ?? '')
-  .replace(/```[\s\S]*?```/g,'').replace(/[#*`_>~\[\]\(\)]/g,'')
+  .replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g,' ')
+  .replace(/\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]/g,' ')
+  .replace(/<\/?[a-z][^>\n]*>/gi,'')
+  .replace(/^\s*>\s*\[![a-z][\w-]*\][+-]?[ \t]*/gim,'')
+  .replace(/^\s*(?:[-*+]|\d+[.)])\s+\[[ xX]\]\s+/gm,'')
+  .replace(/\[\[([^\]|\n]+)\|([^\]\n]+)\]\]/g,'$2')
+  .replace(/\[\[([^\]\n]+)\]\]/g,'$1')
+  .replace(/\[([^\]]+)\]\([^)\n]+\)/g,'$1')
+  .replace(/\$([^$\n]+)\$|\\\((.+?)\\\)/g,'$1$2')
+  .replace(/[#*`_>~\[\]\(\)]/g,'')
   .replace(/\s+/g,' ').trim().slice(0,max) || '留白，也是一天的注脚。';
 
 const SEASONAL_MONTHS = ['','季冬','孟春','仲春','季春','孟夏','仲夏','季夏','孟秋','仲秋','季秋','孟冬','仲冬'];

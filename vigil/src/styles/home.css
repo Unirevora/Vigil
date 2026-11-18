@@ -400,7 +400,8 @@
 :root[data-motion=subtle] .hero-scene img{animation:none!important}
 :root[data-theme=night] .heritage-stat{background:#343239!important}
 :root[data-theme=night] .hero-scene{filter:grayscale(.30) brightness(.79)}
-:root[data-theme=night] .heritage-copy .hero-actions .btn-quiet{color:#2e2b2f!important;background:#e7ddd0!important;border-color:#d5c4b5!important}
+:root[data-theme=night] .heritage-copy .hero-actions .btn-quiet{color:var(--ink)!important;background:rgba(255,255,255,.09)!important;border-color:rgba(255,255,255,.2)!important}
+:root[data-theme=night] .heritage-copy .hero-actions .btn-quiet:hover:not(:disabled){background:rgba(255,255,255,.15)!important;border-color:color-mix(in srgb,var(--appearance-accent) 55%,rgba(255,255,255,.3))!important}
 :root[data-theme=night] .heritage-stat :is(strong,span,small){color:var(--ink)!important}
 :root[data-theme=night] .heritage-copy :is(h1,h2){color:#f3f0e8!important}
 :root[data-theme=night] .heritage-copy p{color:#d3d6cc!important}

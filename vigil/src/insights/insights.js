@@ -1,6 +1,9 @@
 /** Meaningful, privacy-preserving journal retrieval. Pure and offline. */
+import {todayISO} from '../core/format.js';
+
 const datePattern=/(?:📅|due:|截止:|期限:|@due\()?\s*(\d{4}-\d{2}-\d{2})/iu;
-export function tasksFromEntries(entries){
+export function tasksFromEntries(entries,now=new Date()){
+  const today=todayISO(new Date(now));
   const results=[];
   for(const e of entries){
     const lines=e.content.split(/\r?\n/);
@@ -16,7 +19,7 @@ export function tasksFromEntries(entries){
       results.push({id:`${e.id}:${i}`,entryId:e.id,entryTitle:e.title||'未命名手记',
         date:e.date,updatedAt:e.updatedAt,line:i,source:line,
         complete:match[2].toLowerCase()==='x',title:raw.replace(datePattern,'').trim()||raw,
-        due,overdue:Boolean(due&&due<new Date().toISOString().slice(0,10))});
+        due,overdue:Boolean(due&&due<today)});
     }
   }
   return results.sort((a,b)=>Number(a.complete)-Number(b.complete)||
@@ -54,7 +57,7 @@ export function connectionsFromEntries(entries){
   return {edges,backlinks,unresolved};
 }
 export function reviewMetrics(entries,now=new Date()){
-  const dayString=new Date(now).toISOString().slice(0,10);
+  const dayString=todayISO(new Date(now));
   const ms=Date.parse(dayString+'T00:00:00Z');
   const active=new Set(entries.map(e=>e.date));
   const words=entries.reduce((sum,e)=>sum+e.content.replace(/\s/g,'').length,0);
@@ -72,7 +75,7 @@ export function reviewMetrics(entries,now=new Date()){
   const counts=new Map();
   for(const e of entries)for(const tag of e.tags||[])counts.set(tag,(counts.get(tag)||0)+1);
   const tags=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const taskList=tasksFromEntries(entries);
+  const taskList=tasksFromEntries(entries,now);
   return {
     total:entries.length,words,streak,
     week:entries.filter(e=>e.date>=since7&&e.date<=dayString).length,

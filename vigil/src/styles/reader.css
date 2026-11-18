@@ -174,9 +174,11 @@
 .article-content h5{font-size:1.045em;font-weight:700;letter-spacing:.025em}
 .article-content h6{font-size:.93em;text-transform:none;font-weight:700;letter-spacing:.05em;color:var(--ink-2)}
 .article-content :is(h1,h2,h3,h4,h5,h6):first-child{margin-top:0}
-/* Literary block quotes: clean vermilion rule without a heavy grey box slab. */
-.article-content .markdown-quote{border-left:2px solid color-mix(in srgb,var(--appearance-accent) 68%,var(--stroke));background:transparent;border-radius:0;padding:2px 0 2px 18px;margin:1.25em 0!important;color:var(--ink-2);font-style:normal;box-shadow:none}
-.reading-paper .article-content :is(.markdown-quote,.vigil-callout .callout-content) > :last-child{margin-bottom:0!important}
+/* Literary block quotes: clean vermilion rule shared by Reader, embedded Reader and live-editor quote widgets. */
+.markdown-quote,.article-content .markdown-quote{margin:0;border-left:2px solid color-mix(in srgb,var(--appearance-accent) 68%,var(--stroke));background:transparent;border-radius:0;padding:2px 0 2px 18px;color:var(--ink-2);font-style:normal;box-shadow:none}
+.article-content .markdown-quote{margin:1.25em 0!important}
+.markdown-quote > :first-child{margin-top:0!important}
+.markdown-quote > :last-child,.reading-paper .article-content :is(.markdown-quote,.vigil-callout .callout-content) > :last-child{margin-bottom:0!important}
 .article-content .markdown-quote > :first-child{margin-top:0}
 .article-content .markdown-quote > :last-child{margin-bottom:0}
 /* Obsidian-shaped, contained Callout layout; only muted color accents. */

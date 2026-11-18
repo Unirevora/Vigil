@@ -317,10 +317,7 @@
   .sidebar .nav-item svg{width:17px;height:17px}
   .sidebar .nav-item .nav-short{display:block;font-size:11px}
   .sidebar .nav-item.active{box-shadow:none!important;clip-path:none}
-  .sidebar .appearance-entry{width:100%;min-height:40px;height:40px;display:flex!important;margin:5px 0 0;padding:9px 12px;justify-content:center;border:1px solid rgba(255,255,255,.16);border-radius:11px!important;color:#f0f7f1;font-size:11px;letter-spacing:0}
-  .sidebar .appearance-entry .nav-short{display:block}
   .shell.mobile-nav-closed .sidebar .nav-list{max-height:0!important;opacity:0;transform:translateY(-6px);padding:0;visibility:hidden;pointer-events:none}
-  .shell.mobile-nav-closed .sidebar .appearance-entry{display:none!important}
   .shell.mobile-nav-closed .sidebar-inner{padding-bottom:10px!important}
   .topbar{position:sticky;top:0;z-index:14;background:color-mix(in srgb,var(--surface) 87%,transparent)!important;border-bottom:1px solid var(--stroke)!important;backdrop-filter:blur(18px)}
   .topbar .top-right{margin-left:auto;gap:7px;flex:0 0 auto}
@@ -528,12 +525,16 @@ html body .main-inner{padding-top:10px!important}
 :root[data-theme=night] body .main-inner :is(.season-teaser,.home-quick-row .draft-banner) small{color:#bbc5c1!important}
 .sidebar .brand{margin-top:10px;margin-bottom:27px}
 .sidebar .brand-sub{letter-spacing:.08em}
-.sidebar .sidebar-bottom{display:flex!important;align-items:flex-end;justify-content:flex-start;border-top:1px solid rgba(255,255,255,.13)!important;padding:13px 0 0 7px!important;margin-top:auto!important;text-align:left!important;color:rgba(246,238,225,.74)!important}
+.sidebar .sidebar-bottom{display:flex!important;flex:none;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid rgba(255,255,255,.13);padding:9px 0 0 7px;margin-top:auto;text-align:left;color:rgba(246,238,225,.74)}
+.sidebar-settings{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid transparent;border-radius:var(--radius-sm);background:transparent;color:var(--sidebar-accent-ink);cursor:pointer;transition:scale .16s var(--vigil-ease),background-color .16s,border-color .16s}
+.sidebar-settings svg{width:19px;height:19px}
+.sidebar-settings:hover,.sidebar-settings[aria-expanded=true]{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.16)}
+.sidebar-settings:active{scale:.96}
 .sidebar .sidebar-version{float:none!important;margin:0!important;padding:0!important;color:inherit!important;letter-spacing:.04em;font:11px/1.6 var(--font-typed,monospace)!important}
-.shell.sidebar-collapsed .sidebar-bottom{display:flex!important;padding-left:0!important;justify-content:center!important}
+.shell.sidebar-collapsed .sidebar-bottom{flex-direction:column-reverse;padding-left:0;justify-content:center}
 .shell.sidebar-collapsed .sidebar-version{font-size:10px!important}
 @media (max-width:900px){
-  .sidebar .sidebar-bottom{display:none!important}
+  .shell .sidebar .sidebar-bottom{display:none!important}
 }
 /* Desktop sidebar already anchors Settings; hide the duplicate topbar gear above 900px. */
 @media (min-width:901px){

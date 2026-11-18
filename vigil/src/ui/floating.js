@@ -6,7 +6,7 @@ const SURFACES=[
   '.home-quick-row','.home-recent-head','.note-card','.filter-panel','.vintage-panel',
   '.season-current','.hou-panel','.dial-panel','.season-verse','.surface','.link-panel','.topic-panel',
   '.reading-paper','.editor-stage','.editor-topline','.calendar-card','.archive-mini-card',
-  '.insight-metric','.insight-panel','.settings-hub-panel','.github-connect','.github-files',
+  '.insight-metric','.insight-panel','.settings-window','.github-connect','.github-files',
   '.github-detail','.notebook-unlinked','.notebook-repo-strip','.data-action-card',
   '.data-summary','.secure-backup-strip','.vigil-tabs','.pagination-card','.modal',
   '.command-dialog','.passphrase-dialog','.vigil-select-popup','.toast','.glass-dock',

@@ -7,7 +7,7 @@ import {settingsView} from '../src/ui/views/settings.js';
 import {entriesView} from '../src/ui/views/entries.js';
 import {DEFAULT_APPEARANCE} from '../src/appearance/settings.js';
 import {APP_VERSION} from '../src/core/diagnostics.js';
-import {readStyles,styleModules} from './support/styles.js';
+import {readStyle,readStyles,styleModules} from './support/styles.js';
 
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 const base={
@@ -48,8 +48,10 @@ test('v1.7.1: 毛玻璃覆盖卡片、面板、菜单、对话框、阅读与写
   // Every selector of every rule that applies the frosted-glass blur.
   const plain=css.replace(/\/\*[\s\S]*?\*\//g,'');
   const frosted=[...plain.matchAll(/([^{}]+)\{[^{}]*backdrop-filter:var\(--glass-panel-blur\)!important/g)].map(m=>m[1]).join(',');
-  for(const surface of ['.note-card','.filter-panel','.vintage-panel','.insight-panel','.settings-hub-panel','.unified-toolbar','.editor-outline-sidebar','.modal','.pagination-card'])
+  for(const surface of ['.note-card','.filter-panel','.vintage-panel','.insight-panel','.unified-toolbar','.editor-outline-sidebar','.modal','.pagination-card'])
     assert.ok(frosted.includes(surface),`${surface} is frosted`);
+  assert.match(plain,/\.settings-window\{[^}]*backdrop-filter:var\(--glass-panel-blur\)/);
+  assert.doesNotMatch(readStyle('surfaces'),/\.settings-hub-panel/);
   // Papers are frosted through a ::before underlay, never on the element itself
   // (backdrop-filter would capture the position:fixed outline drawer).
   assert.match(frosted,/:is\(\.reading-paper,\.editor-paper\)::before/);

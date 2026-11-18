@@ -2,7 +2,6 @@ import {icon} from '../icons.js';
 import {BACKGROUND_PRESETS,COLOR_PRESETS} from '../../appearance/settings.js';
 import {dataManagementPanels} from './data.js';
 import {aboutPanel} from './about.js';
-import {pageHeading} from './page-heading.js';
 
 export const SETTINGS_TABS=[['appearance','外观'],['reading','排版'],['data','数据'],['about','关于']];
 const bgClass={paper:'bg-paper',mountains:'bg-mountains',sage:'bg-sage',sea:'bg-sea',custom:'bg-custom',none:'bg-none'};
@@ -100,7 +99,13 @@ export function settingsView(state){
   const content={appearance:appearancePanel,reading:readingPanel,about:aboutPanel};
   return `<section class="settings-hub">
     <div class="settings-heading">
-    ${pageHeading({title:'设置',description:'调整书写空间，管理本地资料。',actions:active==='about'||active==='data'?'':`<button class="settings-reset" data-action="reset-appearance">${icon('refresh')} 恢复默认设置</button>`})}
+    <header class="settings-titlebar">
+      <h2 id="settingsTitle">设置</h2>
+      <div class="settings-actions">
+        ${active==='about'||active==='data'?'':`<button type="button" class="settings-reset" data-action="reset-appearance">${icon('refresh')} 恢复默认设置</button>`}
+        <button type="button" class="settings-close" data-action="close-settings" aria-label="关闭设置" title="关闭设置">${icon('close')}</button>
+      </div>
+    </header>
     <nav class="settings-hub-tabs vigil-tabs" role="tablist" aria-label="设置分类">${SETTINGS_TABS.map(([key,label])=>`<button type="button" id="settings-tab-${key}" class="settings-tab vigil-tab ${active===key?'active':''}" role="tab" aria-controls="settings-content" aria-selected="${active===key}" tabindex="${active===key?'0':'-1'}" data-action="settings-tab" data-tab="${key}">${label}</button>`).join('')}</nav>
     </div>
     <section class="settings-hub-panel" id="settings-content" role="tabpanel" aria-labelledby="settings-tab-${active}" tabindex="0">

@@ -50,9 +50,10 @@ function highlight(index){
   if(!items.length)return;
   const valid=items.filter(x=>!x.disabled);
   if(!valid.length)return;
-  const item=items[((index%items.length)+items.length)%items.length];
-  if(item.disabled)return;
-  active.index=items.indexOf(item);
+  let pos=((index%items.length)+items.length)%items.length;
+  for(let step=0;step<items.length&&items[pos].disabled;step++)pos=(pos+1)%items.length;
+  const item=items[pos];
+  active.index=pos;
   for(let i=0;i<items.length;i++){
     const node=popup.children[i];
     node.classList.toggle('is-highlighted',i===active.index);
@@ -77,11 +78,13 @@ function open(select,trigger){
   if(active?.trigger===trigger){closeThemedSelect();return;}
   closeThemedSelect();
   const list=popupElement();list.replaceChildren();
+  const host=trigger.closest('#settingsLayer')||document.body;
+  if(list.parentElement!==host)host.append(list);
   const items=[...select.options];
   active={select,trigger,items,index:Math.max(0,select.selectedIndex)};
   for(let i=0;i<items.length;i++){
     const option=items[i];
-    const row=document.createElement('button');row.type='button';row.id='vigil-select-opt-'+i;
+    const row=document.createElement('button');row.type='button';row.tabIndex=-1;row.id='vigil-select-opt-'+i;
     row.className='vigil-select-option';row.setAttribute('role','option');
     row.setAttribute('aria-selected',String(i===active.index));
     row.disabled=option.disabled;

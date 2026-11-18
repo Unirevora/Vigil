@@ -1,13 +1,13 @@
 /* Frosted-glass surfaces shared by cards, panels, papers and dialogs. */
 /* Glass belongs on action chips. Reading text always keeps a stable paper. */
-.main-inner :is(.reading-paper,.editor-paper,.github-detail,.settings-hub-panel){-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.main-inner :is(.reading-paper,.editor-paper,.github-detail){-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 /* All night reading surfaces must own BOTH their ink and their background.
    White-on-white metrics and mixed paper/night review cards were root causes. */
 :root[data-theme=night] body .main-inner :is(
   .insight-metric,.insight-panel,.insight-panel.task-panel,.link-panel,.topic-panel,
   .note-card,.filter-panel,.reading-paper,.editor-paper,.calendar-card,.archive-mini-card,
   .github-connect,.github-files,.github-detail,.data-action-card,.data-summary > div,
-  .list-surface,.settings-hub-panel,.settings-group,.about-section,.season-current,
+  .list-surface,.season-current,
   .hou-panel,.dial-panel,.season-verse,.vintage-panel,.surface
 ){background:color-mix(in srgb,var(--surface) var(--paper-opacity,91%),transparent)!important;background-image:none!important;border-color:var(--stroke)!important;color:var(--ink)!important;text-shadow:none!important}
 :root[data-theme=night] body .main-inner :is(.insights-head,.page-head) h1{color:#f4f2ec!important;opacity:1!important}
@@ -23,7 +23,7 @@
      Opacity follows Settings → 纸面透光 (--paper-opacity). */
   .main-inner :is(
     .note-card,.filter-panel,.vintage-panel:not(.season-verse),.heritage-stat,.illustrated-slip,
-    .insight-metric,.insight-panel:not(.reflection-panel),.surface,.settings-hub-panel,
+    .insight-metric,.insight-panel:not(.reflection-panel),.surface,
     .github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty
   ){background-color:var(--glass-panel-bg)!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
   .main-inner .reflection-panel{background:linear-gradient(142deg,color-mix(in srgb,var(--glass-panel-bg) 86%,var(--appearance-accent-soft)),color-mix(in srgb,var(--glass-panel-bg) 88%,var(--green-soft)))!important;border-color:var(--glass-panel-edge)!important;box-shadow:var(--glass-panel-shadow)!important;-webkit-backdrop-filter:var(--glass-panel-blur)!important;backdrop-filter:var(--glass-panel-blur)!important}
@@ -35,11 +35,11 @@
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .main-inner :is(.reading-paper,.editor-paper)::before{background:var(--surface)!important}
     .main-inner :is(.note-card,.filter-panel,.vintage-panel,.heritage-stat,.illustrated-slip,.insight-metric,
-        .insight-panel,.surface,.settings-hub-panel,.github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty){background:var(--surface)!important;background-color:var(--surface)!important}
+        .insight-panel,.surface,.github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty){background:var(--surface)!important;background-color:var(--surface)!important}
   }
   @media (prefers-reduced-transparency:reduce){
     .main-inner :is(.reading-paper,.editor-paper)::before{background:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
     .main-inner :is(.note-card,.filter-panel,.vintage-panel,.heritage-stat,.illustrated-slip,.insight-metric,
-        .insight-panel,.surface,.settings-hub-panel,.github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty){background:var(--surface)!important;background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+        .insight-panel,.surface,.github-anonymous-option,.notebook-repo-strip,.reader-backlinks,.empty){background:var(--surface)!important;background-color:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   }
 }

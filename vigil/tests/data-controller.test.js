@@ -103,7 +103,7 @@ function invalidImportFile(){
 }
 function createRuntimeHarness({
   entries=[makeEntry('current')],backupItems=[],confirmation=true,password='test-passphrase',
-  decryptedEntries=[makeEntry('decrypted')],repoReadOnly=false,saveError=null,backupError=null,decryptError=null
+  decryptedEntries=[makeEntry('decrypted')],repoReadOnly=false,saveError=null,backupError=null,decryptError=null,canLeave=true
 }={}){
   const originalEntries=entries;
   const originalSnapshot=JSON.parse(JSON.stringify(entries));
@@ -142,6 +142,7 @@ function createRuntimeHarness({
     },
     render(){calls.renders++;},
     navigate(page){calls.navigations.push(page);},
+    canLeave(){return canLeave;},
     refreshDrafts(){},
     refreshBackups(){calls.refreshes++;}
   });
@@ -156,6 +157,16 @@ function assertImportLeftUntouched(harness){
   assert.equal(harness.calls.backups.length,0);
   assertEntriesUntouched(harness);
 }
+
+test('设置浮层中的导入和恢复在拒绝离开当前稿纸时不覆盖手记',async()=>{
+  const item={id:'saved',entries:[makeEntry('saved')]};
+  const harness=createRuntimeHarness({canLeave:false,backupItems:[item]});
+  await harness.controller.processImportFile(new Blob([JSON.stringify({schemaVersion:1,entries:item.entries})]));
+  await harness.controller.actions['restore-backup']({dataset:{id:item.id}});
+  assert.equal(harness.calls.confirms.length,2);
+  assert.equal(harness.calls.navigations.length,0);
+  assertImportLeftUntouched(harness);
+});
 async function assertBackupFailureBlocksSave(harness,operation){
   await operation();
   assert.equal(harness.calls.backups.length,1);
@@ -181,7 +192,7 @@ test('数据控制器只暴露约定接口和 13 个动作，且不依赖 main.j
   assert.deepEqual(Object.keys(controller.actions).sort(),[...expectedActions].sort());
   for(const action of expectedActions)assert.equal(typeof controller.actions[action],'function',action);
   assert.match(source,/export function createDataController\(context\)/);
-  assert.match(source,/const \{state,repo,drafts,backups,\$,render,navigate,refreshDrafts,refreshBackups\}=context;/);
+  assert.match(source,/const \{state,repo,drafts,backups,\$,render,navigate,canLeave,refreshDrafts,refreshBackups\}=context;/);
   assert.doesNotMatch(source,/(?:from\s*|import\s*\(\s*)['"][^'"]*main\.js['"]/);
 });
 

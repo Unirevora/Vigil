@@ -13,7 +13,7 @@ const localSource=localActionsMatch?.[1]||'';
 const localActions=[...localSource.matchAll(/^\s*'([a-z0-9-]+)':/gm)].map(match=>match[1]);
 
 const expectedLocalActions=[
-  'nav','insight-tag','toggle-sidebar','command-palette','theme','settings-tab','season-tab',
+  'nav','insight-tag','toggle-sidebar','command-palette','theme','open-settings','close-settings','settings-tab','season-tab',
   'chronicle-today','about-diagnose','about-copy-diagnostics','editor-mode','toggle-zen',
   'toggle-outline-sidebar','close-outline-sidebar','find-prev','find-next','find-replace',
   'find-replace-all','find-close','setting-upload','setting-accent','setting-background',

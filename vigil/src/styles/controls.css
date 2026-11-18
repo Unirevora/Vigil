@@ -107,7 +107,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 /* Override legacy hard-coded green CTA backgrounds with the selected color. */
 .btn-primary:not(.side-create){background:var(--user-primary-bg)!important;color:var(--appearance-contrast)!important;border-color:color-mix(in srgb,var(--user-primary-bg) 73%,var(--ink))!important}
 .btn-primary:not(.side-create):hover:not(:disabled){background:color-mix(in srgb,var(--user-primary-bg) 88%,#fff)!important}
-:root[data-theme=night] .vigil-select-popup{background:rgba(44,44,51,.97)!important;color:var(--ink)!important}
+:root[data-theme=night] .vigil-select-popup{background:var(--glass-dialog-bg)!important;border-color:var(--glass-panel-edge)!important;color:var(--ink)!important}
 :root[data-theme=night] input{color:var(--ink);caret-color:var(--appearance-accent)}
 :root[data-theme=night] textarea{color:var(--ink);caret-color:var(--appearance-accent)}
 :root[data-theme=night] select{color:var(--ink);caret-color:var(--appearance-accent)}

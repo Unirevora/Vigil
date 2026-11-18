@@ -1,12 +1,51 @@
-/* Settings owns one set of controls. Shared page headings, tabs and glass
-   surfaces remain in pages.css, tabs.css and surfaces.css. */
-.appearance-entry{display:flex;align-items:center;gap:17px;margin-top:9px}
-.shell.sidebar-collapsed .appearance-entry{width:56px;margin:9px auto 0;justify-content:center;min-height:48px;height:48px;padding:8px}
-.shell.sidebar-collapsed .appearance-entry .nav-short{display:none}
-body[data-page=settings] .main-inner{padding-bottom:16px}
-.settings-hub{max-width:1060px;min-width:0;margin-inline:auto;height:var(--settings-height,calc(100dvh - 100px));display:flex;flex-direction:column}
+/* Keep the overlay between the app chrome and the confirmation dialog. */
+html:has(.settings-layer.is-open){overflow:hidden}
+.settings-layer{
+  --settings-inset:clamp(14px,2.4vw,36px);
+  --settings-duration:.32s;
+  position:fixed;inset:0;z-index:25;display:grid;align-items:end;justify-items:start;
+  padding:var(--settings-inset) var(--settings-inset) var(--settings-inset) calc(var(--sidebar-width) + 16px);
+  visibility:hidden;pointer-events:none;transition:visibility 0s var(--settings-duration);
+}
+.settings-layer.from-compact-sidebar{padding-left:calc(var(--sidebar-closed) + 16px)}
+.settings-layer.from-zen{padding-left:var(--settings-inset);justify-items:center}
+.settings-layer.is-open{visibility:visible;pointer-events:auto;transition:none}
+.settings-layer::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:color-mix(in srgb,var(--sidebar-solid) 38%,transparent);
+  -webkit-backdrop-filter:blur(7px) brightness(.82);backdrop-filter:blur(7px) brightness(.82);
+  opacity:0;transition:opacity var(--settings-duration) var(--vigil-ease);
+}
+.settings-layer.is-open::before{opacity:1}
+.settings-window{
+  position:relative;width:min(100%,880px);min-width:0;
+  height:min(740px,calc(100dvh - 2 * var(--settings-inset)));
+  border:1px solid var(--glass-panel-edge);border-radius:var(--radius-lg);
+  background:var(--surface);color:var(--ink);box-shadow:var(--glass-panel-shadow),0 24px 65px rgba(0,0,0,.24);
+  translate:-12px 14px;scale:.98;opacity:0;transform-origin:bottom left;
+  transition:translate var(--settings-duration) var(--vigil-ease),scale var(--settings-duration) var(--vigil-ease),opacity var(--settings-duration) var(--vigil-ease);
+}
+.settings-layer.is-open .settings-window{translate:0 0;scale:1;opacity:1}
+.settings-hub{height:100%;min-width:0;display:flex;flex-direction:column;padding:clamp(14px,2.1vw,30px)}
+@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
+  .settings-window{background:var(--glass-dialog-bg);-webkit-backdrop-filter:var(--glass-panel-blur);backdrop-filter:var(--glass-panel-blur)}
+}
+@media (prefers-reduced-transparency:reduce){
+  .settings-window{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .settings-layer::before{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+:root[data-motion=subtle] .settings-layer{--settings-duration:.2s}
+:root[data-motion=off] .settings-layer{--settings-duration:0s}
 .settings-heading{flex:none;min-width:0}
-.settings-hub-panel{flex:1 1 0;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:clamp(20px,3vw,36px);border:1px solid var(--stroke);border-radius:var(--radius-lg,20px);color:var(--ink)}
+.settings-titlebar,.settings-actions{display:flex;align-items:center;gap:10px}
+.settings-titlebar{justify-content:space-between;margin-bottom:6px}
+.settings-titlebar h2{font:600 30px/1.2 var(--font-display)}
+.settings-close{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--stroke);border-radius:var(--radius-sm);background:transparent;color:var(--ink-2);cursor:pointer;transition:scale .16s var(--vigil-ease),background-color .16s,color .16s}
+.settings-close:hover{background:var(--surface-soft);color:var(--appearance-accent)}
+.settings-close:active{scale:.96}
+.settings-hub-panel{flex:1 1 0;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:4px 4px 18px;color:var(--ink)}
+/* Trim the shared tabs' page spacing within the dialog. */
+@layer overrides{.settings-heading .vigil-tabs{margin-bottom:14px!important}}
 .settings-reset,.settings-theme-switch{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 14px;border:1px solid var(--stroke);border-radius:12px;background:transparent;color:var(--ink-2);font-size:12px;cursor:pointer;transition:color .2s,border-color .2s,background-color .2s}
 :is(.settings-reset,.settings-theme-switch):hover{border-color:var(--appearance-accent);color:var(--appearance-accent);background:var(--surface-soft)}
 :is(.settings-reset,.settings-theme-switch) svg{width:16px;height:16px;flex:none}
@@ -149,9 +188,13 @@ body[data-page=settings] .main-inner{padding-bottom:16px}
 .about-footer span{font:10px var(--font-typed);letter-spacing:.1em}
 .about-mark img{width:100%;height:100%;object-fit:contain;display:block}
 
-@media (max-width:900px){.appearance-entry{display:none!important}}
+@media (max-width:900px){
+  .settings-layer,.settings-layer.from-compact-sidebar{padding-left:var(--settings-inset);justify-items:center;align-items:center}
+  .settings-window{translate:0 12px;transform-origin:center bottom}
+}
 @media (max-width:680px){
-  .settings-hub-panel{padding:20px 16px;border-radius:18px}
+  .settings-titlebar h2{font-size:26px}
+  .settings-reset{padding-inline:9px}
   .settings-section-heading h2{font-size:16px}
   .settings-colors-row{flex-direction:column;gap:16px}
   .settings-color-options{justify-content:flex-start;gap:12px 8px}
@@ -182,5 +225,6 @@ body[data-page=settings] .main-inner{padding-bottom:16px}
 }
 @media (max-width:380px){.about-hero h2{font-size:26px}}
 @media (prefers-reduced-motion:reduce){
+  .settings-layer,.settings-layer::before,.settings-window,
   .settings-hub :is(button,.color-swatch,.settings-toggle-visual),.settings-toggle-visual::after{transition:none!important}
 }

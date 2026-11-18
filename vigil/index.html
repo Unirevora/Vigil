@@ -35,10 +35,12 @@
           <button type="button" class="nav-item" data-nav="insights" data-action="nav" data-to="insights" title="线索与行动"><span data-icon="compass"></span><span class="nav-full">线索与行动</span><span class="nav-short">线索</span></button>
           <button type="button" class="nav-item" data-nav="github" data-action="nav" data-to="github" title="GitHub 仓库"><span data-icon="github"></span><span class="nav-full">GitHub 仓库</span><span class="nav-short">仓库</span></button>
         </nav>
-        <button type="button" class="nav-item appearance-entry" data-action="nav" data-to="settings" data-nav="settings"
-          title="设置中心" aria-label="设置中心"><span data-icon="settings"></span><span class="nav-full">设置中心</span><span class="nav-short">设置</span></button>
         <div class="sidebar-spacer"></div>
-        <div class="sidebar-bottom"><span class="sidebar-version">v1.7.7</span></div>
+        <div class="sidebar-bottom">
+          <span class="sidebar-version">v1.7.8</span>
+          <button type="button" class="sidebar-settings" data-action="open-settings" aria-haspopup="dialog" aria-controls="settingsLayer" aria-expanded="false"
+            title="设置中心" aria-label="打开设置中心"><span data-icon="settings"></span></button>
+        </div>
       </div>
       <button type="button" class="sidebar-toggle" id="sidebarToggle"
         data-action="toggle-sidebar" aria-controls="sidebarNav" aria-expanded="true"
@@ -48,7 +50,7 @@
     </aside>
     <div class="main">
       <header class="topbar">
-        <div class="top-right" role="group" aria-label="全局快捷操作"><button type="button" class="icon-button header-settings" data-liquid-glass data-action="nav" data-to="settings" aria-label="打开设置中心" title="设置中心"><span data-icon="settings"></span></button>
+        <div class="top-right" role="group" aria-label="全局快捷操作"><button type="button" class="icon-button header-settings" data-liquid-glass data-action="open-settings" aria-haspopup="dialog" aria-controls="settingsLayer" aria-expanded="false" aria-label="打开设置中心" title="设置中心"><span data-icon="settings"></span></button>
         <button type="button" class="header-search" data-liquid-glass data-action="command-palette"
         aria-keyshortcuts="Control+K Meta+K" title="快速搜索与命令 (Ctrl/⌘+K)">
         <span data-icon="search"></span><span>快速检索</span><kbd>⌘ K</kbd>
@@ -66,6 +68,9 @@
     <button data-action="nav" data-to="insights" data-dock="insights" title="线索与行动"><span data-icon="compass"></span><span>线索</span></button>
     <button data-action="nav" data-to="chronicle" data-dock="chronicle" title="日历与风物"><span data-icon="calendar"></span><span>岁时</span></button>
   </nav>
+  <div class="settings-layer" id="settingsLayer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" inert>
+    <div class="settings-window" id="settingsWindow"></div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal-layer" id="modalLayer" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">

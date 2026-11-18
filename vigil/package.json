@@ -1,9 +1,9 @@
 {
   "name": "vigil-inkpress",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "private": true,
   "type": "module",
-  "description": "不眠手记 v1.7.7：哑光棉纸与光学玻璃、编年目录与精微中文排版",
+  "description": "不眠手记 v1.7.8：哑光棉纸与光学玻璃、编年目录与精微中文排版",
   "scripts": {
     "dev": "node scripts/build-css.mjs && node scripts/dev-server.mjs",
     "start": "node scripts/build-css.mjs && node scripts/dev-server.mjs",

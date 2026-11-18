@@ -16,7 +16,7 @@ import {githubDraftKey,githubDraftSnapshot} from './github/notebook.js';
 import {icon} from './ui/icons.js';
 import {entriesCards} from './ui/views/entry-cards.js';
 import {VIEWS,VIEW_TITLES} from './ui/views/index.js';
-import {SETTINGS_TABS} from './ui/views/settings.js';
+import {SETTINGS_TABS,settingsView} from './ui/views/settings.js';
 import {KATEX_VERSION} from './core/math.js';
 import {collectDiagnostics,formatDiagnostics} from './core/diagnostics.js';
 import {showToast,confirmDialog} from './ui/feedback.js';
@@ -74,7 +74,9 @@ let draftDirty=false;
 let previewFrame=null;
 let almanacController=null;
 let unifiedEditor=null;
-let settingsFrameObserver=null;
+const settingsLayer=$('#settingsLayer');
+const settingsBackground=[$('.shell'),$('.glass-dock')];
+let settingsReturnFocus=null;
 let zenFrameAnimation=null;
 let typingQuietTimer=null;
 let glass=null; // scene sampler is refreshed after every theme / wallpaper change
@@ -275,6 +277,15 @@ function saveDraftLocal(){
   clearTimeout(draftTimer);draftTimer=null;
   if(state.view!=='editor'||!state.draft)return true;
   const signature=JSON.stringify(state.draft);
+  if(signature===state.originalDraft){
+    draftDirty=false;
+    state.draftSavedSignature=null;
+    if(state.drafts.some(d=>d.key===draftKey())){
+      try{drafts.remove(draftKey());refreshDrafts();}catch{}
+    }
+    updateDraftStatus('内容与已保存版本一致');
+    return true;
+  }
   if(!draftDirty||signature===state.draftSavedSignature)return true;
   try{
     const old=state.entries.find(e=>e.id===state.editingId);
@@ -326,8 +337,8 @@ function navigate(view){
   // Preserve routes for older calls while presenting one cohesive calendar/season page.
   if(view==='calendar'){state.seasonTab='calendar';view='chronicle';}
   else if(view==='almanac'){state.seasonTab='almanac';view='chronicle';}
-  if(view==='data'){state.settingsTab='data';view='settings';}
-  else if(view==='settings'&&state.view!=='settings')state.settingsTab='appearance';
+  if(view==='data'||view==='settings'){openSettings(view==='data'?'data':'appearance');return;}
+  closeSettings({restoreFocus:false});
   if(state.view==='editor'&&view!=='editor')resetDraft();
   if(state.view==='github'&&view!=='github'){gh.editing=false;gh.dirty=false;}
   state.view=view;render();
@@ -336,7 +347,7 @@ function navigate(view){
     try{storage.setItem(MOBILE_NAV_KEY,'0');}catch{}
     updateSidebar();
   }
-  window.scrollTo(0,0);
+  try{window.scrollTo({top:0,left:0,behavior:'instant'});}catch{window.scrollTo(0,0);}
 }
 async function leaveTo(view){if(await canLeave())navigate(view);}
 async function startEditor(id=null,{resume=false,seed=null}={}){
@@ -369,7 +380,8 @@ async function startEditor(id=null,{resume=false,seed=null}={}){
   state.draftSavedSignature=useSaved?JSON.stringify(chosen):null;
   draftDirty=false;
   state.draftStatus=useSaved?'已恢复草稿，继续写吧':'输入后会自动保存草稿';
-  state.view='editor';render();window.scrollTo(0,0);
+  state.view='editor';render();
+  try{window.scrollTo({top:0,left:0,behavior:'instant'});}catch{window.scrollTo(0,0);}
   animatePaperUnfold(document.querySelector('.editor-paper'),fromRect);
   $('#entryTitle')?.focus();
 }
@@ -404,7 +416,8 @@ async function startGithubEditor(){
   draftDirty=false;
   state.draftStatus=restore?'已恢复仓库草稿，尚未提交':'输入后自动保存本机草稿；保存按钮提交 GitHub';
   gh.editing=false;gh.dirty=false;
-  state.view='editor';render();window.scrollTo(0,0);
+  state.view='editor';render();
+  try{window.scrollTo({top:0,left:0,behavior:'instant'});}catch{window.scrollTo(0,0);}
   unifiedEditor?.focus();
 }
 async function resumeDraft(key){
@@ -468,10 +481,60 @@ function toggleEditorFocus(){
     button.classList.toggle('active',state.editorFocus);
   }
 }
+function renderSettings({preserveScroll=true,animateTabs=true}={}){
+  if(settingsLayer.inert)return;
+  const previous=$('#settings-content');
+  const scrollTop=preserveScroll?previous?.scrollTop||0:0;
+  const focused=document.activeElement;
+  const restoreFocus=settingsLayer.contains(focused);
+  closeThemedSelect();
+  state.storageUsage=storageFootprint(storage);
+  $('#settingsWindow').innerHTML=settingsView(state);
+  mountThemedSelects(settingsLayer);
+  syncTabIndicators(settingsLayer,{animate:animateTabs&&state.appearance.motionMode!=='off'});
+  $('#settings-content').scrollTop=scrollTop;
+  if(restoreFocus){
+    const id=focused.id;
+    const action=focused.dataset.action;
+    const replacement=id?document.getElementById(id):
+      action&&!focused.dataset.id?settingsLayer.querySelector(`[data-action="${CSS.escape(action)}"]`):null;
+    (replacement?.getClientRects().length&&!replacement.disabled?replacement:
+      settingsLayer.querySelector('[role="tab"][aria-selected="true"]')).focus({preventScroll:true});
+  }
+}
 function setSettingsTab(tab){
   state.settingsTab=SETTINGS_TABS.some(([key])=>key===tab)?tab:'appearance';
-  if(state.view!=='settings')state.view='settings';
-  render();
+  renderSettings({preserveScroll:false});
+  settingsLayer.querySelector('[role="tab"][aria-selected="true"]')?.focus({preventScroll:true});
+}
+function openSettings(tab='appearance',trigger=document.activeElement){
+  if(!settingsLayer.inert){setSettingsTab(tab);return;}
+  settingsReturnFocus=trigger;
+  closeThemedSelect();
+  settingsLayer.inert=false;
+  settingsLayer.classList.toggle('from-compact-sidebar',$('.shell').classList.contains('sidebar-collapsed'));
+  settingsLayer.classList.toggle('from-zen',state.zenMode);
+  state.settingsTab=tab;
+  renderSettings({preserveScroll:false,animateTabs:false});
+  settingsLayer.classList.add('is-open');
+  for(const region of settingsBackground)region.inert=true;
+  document.querySelectorAll('[data-action="open-settings"]').forEach(button=>button.setAttribute('aria-expanded','true'));
+  settingsLayer.querySelector('.settings-close').focus({preventScroll:true});
+}
+function closeSettings({restoreFocus=true}={}){
+  if(settingsLayer.inert)return;
+  closeThemedSelect();
+  settingsLayer.inert=true;
+  settingsLayer.classList.remove('is-open');
+  for(const region of settingsBackground)region.inert=false;
+  document.querySelectorAll('[data-action="open-settings"]').forEach(button=>button.setAttribute('aria-expanded','false'));
+  if(restoreFocus){
+    const fallback=mobileMedia.matches?$('.header-settings'):$('.sidebar-settings');
+    const target=settingsReturnFocus?.getClientRects().length&&settingsReturnFocus!==document.body
+      ?settingsReturnFocus:fallback?.getClientRects().length?fallback:$('#mainContent');
+    target.focus({preventScroll:true});
+  }
+  settingsReturnFocus=null;
 }
 function setSeasonTab(tab){
   if(!['calendar','almanac'].includes(tab))return;
@@ -496,7 +559,7 @@ function chronicleToday(){
 }
 function aboutDiagnostics(){
   state.aboutDiagnostics=collectDiagnostics(state,window);
-  render();
+  renderSettings();
   document.querySelector('[data-action="about-diagnose"]')?.focus({preventScroll:true});
 }
 async function copyAboutDiagnostics(){
@@ -657,7 +720,7 @@ function filterTo(value){
   if(state.view==='entries')refreshList();else render();
 }
 function changeTheme(){
-  if(saveAppearance({theme:state.theme==='paper'?'night':'paper'})&&state.view==='settings')render();
+  if(saveAppearance({theme:state.theme==='paper'?'night':'paper'}))renderSettings();
 }
 function syncAccentSwatches(color){
   document.querySelectorAll('.settings-color-options [data-action="setting-accent"]').forEach(node=>{
@@ -688,7 +751,7 @@ async function uploadAppearanceImage(file,key){
     await visualAssets.set(key,blob);
     selectAppearanceOption(key==='hero'?'heroMode':'background','custom');
     applyAppearance();
-    if(state.view==='settings')render();
+    renderSettings();
     showToast(key==='hero'?'静物图片已保存':'背景图片已保存');
   }catch(err){showToast('图片设置失败：'+err.message,{error:true});}
 }
@@ -696,7 +759,7 @@ async function removeAppearanceImage(key){
   try{
     await visualAssets.set(key,null);
     saveAppearance(key==='hero'?{heroMode:'original'}:{background:'paper'});
-    if(state.view==='settings')render();
+    renderSettings();
     showToast('图片已恢复默认');
   }catch(err){showToast(err.message,{error:true});}
 }
@@ -713,18 +776,7 @@ function fitEditorFrame(){
   unifiedEditor?.refresh();
 }
 window.addEventListener('resize',fitEditorFrame);
-/** Keep the settings heading outside a viewport-sized, independently scrolling panel. */
-function fitSettingsFrame(){
-  const page=document.querySelector('.settings-hub');
-  if(!page)return;
-  const top=page.getBoundingClientRect().top+window.scrollY;
-  const inner=page.closest('.main-inner');
-  const pad=inner?parseFloat(getComputedStyle(inner).paddingBottom)||0:0;
-  page.style.setProperty('--settings-height',Math.max(0,Math.floor(window.innerHeight-top-pad))+'px');
-}
-window.addEventListener('resize',fitSettingsFrame);
 function render(){
-  settingsFrameObserver?.disconnect();settingsFrameObserver=null;
   zenFrameAnimation?.cancel();zenFrameAnimation=null;
   exitTypingQuietude();
   state.storageUsage=storageFootprint(storage);
@@ -749,12 +801,7 @@ function render(){
   applyAppearance();
   mountThemedSelects($('#mainContent'));
   syncTabIndicators($('#mainContent'));
-  if(state.view==='settings'){
-    fitSettingsFrame();
-    settingsFrameObserver=new ResizeObserver(fitSettingsFrame);
-    settingsFrameObserver.observe(document.querySelector('.settings-heading'));
-    if($('#appSidebar'))settingsFrameObserver.observe($('#appSidebar'));
-  }
+  renderSettings();
   document.title=`${VIEW_TITLES[state.view]} · 不眠手记`;
   if(state.view==='github')githubController.ensureGithubProxyStatus();
   playEntranceMotion($('#mainContent'));
@@ -830,13 +877,14 @@ const palette=mountCommandPalette({
   onSelect:async item=>{
     try{
       switch(item.kind){
-        case 'nav':await leaveTo(item.view);break;
+        case 'nav':
+          if(item.view==='settings')openSettings();
+          else await leaveTo(item.view);
+          break;
         case 'season-almanac':
           if(!await canLeave())return;
           state.seasonTab='almanac';navigate('chronicle');break;
-        case 'about':
-          if(!await canLeave())return;
-          navigate('settings');setSettingsTab('about');break;
+        case 'about':openSettings('about');break;
         case 'new':await startEditor();break;
         case 'read':await readEntry(item.id);break;
         case 'resume':await resumeDraft(item.id);break;
@@ -853,13 +901,18 @@ const palette=mountCommandPalette({
 function resetListFilters(){state.query='';state.filters={};render();}
 const actions={
   'nav':async button=>{
-    if(button.dataset.tab)state.settingsTab=button.dataset.tab;
+    if(button.dataset.to==='settings'||button.dataset.to==='data'){
+      openSettings(button.dataset.tab||(button.dataset.to==='data'?'data':'appearance'),button);
+      return;
+    }
     await leaveTo(button.dataset.to);
   },
   'insight-tag':button=>{state.filters={tag:button.dataset.tag||''};navigate('entries');},
   'toggle-sidebar':button=>{toggleSidebar();},
   'command-palette':button=>{palette.open();},
   'theme':button=>{changeTheme();},
+  'open-settings':button=>{openSettings('appearance',button);},
+  'close-settings':()=>{closeSettings();},
   'settings-tab':button=>{setSettingsTab(button.dataset.tab);},
   'season-tab':button=>{setSeasonTab(button.dataset.tab);},
   'chronicle-today':button=>{chronicleToday();},
@@ -888,7 +941,7 @@ const actions={
   },
   'reset-appearance':async button=>{
     if(await confirmDialog({title:'恢复默认设置？',description:'将外观、材质、动效与正文排版恢复为默认值，不影响手记和已上传的图片文件。',confirmText:'恢复默认'})){
-      if(saveAppearance({...DEFAULT_APPEARANCE})){render();showToast('外观与排版已恢复默认');}
+      if(saveAppearance({...DEFAULT_APPEARANCE})){renderSettings();showToast('外观与排版已恢复默认');}
     }
   },
   'remove-custom-background':async button=>{await removeAppearanceImage('background');},
@@ -956,7 +1009,11 @@ const githubController=createGithubController({
   drafts,refreshDrafts,draftKey,trackDraftFromInputs,saveDraftLocal,updateDraftStatus
 });
 const dataController=createDataController({
-  state,repo,drafts,backups,$,render,navigate,refreshDrafts,refreshBackups
+  state,repo,drafts,backups,$,navigate,canLeave,refreshDrafts,refreshBackups,
+  render:()=>{
+    if(!settingsLayer.inert&&['editor','github'].includes(state.view))renderSettings();
+    else render();
+  }
 });
 const dispatchAction=createActionDispatcher({
   ...actions,
@@ -976,6 +1033,7 @@ document.body.addEventListener('pointerdown',event=>{
   if(format && event.pointerType==='mouse' && event.button===0)event.preventDefault();
 });
 document.body.addEventListener('click',async e=>{
+  if(e.target===settingsLayer){closeSettings();return;}
   if(!e.target.closest('.editor-dropdown-menu'))closeEditorMenus();
   const opened=e.target.closest('.editor-dropdown-menu > summary');
   if(opened)closeEditorMenus(opened.parentElement);
@@ -1021,6 +1079,7 @@ $('#importFile').addEventListener('change',async e=>{
   await dataController.processImportFile(file);
 });
 document.addEventListener('keydown',e=>{
+  if(e.defaultPrevented)return;
   if(e.target.matches?.('.chronicle-tab[role="tab"]')&&
       ['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
     e.preventDefault();
@@ -1041,7 +1100,19 @@ document.addEventListener('keydown',e=>{
       (current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
     const target=tabs[next];
     setSettingsTab(target);
-    document.querySelector(`.settings-tab[data-tab="${target}"]`)?.focus();
+    return;
+  }
+  if(!settingsLayer.inert){
+    if($('#modalLayer.open')||$('#passphraseLayer[aria-hidden="false"]'))return;
+    if(e.key==='Escape'){e.preventDefault();closeSettings();}
+    if(e.key==='Tab'){
+      const controls=[...settingsLayer.querySelectorAll('button,a[href],input,[tabindex]')]
+        .filter(node=>node.tabIndex>=0&&!node.disabled&&node.getClientRects().length);
+      const edge=e.shiftKey?controls.at(-1):controls[0];
+      if(!settingsLayer.contains(e.target)||e.target===(e.shiftKey?controls[0]:controls.at(-1))){
+        e.preventDefault();edge?.focus();
+      }
+    }
     return;
   }
   if(e.target.matches?.('.notebook-tab[role="tab"]')&&

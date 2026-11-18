@@ -1,6 +1,6 @@
 /** Local-only, non-sensitive environment report; never includes notes, tokens, URLs, keys or file contents. */
-export const APP_VERSION='1.7.7';
-export const RELEASE_NAME='墨笺';
+export const APP_VERSION='1.7.8';
+export const RELEASE_NAME='浮笺';
 
 export function collectDiagnostics(state,environment=globalThis){
   const storage=(()=>{

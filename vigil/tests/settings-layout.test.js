@@ -37,8 +37,18 @@ test('开关下的强度控件统一禁用，旧设置类和标签卡片规则�
 test('设置标题和标签处于滚动区外，导入导出卡片使用完整的统一布局',()=>{
   const html=settingsView(state),css=readStyle('settings');
   assert.match(html,/<div class="settings-heading">[\s\S]*?<nav class="settings-hub-tabs vigil-tabs"[\s\S]*?<\/nav>\s*<\/div>\s*<section class="settings-hub-panel"/);
-  assert.match(css,/\.settings-hub\{[^}]*height:var\(--settings-height/);
+  assert.match(css,/\.settings-window\{[^}]*height:min\(740px,calc\(100dvh/);
   assert.match(css,/\.settings-hub-panel\{[^}]*overflow:auto/);
   assert.match(css,/\.data-action-card\{[^}]*display:flex;[^}]*padding:22px/);
   assert.doesNotMatch(css,/\.data-action-card\{[^}]*border:0!important;[^}]*border-radius:0!important/);
+});
+
+test('设置入口位于侧栏底部，浮层独立于当前页面',()=>{
+  const shell=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+  assert.match(shell,/class="sidebar-bottom">\s*<span class="sidebar-version">[^<]+<\/span>\s*<button[^>]+data-action="open-settings"/);
+  assert.match(shell,/<\/main>[\s\S]*?id="settingsLayer" role="dialog" aria-modal="true"[^>]*\binert\b/);
+  assert.doesNotMatch(shell,/data-nav="settings"|appearance-entry/);
+  assert.doesNotMatch(main,/state\.view\s*===?\s*'settings'|fitSettingsFrame/);
+  assert.match(readStyle('settings'),/\.settings-layer::before\{[^}]*backdrop-filter:blur\(7px\) brightness\(\.82\)/);
 });

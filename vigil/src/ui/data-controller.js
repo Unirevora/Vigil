@@ -6,7 +6,7 @@ import {requestPassphrase} from './passphrase.js';
 import {toggleTask} from '../insights/insights.js';
 
 export function createDataController(context){
-  const {state,repo,drafts,backups,$,render,navigate,refreshDrafts,refreshBackups}=context;
+  const {state,repo,drafts,backups,$,render,navigate,canLeave,refreshDrafts,refreshBackups}=context;
   let requireEncryptedImport=false;
 
   function writeEntries(next){
@@ -76,6 +76,7 @@ export function createDataController(context){
       description:`文件含 ${incoming.length} 篇，将替换目前的 ${state.entries.length} 篇。备份失败会取消导入。`,
       confirmText:'备份并导入',danger:true
     }))return;
+    if(!await canLeave())return;
     if(state.entries.length&&!makeBackup(state.entries,'before-import','导入前备份'))return;
     if(writeEntries(incoming)){
       state.query='';state.filters={};navigate('entries');showToast('手记导入成功');
@@ -84,8 +85,16 @@ export function createDataController(context){
   async function clearDemo(){
     const count=state.entries.filter(e=>e.demo).length;if(!count)return;
     if(!await confirmDialog({title:'清除示例手记？',description:`仅清除 ${count} 篇示例内容。`,confirmText:'清除',danger:true}))return;
+    const displayedId=state.view==='editor'&&state.editorOrigin==='local'?state.editingId:
+      state.view==='reader'&&state.readerSource==='local'?state.selectedId:null;
+    const removesDisplayedEntry=state.entries.some(e=>e.id===displayedId&&e.demo);
+    if(removesDisplayedEntry&&!await canLeave())return;
     if(!makeBackup(state.entries,'before-delete','清除示例前'))return;
-    if(writeEntries(state.entries.filter(e=>!e.demo))){render();showToast('已清除示例');}
+    if(writeEntries(state.entries.filter(e=>!e.demo))){
+      if(removesDisplayedEntry)navigate('entries');
+      else render();
+      showToast('已清除示例');
+    }
   }
   function createBackup(){
     if(repo.readOnly)return;
@@ -94,6 +103,7 @@ export function createDataController(context){
   async function restoreBackup(id){
     const item=state.backups.find(b=>b.id===id);if(!item)return;
     if(!await confirmDialog({title:'恢复这份备份？',description:`将当前文库替换为 ${item.entries.length} 篇手记，恢复前也会先创建安全备份。`,confirmText:'恢复',danger:true}))return;
+    if(!await canLeave())return;
     const target=item.entries.map(e=>({...e}));
     if(!makeBackup(state.entries,'before-restore','恢复前备份'))return;
     if(writeEntries(target)){state.filters={};navigate('entries');showToast('已恢复备份');}

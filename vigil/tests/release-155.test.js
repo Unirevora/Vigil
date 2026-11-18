@@ -32,12 +32,14 @@ test('标题共用组件支持计数、可访问操作区，并对外来字符�
   assert.match(html,/与 &amp; 安全相关/);
   assert.match(html,/page-title-actions/);
 });
-test('五个功能页面共用同一主标题层级，主页编辑阅读保留独立语义',()=>{
-  for(const html of [entriesView(state),chronicleView(state),githubView(state),insightsView(state),settingsView(state)]){
+test('功能页面共用同一主标题层级，设置浮层有独立标题',()=>{
+  for(const html of [entriesView(state),chronicleView(state),githubView(state),insightsView(state)]){
     assert.equal((html.match(/<h1\b/g)||[]).length,1);
     assert.match(html,/class="page-head page-titlebar/);
     assert.match(html,/class="page-title"/);
   }
+  assert.match(settingsView(state),/<h2 id="settingsTitle">设置<\/h2>/);
+  assert.doesNotMatch(settingsView(state),/<h1\b/);
 });
 test('顶栏不重复输出页面名称，样式载入在最终位置',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');

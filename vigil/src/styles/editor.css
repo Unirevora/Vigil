@@ -163,11 +163,11 @@
 .cm-table-widget th{border:1px solid var(--stroke-2);padding:6px 10px;text-align:left}
 .cm-live-task{accent-color:var(--appearance-accent);width:16px;height:16px;cursor:pointer;margin:0 9px 0 2px;vertical-align:middle}
 .editor-searchbar[hidden]{display:none!important}
-.editor-searchbar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px;border:1px solid var(--stroke-2);border-radius:10px;background:var(--surface-soft);color:var(--appearance-accent);flex-wrap:wrap}
+.editor-searchbar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 11px;border:1px solid var(--stroke);border-radius:var(--radius-md,14px);background:var(--surface-soft);color:var(--appearance-accent);flex-wrap:wrap}
 .editor-searchbar svg{width:16px;height:16px}
-.editor-searchbar input{flex:1;min-width:110px;min-height:34px;padding:6px 10px;border:1px solid var(--stroke);border-radius:7px;background:var(--paper-light)}
-.editor-searchbar .btn{flex:none;min-height:31px}
-.editor-searchbar .icon-button{flex:none;min-height:31px}
+.editor-searchbar input{flex:1;min-width:110px;min-height:34px;padding:6px 11px;border:1px solid var(--stroke);border-radius:8px;background:var(--surface);color:var(--ink)}
+.editor-searchbar .btn{flex:none;min-height:32px;height:32px;padding:0 12px}
+.editor-searchbar .icon-button{flex:none;width:32px;height:32px;min-width:32px;min-height:32px;padding:6px;border-radius:8px}
 @media (max-width:640px){
   .editor-searchbar{gap:5px}
   .editor-searchbar input{flex:1 1 calc(50% - 35px)}
@@ -493,10 +493,36 @@ select:focus-visible{outline:2px solid var(--appearance-accent);outline-offset:3
 .refined-editor .editor-outline-panel p{column-span:all;color:var(--muted);font-size:12px;margin:10px 8px;line-height:1.6}
 .refined-editor .editor-outline-item{display:block;break-inside:avoid;width:100%;text-align:left;border:0;border-radius:10px;padding:10px 9px 10px calc(10px + var(--depth)*12px);background:transparent;color:var(--ink-2);font-size:12px;cursor:pointer;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
 .refined-editor .editor-outline-item:hover{background:var(--surface-soft);color:var(--ink)}
+/* Medium viewports (laptops with sidebar open): compact toolbar & outline width so opening the
+   outline never wraps the single-row toolbar or jolts the manuscript downward. */
+@media (min-width:901px) and (max-width:1280px){
+  .editor-stage{--outline-width:228px}
+  .refined-editor.outline-open .editor-stage{column-gap:12px}
+  .refined-editor .editor-paper{padding:24px 22px 16px}
+  .refined-editor .unified-toolbar{flex-wrap:nowrap;gap:8px;padding:6px 7px}
+  .refined-editor .format-tools.editor-tool-groups{flex-wrap:nowrap;gap:3px}
+  .refined-editor .tool-button{width:32px;height:32px;min-width:32px;min-height:32px;padding:6px}
+  .refined-editor .toolbar-separator{display:none}
+  .refined-editor .editor-dropdown-menu summary{min-width:0;height:32px;min-height:32px;padding:0 7px;gap:4px}
+  .refined-editor .editor-dropdown-menu summary>svg:first-child{display:none}
+  .refined-editor .editor-mode-option{min-height:30px;padding:5px 8px}
+  .refined-editor .editor-mode-option svg{display:none}
+}
+@media (min-width:901px) and (max-width:1060px){
+  .shell:not(.sidebar-collapsed):not(.zen-mode) .refined-editor.outline-open .editor-stage{grid-template-columns:minmax(0,1fr) 0px;column-gap:0}
+}
 /* Narrow screens: no room to squeeze the paper, so the open window overlays its right side. */
 @media (max-width:900px){
   .editor-stage{--outline-width:min(300px,86vw)}
   .refined-editor.outline-open .editor-stage{grid-template-columns:minmax(0,1fr) 0px;column-gap:0}
+}
+@media (max-width:680px){
+  /* Compact icon-only bookmark tab alongside the title so it never overlaps the formatting toolbar below. */
+  .editor-stage{--outline-tab-top:8px;--outline-tab-h:76px}
+  .refined-editor .editor-outline-sidebar:not(.is-open){width:34px;margin-right:-6px;border-radius:11px}
+  .refined-editor .editor-outline-handles > button{padding:0 5px 0 0}
+  .refined-editor .editor-outline-handles .handle-vertical-label{display:none}
+  .refined-editor .editor-title{padding-right:30px}
 }
 @media (prefers-reduced-motion:reduce){
   .editor-stage,.refined-editor .editor-outline-sidebar,.editor-outline-handles,.refined-editor .editor-outline-sticky{transition:none!important}
